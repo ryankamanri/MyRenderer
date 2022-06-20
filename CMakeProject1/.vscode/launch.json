@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build And Run",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "${fileDirname}",
+            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.exe",
+            "preLaunchTask": "Make Build",
+            "externalConsole": true
+        },
+        {
+            "name": "Run",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "${fileDirname}",
+            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.exe",
+            "externalConsole": true
+        },
+        {
+            "name": "Clean",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "${fileDirname}",
+            "program": "C:\\MinGW64\\bin\\rm.exe",
+            "preLaunchTask": "Clean"
+        }
+    ]
+}
