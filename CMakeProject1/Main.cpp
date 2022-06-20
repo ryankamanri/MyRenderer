@@ -17,6 +17,8 @@ const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 
+const char* FILE_LOCATION = "../Main.cpp";
+
 
 
 
@@ -28,8 +30,9 @@ void Triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
 
 MyResult<int>* ResultTest() {
     MyResult<int>* innerResult = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Inner Result", 1, nullptr);
+    innerResult->PushToStack(StackTrace(FILE_LOCATION, 32));
     MyResult<int>* result = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Arguments", 9090, innerResult);
-    
+    result->PushToStack(StackTrace(FILE_LOCATION, 34));
     return result;
 }
 
@@ -56,16 +59,15 @@ int main(int argc, char** argv)
     // image.write_tga_file(outPath);
     // Log<const char*>::Info( "Main", "Save File To %s", outPath);
 
+
     MyResult<int>* result = ResultTest();
-    Log<bool>::Info("name", "result is exception ? %d", result->IsException());
-    Log<bool>::Info("name", "result is exception ? %d", result->IsException());
-    result->Print();
-    delete result;
 
-    auto fun = [](int a) {
-        PrintLn<int>("%d", a);
-    };
-
+    result->PushToStack(StackTrace(FILE_LOCATION, 62))
+        ->PushToStack(StackTrace(FILE_LOCATION, 67, 4))
+        ->Using([](MyResult<int> result) {
+        Log<bool>::Info("name", "result is exception ? %d", result.IsException());
+        Log<bool>::Info("name", "result is exception ? %d", result.IsException());
+    });
     
     
 	///

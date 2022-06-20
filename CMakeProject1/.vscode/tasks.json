@@ -7,7 +7,8 @@
             "args": [
                 "-r",
                 "-f",
-                "build/"
+                "build/",
+                "out/build"
             ]
         },
         {

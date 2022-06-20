@@ -52,6 +52,7 @@
         "cstdarg": "cpp",
         "cwctype": "cpp",
         "unordered_map": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "chrono": "cpp"
     }
 }

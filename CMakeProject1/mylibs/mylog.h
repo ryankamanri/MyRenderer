@@ -24,11 +24,11 @@ typedef int LogLevel;
 #define ERROR_LEVEL 4
 
 
-#define TRACE_SIGN "TRACE"
-#define DEBUG_SIGN "DEBUG"
-#define INFO_SIGN "INFOR"
-#define WARN_SIGN "WARNG"
-#define ERROR_SIGN "ERROR"
+#define TRACE_SIGN "trace"
+#define DEBUG_SIGN "debug"
+#define INFO_SIGN "infor"
+#define WARN_SIGN "warng"
+#define ERROR_SIGN "error"
 
 #define DEFAULT_COLOR 0x07
 #define TRACE_COLOR 0x8F
