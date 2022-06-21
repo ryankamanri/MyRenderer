@@ -17,7 +17,7 @@ const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 
-const char* FILE_LOCATION = "../Main.cpp";
+constexpr char* FILE_LOCATION = "../Main.cpp";
 
 
 
@@ -28,12 +28,25 @@ void Triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
     Line(t2, t0, image, color); 
 }
 
+
 MyResult<int>* ResultTest() {
-    MyResult<int>* innerResult = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Inner Result", 1, nullptr);
-    innerResult->PushToStack(StackTrace(FILE_LOCATION, 32));
-    MyResult<int>* result = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Arguments", 9090, innerResult);
-    result->PushToStack(StackTrace(FILE_LOCATION, 34));
+    auto innerResult = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Inner Result", 1, nullptr);
+    innerResult->PushToStack(StackTrace(FILE_LOCATION, 33));
+    auto result = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Arguments", 9090, innerResult);
+    result->PushToStack(StackTrace(FILE_LOCATION, 35));
     return result;
+}
+
+MyResult<const char*>* ResultTest2() {
+    auto result1 = ResultTest();
+    if(result1->IsException()) {
+        result1->PushToStack(StackTrace(FILE_LOCATION, 41));
+        return result1->As("const char*");
+    }
+    
+    auto data = result1->Data();
+    Log<int>::Info("name", "receive result1 data: %d", data);
+    return new MyResult<const char*>("const char*");
 }
 
 int main(int argc, char** argv)
@@ -60,17 +73,26 @@ int main(int argc, char** argv)
     // Log<const char*>::Info( "Main", "Save File To %s", outPath);
 
 
-    MyResult<int>* result = ResultTest();
+    auto result = ResultTest2();
 
-    result->PushToStack(StackTrace(FILE_LOCATION, 62))
-        ->PushToStack(StackTrace(FILE_LOCATION, 67, 4))
-        ->Using([](MyResult<int> result) {
-        Log<bool>::Info("name", "result is exception ? %d", result.IsException());
-        Log<bool>::Info("name", "result is exception ? %d", result.IsException());
-    });
+
+    result->PushToStack(StackTrace(FILE_LOCATION, 76));
     
-    
-	///
+    if(result->IsException()) 
+    {
+        Log<bool>::Info("name", "result is exception ? %d", result->IsException());
+        Log<bool>::Info("name", "result is exception ? %d", result->IsException());
+        result->Print();
+
+        Log<>::Info("name", "Shut down.");
+        result->Dispose();
+        return -1;
+    }
+        
+    const char* data = result->Data();
+    Log<const char*>::Info("name", "receive data %s", data);
+
+    ///
 	system("pause");
 	return 0;
 }

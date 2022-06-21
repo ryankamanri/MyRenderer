@@ -85,17 +85,22 @@ public:
     };
     // constructors
     MyResult();
+    explicit MyResult(T data);
     MyResult(Status status, int code, const char *message, T data, MyResult<T> *innerResult);
+    MyResult(Status status, int code, const char *message, T data, MyResult<T> *innerResult, std::vector<StackTrace> stackTrace);
     ~MyResult();
 
     bool IsException();
     MyResult<T>* GetInnerResult();
     MyResult<T>* Print();
     MyResult<T>* PushToStack(StackTrace stackTrace);
-    
 
-    // use auto release memory call.
-    void Using(void (*callBack)(MyResult<T>));
+    void Dispose();
+    T Data();
+
+    template <class T2>
+    MyResult<T2>* As(T2 data);
+
 
 private:
     // 返回状态: NORMAL为正常返回, EXCEPTION为异常返回
@@ -129,6 +134,17 @@ MyResult<T>::MyResult()
 }
 
 template <class T>
+MyResult<T>::MyResult(T data)
+{
+    this->_Status = MyResult<T>::Status::NORMAL;
+    this->_Code = NORMAL_CODE;
+    this->_Message = DEFAULT_MESSAGE;
+    this->_Data = data;
+    this->_InnerResult = nullptr;
+}
+
+
+template <class T>
 MyResult<T>::MyResult(
     MyResult<T>::Status status,
     int code,
@@ -142,6 +158,23 @@ MyResult<T>::MyResult(
     this->_Message = message;
     this->_Data = data;
     this->_InnerResult = innerResult;
+}
+
+template <class T>
+MyResult<T>::MyResult(
+    Status status, 
+    int code, 
+    const char *message, 
+    T data, 
+    MyResult<T> *innerResult, 
+    std::vector<StackTrace> stackTrace)
+{
+    this->_Status = status;
+    this->_Code = code;
+    this->_Message = message;
+    this->_Data = data;
+    this->_InnerResult = innerResult;
+    this->_StackTrace.assign(stackTrace.begin(), stackTrace.end());
 }
 
 /**
@@ -238,21 +271,53 @@ MyResult<T>* MyResult<T>::PushToStack(StackTrace stackTrace)
 }
 
 
-
-
 /**
- * @brief  use auto release memory call.
+ * @brief Dispose this result.
  * 
  * @tparam T 
- * @param result 
- * @param callBack 
  */
-template <class T>
-void MyResult<T>::Using(void (*callBack)(MyResult<T>))
+template<class T>
+void MyResult<T>::Dispose()
 {
-    callBack(*this);
+    delete this;
+}
+
+/**
+ * @brief Get The Return Data And Dispose result
+ * 
+ * @tparam T 
+ * @return T 
+ */
+template<class T>
+T MyResult<T>::Data()
+{
+    T data = this->_Data;
     if(this->IsException()) {
         this->Print();
     }
     delete this;
+    return data;
+}
+
+template <class T>
+template <class T2>
+MyResult<T2> *MyResult<T>::As(T2 data)
+{
+    if (this->_InnerResult == nullptr)
+    {
+        return new MyResult<T2>(
+            this->_Status == MyResult<T>::EXCEPTION ? MyResult<T2>::EXCEPTION : MyResult<T2>::NORMAL,
+            this->_Code,
+            this->_Message,
+            data,
+            nullptr,
+            this->_StackTrace);
+    }
+    return new MyResult<T2>(
+        this->_Status == MyResult<T>::EXCEPTION ? MyResult<T2>::EXCEPTION : MyResult<T2>::NORMAL,
+        this->_Code,
+        this->_Message,
+        data,
+        this->_InnerResult->As(data),
+        this->_StackTrace);
 }

@@ -34,7 +34,7 @@ typedef int LogLevel;
 #define TRACE_COLOR 0x8F
 #define DEBUG_COLOR 0x1F
 #define INFO_COLOR 0x2F
-#define WARN_COLOR 0x6F
+#define WARN_COLOR 0x60
 #define ERROR_COLOR 0x4F
 
 /**
