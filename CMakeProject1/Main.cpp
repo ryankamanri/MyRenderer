@@ -2,12 +2,10 @@
 //
 #include <iostream>
 #include "mylibs/mylog.h"
-#include "mylibs/tgaimage.h"
-#include "mylibs/model.h"
+#include "renderers/tgaimage.h"
+#include "renderers/model.h"
 #include "renderers/line.h"
 #include "mylibs/myresult.h"
-
-using namespace std;
 
 constexpr int width  = 800; // output image size
 constexpr int height = 800;
@@ -17,8 +15,7 @@ const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 
-constexpr char* FILE_LOCATION = "../Main.cpp";
-
+constexpr const char* FILE_LOCATION = "../Main.cpp";
 
 
 
@@ -45,14 +42,14 @@ MyResult<const char*>* ResultTest2() {
     }
     
     auto data = result1->Data();
-    Log<int>::Info("name", "receive result1 data: %d", data);
+    Log::Info("name", "receive result1 data: %d", data);
     return new MyResult<const char*>("const char*");
 }
 
 int main(int argc, char** argv)
 {
-    Log<>::Level(INFO_LEVEL);
-	Log<>::Info("TGAImage", "This is my TinyRenderer");
+    Log::Level(INFO_LEVEL);
+	Log::Info("TGAImage", "This is my TinyRenderer");
     PrintLn("Let's look about it");
 	///
     
@@ -80,17 +77,23 @@ int main(int argc, char** argv)
     
     if(result->IsException()) 
     {
-        Log<bool>::Info("name", "result is exception ? %d", result->IsException());
-        Log<bool>::Info("name", "result is exception ? %d", result->IsException());
+        if(result->Code() == 500)
+        {
+            Log::Info("name", "result is exception ? %d", result->IsException());
+            Log::Info("name", "result is exception ? %d", result->IsException());
+        }
+
         result->Print();
 
-        Log<>::Info("name", "Shut down.");
+        Log::Info("name", "Shut down.");
         result->Dispose();
+        
+        system("pause");
         return -1;
     }
         
     const char* data = result->Data();
-    Log<const char*>::Info("name", "receive data %s", data);
+    Log::Info("name", "receive data %s", data);
 
     ///
 	system("pause");

@@ -37,30 +37,28 @@ typedef int LogLevel;
 #define WARN_COLOR 0x60
 #define ERROR_COLOR 0x4F
 
+
 /**
- * @brief The Level Of The Logger, Use Log<>::Level To Change It.
+ * @brief Log Class
  * 
  */
-LogLevel _level = TRACE_LEVEL;
-
-template<typename... Ts>
 class Log
 {
+    private:
+        static LogLevel _level;
     public:
         static void Level(LogLevel level);
+        template<typename... Ts>
         static void Trace(const char* name, const char* message, Ts... argv);
+        template<typename... Ts>
         static void Debug(const char* name, const char* message, Ts... argv);
+        template<typename... Ts>
         static void Info(const char* name, const char* message, Ts... argv);
+        template<typename... Ts>
         static void Warn(const char* name, const char* message, Ts... argv);
+        template<typename... Ts>
         static void Error(const char* name, const char* message, Ts... argv);
 };
-
-
-
-template<typename... Ts>
-void Log<Ts...>::Level(LogLevel level) {
-    _level = level;
-}
 
 
 template<typename... Ts>
@@ -82,21 +80,21 @@ void Logger(int color, const char* sign, const char* name, const char* message, 
 }
 
 template<typename... Ts>
-void Log<Ts...>::Trace(const char* name, const char* message, Ts... argv) {
+void Log::Trace(const char* name, const char* message, Ts... argv) {
     if(_level <= TRACE_LEVEL) {
         Logger(TRACE_COLOR, TRACE_SIGN, name, message, argv...);
     }
 }
 
 template<typename... Ts>
-void Log<Ts...>::Debug(const char* name, const char* message, Ts... argv) {
+void Log::Debug(const char* name, const char* message, Ts... argv) {
     if(_level <= DEBUG_LEVEL) {
         Logger(DEBUG_COLOR, DEBUG_SIGN, name, message, argv...);
     }
 }
 
 template<typename... Ts>
-void Log<Ts...>::Info(const char* name, const char* message, Ts... argv) {
+void Log::Info(const char* name, const char* message, Ts... argv) {
     if(_level <= INFO_LEVEL) {
         Logger(INFO_COLOR, INFO_SIGN, name, message, argv...);
     }
@@ -104,14 +102,14 @@ void Log<Ts...>::Info(const char* name, const char* message, Ts... argv) {
 }
 
 template<typename... Ts>
-void Log<Ts...>::Warn(const char* name, const char* message, Ts... argv) {
+void Log::Warn(const char* name, const char* message, Ts... argv) {
     if(_level <= WARN_LEVEL) {
         Logger(WARN_COLOR, WARN_SIGN, name, message, argv...);
     }
 }
 
 template<typename... Ts>
-void Log<Ts...>::Error(const char* name, const char* message, Ts... argv) {
+void Log::Error(const char* name, const char* message, Ts... argv) {
     if(_level <= ERROR_LEVEL) {
         Logger(ERROR_COLOR, ERROR_SIGN, name, message, argv...);
     }

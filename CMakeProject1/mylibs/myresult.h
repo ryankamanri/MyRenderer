@@ -2,6 +2,7 @@
 #include "mylog.h"
 #include "mythread.h"
 #include <string>
+#include <vector>
 
 
 #define DEFAULT_CODE 0
@@ -19,7 +20,7 @@
  */
 typedef struct StackTrace
 {
-    StackTrace(const char* file, int line, int lineCount);
+    StackTrace(const char* file, int line, int lineCount = 1);
     /* data */
     const char* _File;
     int _Line;
@@ -29,49 +30,7 @@ typedef struct StackTrace
 } StackTrace;
 
 
-StackTrace::StackTrace(const char* file, int line, int lineCount = 1): _File(file), _Line(line), _LineCount(lineCount)
-{
-    // auto get the statement
-    _Statement = nullptr;
 
-    // read the source file
-    std::ifstream fs(file);
-
-    std::string str;
-    std::string* statement = new std::string();
-    int index = 1;
-    while (index < line && getline(fs, str))
-    {
-        index++;
-    }
-    while (index < line + lineCount && getline(fs, str))
-    {
-        *statement += "\n\t\t";
-        *statement += str;
-        index++;
-    }
-    
-    fs.close();
-    if(index < line)
-    {
-        Log<const char*, int, int>::Error("MyResultStackTraceException", "File %s Lines Count %d < %d (The Given)", file, index, line);
-        Log<const char*>::Warn("MyResultStackTraceException", "It Might Due To Your Code Source File '%s' Has Been Occupied By Another Process, Try To Close All Process Which Keep Occupying It.", file);
-        Log<>::Warn("MyResultStackTraceException", "And The Following StackTrace Might Be In A Mess, Do NOT Care.");
-        return;
-    }
-    
-    _Statement = statement->c_str();
-    
-}
-
-void StackTrace::Print() 
-{
-    PrintLn("\tat %s, Line %d - %d", this->_File, this->_Line, this->_Line + this->_LineCount);
-    if(_Statement != nullptr) {
-        PrintLn("\t\t%s", _Statement);
-    }
-    
-}
 
 
 template <class T>
@@ -91,11 +50,12 @@ public:
     ~MyResult();
 
     bool IsException();
-    MyResult<T>* GetInnerResult();
+    MyResult<T>* InnerResult();
     MyResult<T>* Print();
     MyResult<T>* PushToStack(StackTrace stackTrace);
 
     void Dispose();
+    int Code();
     T Data();
 
     template <class T2>
@@ -195,7 +155,7 @@ bool MyResult<T>::IsException()
 }
 
 template <class T>
-MyResult<T>* MyResult<T>::GetInnerResult()
+MyResult<T>* MyResult<T>::InnerResult()
 {
     if (this->_InnerResult == nullptr)
     {
@@ -230,8 +190,8 @@ void MyResult<T>::PrintRecursive()
     {
         if (this->IsException())
         {
-            Log<>::Error("ResultError", "An Exception In Result Occurred Caused By: ");
-            Log<>::Error(
+            Log::Error("ResultError", "An Exception In Result Occurred Caused By: ");
+            Log::Error(
                 std::to_string(this->_Code).c_str(),
                 this->_Message);
         }
@@ -283,7 +243,8 @@ void MyResult<T>::Dispose()
 }
 
 /**
- * @brief Get The Return Data And Dispose result
+ * @brief Get The Return Data And Dispose result.
+ *  Note that this method just can be called ONCE ONLY.
  * 
  * @tparam T 
  * @return T 
@@ -299,6 +260,26 @@ T MyResult<T>::Data()
     return data;
 }
 
+/**
+ * @brief Get the code of this result.
+ * 
+ * @tparam T 
+ * @return int 
+ */
+template <class T>
+int MyResult<T>::Code()
+{
+    return _Code;
+}
+
+/**
+ * @brief Change this result to another type(T2).
+ * 
+ * @tparam T 
+ * @tparam T2 
+ * @param data 
+ * @return MyResult<T2>* 
+ */
 template <class T>
 template <class T2>
 MyResult<T2> *MyResult<T>::As(T2 data)
