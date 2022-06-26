@@ -15,7 +15,10 @@ const TGAColor red   = TGAColor(255, 0,   0,   255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 Model *model = NULL;
 
-constexpr const char* FILE_LOCATION = "../Main.cpp";
+SOURCE_FILE("../Main.cpp");
+
+
+///////////////// make_unique
 
 
 
@@ -26,25 +29,25 @@ void Triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
 }
 
 
-MyResult<int>* ResultTest() {
-    auto innerResult = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Inner Result", 1, nullptr);
-    innerResult->PushToStack(StackTrace(FILE_LOCATION, 33));
-    auto result = new MyResult<int>(MyResult<int>::EXCEPTION, 500, "Invalid Arguments", 9090, innerResult);
-    result->PushToStack(StackTrace(FILE_LOCATION, 35));
+P<MyResult<int>> ResultTest() {
+    auto innerResult = New<MyResult<int>>(MyResult<int>::EXCEPTION, 500, "Invalid Inner Result", 1);
+    innerResult->PushToStack(StackTrace(SOURCE_FILE_LOCATION, 33));
+
+    auto result = New<MyResult<int>>(MyResult<int>::EXCEPTION, 500, "Invalid Arguments", 9090, std::move(innerResult));
+    result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, 35));
     return result;
 }
 
-MyResult<const char*>* ResultTest2() {
+P<MyResult<const char*>> ResultTest2() {
     auto result1 = ResultTest();
-    if(result1->IsException()) {
-        result1->PushToStack(StackTrace(FILE_LOCATION, 41));
-        return result1->As("const char*");
-    }
+
+    THROW_EXCEPTION(result1, 41, "const char*");
     
     auto data = result1->Data();
     Log::Info("name", "receive result1 data: %d", data);
-    return new MyResult<const char*>("const char*");
+    return New<MyResult<const char*>>("const char*");
 }
+
 
 int main(int argc, char** argv)
 {
@@ -52,7 +55,6 @@ int main(int argc, char** argv)
 	Log::Info("TGAImage", "This is my TinyRenderer");
     PrintLn("Let's look about it");
 	///
-    
     // Vec2i t0[3] = {Vec2i(10, 70),   Vec2i(50, 160),  Vec2i(70, 80)}; 
     // Vec2i t1[3] = {Vec2i(180, 50),  Vec2i(150, 1),   Vec2i(70, 180)}; 
     // Vec2i t2[3] = {Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180)}; 
@@ -73,7 +75,7 @@ int main(int argc, char** argv)
     auto result = ResultTest2();
 
 
-    result->PushToStack(StackTrace(FILE_LOCATION, 76));
+    result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, 76));
     
     if(result->IsException()) 
     {
@@ -86,7 +88,6 @@ int main(int argc, char** argv)
         result->Print();
 
         Log::Info("name", "Shut down.");
-        result->Dispose();
         
         system("pause");
         return -1;
