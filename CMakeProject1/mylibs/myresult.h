@@ -39,7 +39,7 @@ public:
     // constructors
     MyResult();
     explicit MyResult(T data);
-    MyResult(MyResult<T>::Status status, int code, std::string const& message, T data);
+    MyResult(MyResult<T>::Status status, int code, std::string const& message);
     MyResult(Status status, int code, std::string const& message, T data, P<MyResult<T>> innerResult);
     MyResult(Status status, int code, std::string const& message, T data, P<MyResult<T>> innerResult, std::vector<StackTrace>& stackTrace);
 
@@ -48,9 +48,8 @@ public:
     MyResult<T>* Print();
     MyResult<T>* PushToStack(StackTrace stackTrace);
 
-    void Dispose();
     int Code() const;
-    T Data();
+    T& Data();
 
     template <class T2>
     P<MyResult<T2>> As(T2 data);
@@ -99,14 +98,12 @@ template <class T>
 MyResult<T>::MyResult(
     MyResult<T>::Status status,
     int code,
-    std::string const& message,
-    T data)
+    std::string const& message)
 {
 
     this->_Status = status;
     this->_Code = code;
     this->_Message = message;
-    this->_Data = data;
     this->_InnerResult = nullptr;
 }
 
@@ -225,34 +222,22 @@ MyResult<T>* MyResult<T>::PushToStack(StackTrace stackTrace)
     return this;
 }
 
-/**
- * @brief Dispose this result.
- *
- * @tparam T
- */
-// template <class T>
-// void MyResult<T>::Dispose()
-// {
-//     delete this;
-// }
+
 
 /**
  * @brief Get The Return Data And Dispose result.
- *  Note that this method just can be called ONCE ONLY.
  *
  * @tparam T
- * @return T
+ * @return T&
  */
 template <class T>
-T MyResult<T>::Data()
+T& MyResult<T>::Data()
 {
-    T data = this->_Data;
     if (this->IsException())
     {
         this->Print();
     }
-    // delete this;
-    return data;
+    return this->_Data;
 }
 
 /**
@@ -315,3 +300,11 @@ P<MyResult<T>> MyResult<T>::As(T data)
         result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
         return result1->As(returnData);                              \
     }
+
+using DefaultResult = P<MyResult<void*>>;
+
+#define DEFAULT_RESULT New<MyResult<void*>>()
+
+#define DEFAULT_RESULT_EXCEPTION(code, message) New<MyResult<void*>>(MyResult<void*>::EXCEPTION, code, message)
+
+#define RESULT_EXCEPTION(T, code, message) New<MyResult<T>>(MyResult<T>::EXCEPTION, code, message)

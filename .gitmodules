@@ -1,0 +1,3 @@
+[submodule "CMakeProject1/dependencies/fmt"]
+	path = CMakeProject1/dependencies/fmt
+	url = https://github.com/fmtlib/fmt.git

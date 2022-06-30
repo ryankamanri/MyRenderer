@@ -7,6 +7,9 @@ project(CMakeTest)
 set( CMAKE_BUILD_TYPE "Debug" )
 set(CMAKE_CXX_STANDARD 11)
 
+
+
+
 # 将源代码添加到此项目的可执行文件。
 aux_source_directory(./mylibs/implements MY_LIBS)
 add_library(my_libs ${MY_LIBS})
@@ -18,6 +21,7 @@ add_executable (CMakeProject1 "Main.cpp")
 target_link_libraries(CMakeProject1 my_libs)
 target_link_libraries(CMakeProject1 renderers)
 
+# Add dependencies
 
 # TODO: 如有需要，请添加测试并安装目标。
 message(CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR})

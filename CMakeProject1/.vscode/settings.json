@@ -53,6 +53,17 @@
         "cwctype": "cpp",
         "unordered_map": "cpp",
         "functional": "cpp",
-        "chrono": "cpp"
-    }
+        "chrono": "cpp",
+        "ratio": "cpp",
+        "thread": "cpp",
+        "complex": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "iomanip": "cpp",
+        "numeric": "cpp",
+        "typeindex": "cpp"
+    },
+    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json"
 }
