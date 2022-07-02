@@ -1,7 +1,7 @@
 #include "../myresult.h"
 #include <fstream>
 
-StackTrace::StackTrace(std::string file, int line, int lineCount): _File(file), _Line(line), _LineCount(lineCount)
+StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _File(file), _Line(line), _LineCount(lineCount)
 {
     // auto get the statement
 
@@ -21,26 +21,25 @@ StackTrace::StackTrace(std::string file, int line, int lineCount): _File(file), 
         statement += str;
         index++;
     }
-    
+
     fs.close();
-    if(index < line)
+    if (index < line)
     {
         Log::Error("MyResultStackTraceException", "File %s Lines Count %d < %d (The Given)", file.c_str(), index, line);
-        Log::Warn("MyResultStackTraceException", 
-        "It Might Due To Your Code Source File '%s' Has Been Occupied By Another Process, Try To Close All Process Which Keep Occupying It, And The Following StackTrace Might Be In A Mess, Do NOT Care.", 
-        file.c_str());
+        Log::Warn("MyResultStackTraceException",
+                  "It Might Due To Your Code Source File '%s' Has Been Occupied By Another Process, Try To Close All Process Which Keep Occupying It, And The Following StackTrace Might Be In A Mess, Do NOT Care.",
+                  file.c_str());
         return;
     }
-    
+
     _Statement = statement;
-    
 }
 
-void StackTrace::Print() 
+void StackTrace::Print() const
 {
     PrintLn("\tat %s, Line %d - %d", this->_File.c_str(), this->_Line, this->_Line + this->_LineCount);
-    if(!_Statement.empty()) {
+    if (!_Statement.empty())
+    {
         PrintLn("\t\t%s", _Statement.c_str());
     }
-    
 }

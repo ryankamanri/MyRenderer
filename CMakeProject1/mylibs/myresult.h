@@ -18,13 +18,13 @@
  */
 using StackTrace = struct StackTrace
 {
-    StackTrace(std::string file, int line, int lineCount = 1);
+    StackTrace(std::string const &file, int line, int lineCount = 1);
     /* data */
     std::string _File;
     int _Line;
     int _LineCount;
     std::string _Statement;
-    void Print();
+    void Print() const;
 };
 
 template <class T>
@@ -39,21 +39,24 @@ public:
     // constructors
     MyResult();
     explicit MyResult(T data);
-    MyResult(MyResult<T>::Status status, int code, std::string const& message);
-    MyResult(Status status, int code, std::string const& message, T data, P<MyResult<T>> innerResult);
-    MyResult(Status status, int code, std::string const& message, T data, P<MyResult<T>> innerResult, std::vector<StackTrace>& stackTrace);
+    MyResult(MyResult<T>::Status status, int code, std::string const &message);
+    MyResult(Status status, int code, std::string const &message, T data, P<MyResult<T>> innerResult);
+    MyResult(Status status, int code, std::string const &message, P<MyResult<T>> innerResult, std::vector<StackTrace> &stackTrace);
+    MyResult(Status status, int code, std::string const &message, T data, P<MyResult<T>> innerResult, std::vector<StackTrace> &stackTrace);
 
     bool IsException();
-    MyResult<T>* InnerResult();
-    MyResult<T>* Print();
-    MyResult<T>* PushToStack(StackTrace stackTrace);
+    MyResult<T> *InnerResult();
+    MyResult<T> *Print(bool is_print = true);
+    MyResult<T> *PushToStack(StackTrace stackTrace);
 
     int Code() const;
-    T& Data();
+    T &Data();
+    T &operator*();
 
     template <class T2>
+    P<MyResult<T2>> As();
+    template <class T2>
     P<MyResult<T2>> As(T2 data);
-    P<MyResult<T>> As(T data);
 
 private:
     // 返回状态: NORMAL为正常返回, EXCEPTION为异常返回
@@ -80,7 +83,6 @@ MyResult<T>::MyResult()
     this->_Status = MyResult<T>::Status::NORMAL;
     this->_Code = DEFAULT_CODE;
     this->_Message = DEFAULT_MESSAGE;
-    this->_Data = nullptr;
     this->_InnerResult = nullptr;
 }
 
@@ -98,7 +100,7 @@ template <class T>
 MyResult<T>::MyResult(
     MyResult<T>::Status status,
     int code,
-    std::string const& message)
+    std::string const &message)
 {
 
     this->_Status = status;
@@ -111,7 +113,7 @@ template <class T>
 MyResult<T>::MyResult(
     MyResult<T>::Status status,
     int code,
-    std::string const& message,
+    std::string const &message,
     T data,
     P<MyResult<T>> innerResult)
 {
@@ -127,10 +129,25 @@ template <class T>
 MyResult<T>::MyResult(
     Status status,
     int code,
-    std::string const& message,
+    std::string const &message,
+    P<MyResult<T>> innerResult,
+    std::vector<StackTrace> &stackTrace)
+{
+    this->_Status = status;
+    this->_Code = code;
+    this->_Message = message;
+    this->_InnerResult.reset(innerResult.release());
+    this->_StackTrace.assign(stackTrace.begin(), stackTrace.end());
+}
+
+template <class T>
+MyResult<T>::MyResult(
+    Status status,
+    int code,
+    std::string const &message,
     T data,
     P<MyResult<T>> innerResult,
-    std::vector<StackTrace>& stackTrace)
+    std::vector<StackTrace> &stackTrace)
 {
     this->_Status = status;
     this->_Code = code;
@@ -140,8 +157,6 @@ MyResult<T>::MyResult(
     this->_StackTrace.assign(stackTrace.begin(), stackTrace.end());
 }
 
-
-
 template <class T>
 bool MyResult<T>::IsException()
 {
@@ -149,7 +164,7 @@ bool MyResult<T>::IsException()
 }
 
 template <class T>
-MyResult<T>* MyResult<T>::InnerResult()
+MyResult<T> *MyResult<T>::InnerResult()
 {
     if (this->_InnerResult == nullptr)
     {
@@ -170,7 +185,7 @@ void MyResult<T>::PrintOnce()
     std::vector<StackTrace> copiedStackTrace(this->_StackTrace);
     while (!copiedStackTrace.empty())
     {
-        std::vector<StackTrace>::iterator popStackIterator = copiedStackTrace.begin();
+        auto popStackIterator = copiedStackTrace.begin();
         popStackIterator.base()->Print();
         copiedStackTrace.erase(popStackIterator);
     }
@@ -202,9 +217,9 @@ void MyResult<T>::PrintRecursive()
  * @return MyResult<T>
  */
 template <class T>
-MyResult<T>* MyResult<T>::Print()
+MyResult<T> *MyResult<T>::Print(bool is_print)
 {
-    this->PrintRecursive();
+    if(is_print) this->PrintRecursive();
     return this;
 }
 
@@ -216,22 +231,36 @@ MyResult<T>* MyResult<T>::Print()
  * @return MyResult<T>*
  */
 template <class T>
-MyResult<T>* MyResult<T>::PushToStack(StackTrace stackTrace)
+MyResult<T> *MyResult<T>::PushToStack(StackTrace stackTrace)
 {
     this->_StackTrace.push_back(stackTrace);
     return this;
 }
 
-
-
 /**
- * @brief Get The Return Data And Dispose result.
+ * @brief Get The Return Data
  *
  * @tparam T
  * @return T&
  */
 template <class T>
-T& MyResult<T>::Data()
+T &MyResult<T>::Data()
+{
+    if (this->IsException())
+    {
+        this->Print();
+    }
+    return this->_Data;
+}
+
+/**
+ * @brief Get The Return Data
+ *
+ * @tparam T
+ * @return T&
+ */
+template <class T>
+T &MyResult<T>::operator*()
 {
     if (this->IsException())
     {
@@ -250,6 +279,27 @@ template <class T>
 int MyResult<T>::Code() const
 {
     return _Code;
+}
+
+template <class T>
+template <class T2>
+P<MyResult<T2>> MyResult<T>::As()
+{
+    if (this->_InnerResult == nullptr)
+    {
+        return New<MyResult<T2>>(
+            this->_Status == MyResult<T>::EXCEPTION ? MyResult<T2>::EXCEPTION : MyResult<T2>::NORMAL,
+            this->_Code,
+            this->_Message,
+            P<MyResult<T2>>(nullptr),
+            this->_StackTrace);
+    }
+    return New<MyResult<T2>>(
+        this->_Status == MyResult<T>::EXCEPTION ? MyResult<T2>::EXCEPTION : MyResult<T2>::NORMAL,
+        this->_Code,
+        this->_Message,
+        this->_InnerResult->As<T2>(),
+        this->_StackTrace);
 }
 
 /**
@@ -283,28 +333,28 @@ P<MyResult<T2>> MyResult<T>::As(T2 data)
         this->_StackTrace);
 }
 
-template <class T>
-P<MyResult<T>> MyResult<T>::As(T data)
-{
-    this->_Data = data;
-    return P<MyResult<T>>(this);
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#define SOURCE_FILE(location) constexpr const char* SOURCE_FILE_LOCATION = location
+#define SOURCE_FILE(location) constexpr const char *SOURCE_FILE_LOCATION = location
 
-#define THROW_EXCEPTION(result, line, returnData)                    \
+#define THROW_EXCEPTION_FOR_TYPE(T, result, line)                    \
     if (result->IsException())                                       \
     {                                                                \
         result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
-        return result1->As(returnData);                              \
+        return result->As<T>();                                      \
     }
 
-using DefaultResult = P<MyResult<void*>>;
+#define THROW_EXCEPTION(result, line)                                \
+    if (result->IsException())                                       \
+    {                                                                \
+        result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
+        return result;                                               \
+    }
 
-#define DEFAULT_RESULT New<MyResult<void*>>()
+using DefaultResult = P<MyResult<void *>>;
 
-#define DEFAULT_RESULT_EXCEPTION(code, message) New<MyResult<void*>>(MyResult<void*>::EXCEPTION, code, message)
+#define DEFAULT_RESULT New<MyResult<void *>>()
+
+#define DEFAULT_RESULT_EXCEPTION(code, message) New<MyResult<void *>>(MyResult<void *>::EXCEPTION, code, message)
 
 #define RESULT_EXCEPTION(T, code, message) New<MyResult<T>>(MyResult<T>::EXCEPTION, code, message)

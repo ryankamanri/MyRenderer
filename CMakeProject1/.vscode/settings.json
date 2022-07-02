@@ -63,7 +63,8 @@
         "string_view": "cpp",
         "iomanip": "cpp",
         "numeric": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "random": "cpp"
     },
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json"
 }

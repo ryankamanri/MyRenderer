@@ -17,7 +17,7 @@ Vector::Vector(size_t n)
     }
 
     this->_N = n;
-    this->_V = P<float>(new float[n]);
+    this->_V = P<VectorElemType>(new VectorElemType[n]);
 }
 
 Vector::Vector(Vector &v) : _V(std::move(v._V)), _N(v._N)
@@ -25,7 +25,7 @@ Vector::Vector(Vector &v) : _V(std::move(v._V)), _N(v._N)
     v._N = MYVECTOR_NOT_INITIALIZED_N;
 }
 
-Vector::Vector(std::initializer_list<float> list)
+Vector::Vector(std::initializer_list<VectorElemType> list)
 {
     this->_N = MYVECTOR_NOT_INITIALIZED_N;
 
@@ -37,7 +37,7 @@ Vector::Vector(std::initializer_list<float> list)
     }
 
     this->_N = n;
-    this->_V = P<float>(new float[n]);
+    this->_V = P<VectorElemType>(new VectorElemType[n]);
 
     auto begin = list.begin();
     auto end = list.end();
@@ -49,7 +49,7 @@ Vector::Vector(std::initializer_list<float> list)
     }
 }
 
-P<Vector> Vector::Copy()
+P<Vector> Vector::Copy() const
 {
     auto new_v = New<Vector>(_N);
     auto pv = _V.get();
@@ -90,21 +90,21 @@ P<MyResult<std::size_t>> Vector::N() const
     return New<MyResult<std::size_t>>(_N);
 }
 
-P<MyResult<float>> Vector::operator[](int n) const
+P<MyResult<VectorElemType>> Vector::operator[](int n) const
 {
     auto pv = _V.get();
-    CHECK_MEMORY_FOR_RESULT(float, pv, LOG_NAME, -1)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, LOG_NAME, -1)
 
     if(n < 0 || n > this->_N)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", n, this->_N);
-        return RESULT_EXCEPTION(float, MYVECTOR_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+        return RESULT_EXCEPTION(VectorElemType, MYVECTOR_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    return New<MyResult<float>>(*(pv + n));
+    return New<MyResult<VectorElemType>>(*(pv + n));
 }
 
-DefaultResult Vector::Set(size_t index, float value) const
+DefaultResult Vector::Set(size_t index, VectorElemType value) const
 {
     auto pv = _V.get();
     CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
@@ -113,7 +113,7 @@ DefaultResult Vector::Set(size_t index, float value) const
     return DEFAULT_RESULT;
 }
 
-DefaultResult Vector::SetAll(float value) const
+DefaultResult Vector::SetAll(VectorElemType value) const
 {
     auto pv = _V.get();
     CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
@@ -151,7 +151,7 @@ DefaultResult Vector::operator+=(Vector const &v)
     return DEFAULT_RESULT;
 }
 
-DefaultResult Vector::operator+=(std::initializer_list<float> list)
+DefaultResult Vector::operator+=(std::initializer_list<VectorElemType> list)
 {
     Vector v(list);
     return this->operator+=(v);
@@ -183,7 +183,7 @@ DefaultResult Vector::operator-=(Vector const &v)
     return DEFAULT_RESULT;
 }
 
-DefaultResult Vector::operator-=(std::initializer_list<float> list)
+DefaultResult Vector::operator-=(std::initializer_list<VectorElemType> list)
 {
     Vector v(list);
     return this->operator-=(v);
@@ -225,13 +225,13 @@ DefaultResult Vector::operator*=(Vector const& v)
     
 }
 
-DefaultResult Vector::operator*=(std::initializer_list<float> list)
+DefaultResult Vector::operator*=(std::initializer_list<VectorElemType> list)
 {
     Vector v(list);
     return this->operator*=(v);
 }
 
-DefaultResult Vector::operator*=(float value)
+DefaultResult Vector::operator*=(VectorElemType value)
 {
     auto pv = _V.get();
     CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
@@ -244,12 +244,12 @@ DefaultResult Vector::operator*=(float value)
     return DEFAULT_RESULT;
 }
 
-P<MyResult<float>> Vector::operator*(Vector const& v) const
+P<MyResult<VectorElemType>> Vector::operator*(Vector const& v) const
 {
     auto pv = _V.get();
-    CHECK_MEMORY_FOR_RESULT(float, pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
     auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_RESULT(float, pv2, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv2, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
 
     size_t n1 = _N;
     size_t n2 = v._N;
@@ -257,27 +257,29 @@ P<MyResult<float>> Vector::operator*(Vector const& v) const
     if (n1 != n2)
     {
         Log::Error(LOG_NAME, "Call of Vector::operator*=: Two vectors of unequal length: %d and %d", n1, n2);
-        return RESULT_EXCEPTION(float, MYVECTOR_CODE_NOT_EQUEL_N, "Two vectors of unequal length");
+        return RESULT_EXCEPTION(VectorElemType, MYVECTOR_CODE_NOT_EQUEL_N, "Two vectors of unequal length");
     }
 
-    float result = 0;
+    VectorElemType result = 0;
 
     for(size_t i = 0; i < n1; i++)
     {
         result += *(pv + i) * *(pv2 + i);
     }
 
-    return New<MyResult<float>>(result);
+    return New<MyResult<VectorElemType>>(result);
 }
 
-P<MyResult<float>> Vector::operator*(std::initializer_list<float> list) const
+P<MyResult<VectorElemType>> Vector::operator*(std::initializer_list<VectorElemType> list) const
 {
     Vector v(list);
     return this->operator*(v);
 }
 
-DefaultResult Vector::PrintVector(const char *decimal_count) const
+DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) const
 {
+    if(!is_print) return DEFAULT_RESULT;
+
     auto pV = this->_V.get();
 
     CHECK_MEMORY_FOR_DEFAULT_RESULT(pV, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
@@ -299,7 +301,7 @@ DefaultResult Vector::PrintVector(const char *decimal_count) const
         auto value = *(pV + i);
         Print(formatStr.c_str(), value);
     }
-    Print("\n");
+    PrintLn();
 
     return DEFAULT_RESULT;
 }
