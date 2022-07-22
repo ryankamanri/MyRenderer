@@ -1,6 +1,7 @@
 ﻿// CMakeProject1.cpp: 定义应用程序的入口点。
 //
 #include <iostream>
+#include <thread>
 #include <time.h>
 #include "mylibs/mylog.h"
 #include "renderers/tgaimage.h"
@@ -10,98 +11,170 @@
 #include "mylibs/mymatrix.h"
 #include "mylibs/myvector.h"
 
-constexpr int width  = 800; // output image size
-constexpr int height = 800;
-
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red   = TGAColor(255, 0,   0,   255);
-const TGAColor green = TGAColor(0, 255, 0, 255);
-Model *model = NULL;
-
 SOURCE_FILE("../Main.cpp");
-constexpr const char* LOG_NAME = "Main";
+constexpr const char *LOG_NAME = "Main";
 
-void Triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) { 
-    Line(t0, t1, image, color); 
-    Line(t1, t2, image, color); 
-    Line(t2, t0, image, color); 
+#include <windows.h>
+#include <time.h>
+
+const int DEFAULT_LENGTH = 600;
+
+const int WINDOW_WIDTH = DEFAULT_LENGTH;
+const int WINDOW_HEIGHT = DEFAULT_LENGTH;
+
+//窗口处理函数
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+// 绘图
+void Paint(HWND hWnd);
+void OnPaint(HDC hDC);
+//绘制方块
+void Draw(HDC hDC, int n,COLORREF color = 0);
+
+//入口函数：所有代码都从这里开始执行
+// WinMain:C语言Windows窗口程序入口函数
+
+//做游戏窗口的步骤
+// 1.设计窗口类
+// 2.注册窗口类
+// 3.创建窗口
+// 4.显示窗口
+// 5.更新窗口
+// 6.消息循环
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    // 1.设计窗口类
+    TCHAR szAppClassName[] = TEXT("ZWX");
+    WNDCLASS wc = {0};
+    wc.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); //背景颜色画刷
+    wc.hCursor = LoadCursor(NULL, IDC_HAND);           //鼠标光标类型,手：DC_HAND
+    wc.hIcon = LoadIcon(NULL, IDI_ERROR);              //图标
+    wc.hInstance = hInstance;                          //应用程序实例句柄，表示exe
+    wc.lpfnWndProc = WindowProc;                       //窗口处理函数
+    wc.lpszClassName = szAppClassName;                 //窗口类型名
+    wc.style = CS_HREDRAW | CS_VREDRAW;                //窗口类的风格
+
+    // 2.注册窗口类
+    RegisterClass(&wc);
+
+    // 3.创建窗口
+    HWND hWnd = CreateWindow(
+        szAppClassName,                                       //窗口类型名
+        TEXT("Graphic"),                                      //窗口标题
+        WS_BORDER | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, //窗口的风格
+        200, 100,                                             //窗口左上角坐标（像素）
+        WINDOW_WIDTH, WINDOW_HEIGHT,                                             //窗口的宽和高
+        NULL,                                                 //父窗口句柄
+        NULL,                                                 //菜单句柄
+        hInstance,                                            //应用程序实例句柄
+        NULL                                                  //附加参数
+    );
+
+    // 4.显示窗口
+    ShowWindow(hWnd, SW_SHOW);
+
+    // 5.更新窗口
+    UpdateWindow(hWnd);
+
+    // 6.消息循环
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0)) // GetMessage从调用线程的消息队列中取得一个消息并放于msg
+    {
+        //将虚拟键消息转换为字符消息
+        TranslateMessage(&msg);
+        //将消息分发给窗口处理函数
+        DispatchMessage(&msg);
+    }
+    return 0;
 }
 
-void PrintVector(Vector v)
+//窗口处理函数
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    v.PrintVector();
-    Vector v2 = v;
-    v2.PrintVector();
+
+    auto tid = GetCurrentThreadId();
+    PrintLn("Thread Id: %d, Msg: %d", tid, uMsg);
+
+    switch (uMsg)
+    {
+    case WM_PAINT: //窗口绘图消息
+        Paint(hWnd);
+        break;
+    case WM_CLOSE: //窗口关闭消息
+        DestroyWindow(hWnd);
+        break;
+    case WM_DESTROY: //窗口销毁消息
+        PostQuitMessage(0);
+        break;
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam); //默认的窗口处理函数
 }
 
-void MatrixTest(bool is_print)
+
+// global scope thread
+std::thread paint_thread;
+
+void Paint(HWND hWnd)
 {
+    //开始绘图
+    paint_thread = std::move(std::thread([hWnd]{
+        HDC hDC;
+        hDC = GetDC(hWnd);
+        OnPaint(hDC);
+        ReleaseDC(hWnd, hDC);
+    }));
     
-    SMatrix sm = 
-    {{1, 2, 3},
-     {4, 5, 6},
-     {7, 8, 9}};
-    SMatrix sm2 =
-        {1, 2, 3,
-         4, 5, 6,
-         7, 8, 9};
-
-    Log::Info(LOG_NAME, "The sm is:");
-    sm.PrintMatrix(is_print);
-    Log::Info(LOG_NAME, "The sm2 is:");
-    sm2.PrintMatrix(is_print);
-
-    auto prv1 = **sm.Get(1);
-
-    Log::Debug(LOG_NAME, "prv1");
-
-    prv1.PrintVector(is_print);
-
-    Log::Debug(LOG_NAME, "sm * prv1");
-    sm * prv1;
-    prv1.PrintVector(is_print);
-
-    Log::Debug(LOG_NAME, "sm^T");
-    auto sm_t = **(+sm);
-    sm_t.PrintMatrix(is_print);
-
-    SMatrix sm3 =
-        {0, 3, 1,
-         1, 5, 7,
-         0, 2, 4};
-
-
-    Log::Debug(LOG_NAME, "%f", **sm3.AComplement(1, 0));
-
-    Log::Debug(LOG_NAME, "Adjoint matrix: ");
-    auto asm3 = **(*sm3);
-    asm3.PrintMatrix(is_print);
-
-    Log::Debug(LOG_NAME, "Inverse matrix: ");
-    auto ism3 = **(-sm3);
-    ism3.PrintMatrix(is_print);
-
-
-    auto res4 = (-sm3)->As<int>();
 }
 
-int main(int argc, char** argv)
+void OnPaint(HDC hDC)
 {
-    Log::Level(DEBUG_LEVEL);
-    auto now = time(nullptr);
-    Log::Info(LOG_NAME, "%s", ctime(&now));
-    PrintLn("Process used %.4lf (s)", (double)clock() / CLOCKS_PER_SEC);
-    
-    ///
+    //创建内存DC（先放到内存中）
+    HDC hMemDC = CreateCompatibleDC(hDC);
+    //创建一张兼容位图
+    // note:
+    //这要注意,如果创建和内存DC兼容的位图就只有黑白色,不会有彩色
+    //所以要创建实际对象DC.窗口DC或静态控件DC兼容的内存位图
+    HBITMAP hBackBmp = CreateCompatibleBitmap(hDC, 600, 600);
 
-    MatrixTest(true);
+    SelectObject(hMemDC, hBackBmp);
 
-    ///
+    // //绘制
+    // Draw(hMemDC, 100);
+    // //一次性绘制到界面上
+    // BitBlt(hDC, 0, 0, 300, 600, hMemDC, 0, 0, SRCCOPY);
 
-    PrintLn("Process used %.4lf (s)", (double)clock() / CLOCKS_PER_SEC);
-	system("pause");
-	return 0;
+    while(true) 
+    {
+        for(int i = 0; i < 200; i+=3)
+        {
+            Draw(hMemDC, i, RGB(0, 0xff, 0xff));
+            BitBlt(hDC, 0, 0, 600, 600, hMemDC, 0, 0, SRCCOPY);
+            
+        }
+            
+        Draw(hMemDC, 600);
+        BitBlt(hDC, 0, 0, 600, 600, hMemDC, 0, 0, SRCCOPY);
+
+        
+    }
+
+    //释放DC
+    DeleteObject(hMemDC);
 }
 
+
+
+//绘制方块
+void Draw(HDC hDC, int n, COLORREF color)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            SetPixel(hDC, i, j, color);
+        }
+    }
+
+}
 
 
