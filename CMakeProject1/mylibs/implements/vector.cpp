@@ -1,6 +1,6 @@
-#include "../myvector.h"
-#include "../mylog.h"
-#include "../mymemory.h"
+#include "../maths/vector.h"
+#include "../utils/log.h"
+#include "../utils/memory.h"
 
 constexpr const char *LOG_NAME = "myvector";
 

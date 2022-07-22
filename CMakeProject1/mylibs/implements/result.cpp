@@ -1,4 +1,4 @@
-#include "../myresult.h"
+#include "../utils/result.h"
 #include <fstream>
 
 StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _File(file), _Line(line), _LineCount(lineCount)

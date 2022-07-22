@@ -1,7 +1,7 @@
 #pragma once
-#include "mylog.h"
-#include "mythread.h"
-#include "mymemory.h"
+#include "log.h"
+#include "thread.h"
+#include "memory.h"
 #include <string>
 #include <vector>
 

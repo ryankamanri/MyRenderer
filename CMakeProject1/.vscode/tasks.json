@@ -19,7 +19,7 @@
                 "-D",
                 "CMAKE_MAKE_PROGRAM:PATH=C:/MinGW64/bin/make.exe",
                 "-G",
-                "Unix Makefiles",
+                "MinGW Makefiles",
                 "-B",
                 "./build"
             ],

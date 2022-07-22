@@ -1,8 +1,8 @@
 #pragma once
 #include <initializer_list>
-#include "mymemory.h"
-#include "myresult.h"
-#include "myvector.h"
+#include "../utils/memory.h"
+#include "../utils/result.h"
+#include "vector.h"
 
 using SMatrixElemType = double;
 

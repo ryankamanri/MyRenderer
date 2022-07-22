@@ -1,7 +1,7 @@
 #pragma once
 #include <initializer_list>
-#include "mymemory.h"
-#include "myresult.h"
+#include "../utils/memory.h"
+#include "../utils/result.h"
 
 using VectorElemType = double;
 

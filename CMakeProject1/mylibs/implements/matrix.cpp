@@ -1,7 +1,7 @@
 #include <math.h>
 #include <algorithm>
-#include "../mymatrix.h"
-#include "../mylog.h"
+#include "../maths/matrix.h"
+#include "../utils/log.h"
 
 constexpr const char *LOG_NAME = "mymatrix";
 
