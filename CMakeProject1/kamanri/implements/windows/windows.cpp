@@ -1,7 +1,15 @@
 #include <thread>
 #include <map>
-#include "../utils/log.h"
-#include "../window/window.h"
+#include "../../utils/logs.h"
+#include "../../windows/windows.h"
+
+using namespace Kamanri::Utils::Logs;
+using namespace Kamanri::Windows::Windows;
+
+const int DEFAULT_LENGTH = 600;
+
+const int WINDOW_WIDTH = DEFAULT_LENGTH;
+const int WINDOW_HEIGHT = DEFAULT_LENGTH;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

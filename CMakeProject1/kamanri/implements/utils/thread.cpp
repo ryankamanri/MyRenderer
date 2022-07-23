@@ -1,7 +1,7 @@
-#include "../utils/thread.h"
+#include "../../utils/thread.h"
 #include <thread>
 #include <chrono>
 
-void Sleep(int millis) {
+void Kamanri::Utils::Thread::Sleep(int millis) {
     std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 }

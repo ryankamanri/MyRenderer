@@ -1,7 +1,13 @@
 #include <math.h>
 #include <algorithm>
-#include "../maths/matrix.h"
-#include "../utils/log.h"
+#include "../../maths/matrix.h"
+#include "../../utils/logs.h"
+
+using namespace Kamanri::Utils::Logs;
+using namespace Kamanri::Utils::Memory;
+using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Maths::Vectors;
+using namespace Kamanri::Maths::Matrix;
 
 constexpr const char *LOG_NAME = "mymatrix";
 

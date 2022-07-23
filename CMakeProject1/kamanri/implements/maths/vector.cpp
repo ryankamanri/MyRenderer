@@ -1,6 +1,12 @@
-#include "../maths/vector.h"
-#include "../utils/log.h"
-#include "../utils/memory.h"
+#include "../../maths/vectors.h"
+#include "../../utils/logs.h"
+#include "../../utils/memory.h"
+
+using namespace Kamanri::Utils::Logs;
+using namespace Kamanri::Utils::Memory;
+using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Maths::Vectors;
+
 
 constexpr const char *LOG_NAME = "myvector";
 

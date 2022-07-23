@@ -3,33 +3,26 @@
 #include <iostream>
 #include <thread>
 #include <time.h>
-#include "mylibs/utils/log.h"
-#include "mylibs/window/window.h"
-#include "mylibs/utils/result.h"
-#include "mylibs/maths/matrix.h"
-#include "mylibs/maths/vector.h"
+#include "kamanri/utils/logs.h"
+#include "kamanri/windows/windows.h"
+#include "kamanri/renderer/obj_reader.h"
+#include "kamanri/utils/result.h"
+#include "kamanri/maths/matrix.h"
+#include "kamanri/maths/vectors.h"
+
+using namespace Kamanri::Utils::Logs;
+using namespace Kamanri::Utils::Memory;
+using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Utils::Thread;
+using namespace Kamanri::Windows::Windows;
+using namespace Kamanri::Renderer::ObjReader;
 
 SOURCE_FILE("../Main.cpp");
 constexpr const char *LOG_NAME = "Main";
 
 
-//绘制方块
-void Draw(Painter painter, int n, COLORREF color = 0);
-
-//入口函数：所有代码都从这里开始执行
-// WinMain:C语言Windows窗口程序入口函数
-
-//做游戏窗口的步骤
-// 1.设计窗口类
-// 2.注册窗口类
-// 3.创建窗口
-// 4.显示窗口
-// 5.更新窗口
-// 6.消息循环
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
+void OpenWindow(HINSTANCE hInstance)
 {
-	
 	auto window = New<Window>(hInstance);
 
 	auto func = [](Painter painter)
@@ -38,34 +31,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 		{
 			for (int i = 0; i < 200; i += 3)
 			{
-				Draw(painter, i, RGB(0, i, 0xff - i));
+				for (int j = 0; j < i; j++)
+				{
+					for (int k = 0; k < i; k++)
+					{
+						painter.Dot(j, k, RGB(i, j, k));
+					}
+				}
 				painter.Flush();
 			}
-            for (int i = 0; i < 200; i += 3)
+			for (int i = 0; i < 200; i += 3)
 			{
-				Draw(painter, i, RGB(0, 0xff - i, i));
+				for (int j = 0; j < i; j++)
+				{
+					for (int k = 0; k < i; k++)
+					{
+						painter.Dot(j, k, RGB(j, k, i));
+					}
+				}
+				painter.Flush();
+			}
+			for (int i = 0; i < 200; i += 3)
+			{
+				for (int j = 0; j < i; j++)
+				{
+					for (int k = 0; k < i; k++)
+					{
+						painter.Dot(j, k, RGB(k, i, j));
+					}
+				}
 				painter.Flush();
 			}
 
-			// Draw(painter, 600);
-			// painter.Flush();
 		}
 	};
 	window->DrawFunc = func;
 	window->Show();
 	Window::MessageLoop();
-	return 0;
 }
 
-
-// //绘制方块
-void Draw(Painter painter, int n, COLORREF color)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < n; j++)
-		{
-			painter.Dot(i, j, color);
-		}
-	}
+
+	auto model = ObjModel();
+	model.Read("./out/floor.obj");
+	system("pause");
+	return 0;
 }

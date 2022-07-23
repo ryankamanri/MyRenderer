@@ -11,17 +11,17 @@ set(CMAKE_CXX_STANDARD 11)
 
 
 # 将源代码添加到此项目的可执行文件。
-aux_source_directory(./mylibs/implements MY_LIBS)
-add_library(my_libs ${MY_LIBS})
+# aux_source_directory(./mylibs/implements MY_LIBS)
+file(GLOB_RECURSE KAMANRI ./kamanri/implements/*.cpp)
+add_library(kamanri ${KAMANRI})
 
-aux_source_directory(./renderers/implements RENDERERS)
-add_library(renderers ${MY_LIBS} ${RENDERERS})
 
-add_executable (CMakeProject1 "Main.cpp")
-target_link_libraries(CMakeProject1 my_libs)
-target_link_libraries(CMakeProject1 renderers)
+add_executable (CMakeProject1 Main.cpp)
+target_link_libraries(CMakeProject1 kamanri)
 
 # Add dependencies
 
 # TODO: 如有需要，请添加测试并安装目标。
 message(CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR})
+message(MY_LIBS_SOURCE_FILES: ${KAMANRI})
+
