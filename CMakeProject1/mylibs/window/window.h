@@ -28,17 +28,15 @@ class Window
         ~Window();
         bool Show();
         bool Update();
-        void MessageLoop();
         void (*DrawFunc)(Painter painter);
 
+        static void MessageLoop();
         // callback paint function called by WindowProc, do not call it outside
         void _Paint();
 
     private:
         // handle of window
         HWND _h_wnd;
-        // message
-        MSG _msg;
         // window message process callback
         LRESULT CALLBACK (*_WindowProc)(HWND, UINT, WPARAM, LPARAM);
 

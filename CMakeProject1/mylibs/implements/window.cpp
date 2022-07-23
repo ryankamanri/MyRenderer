@@ -11,6 +11,8 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
  */
 std::map<HWND, Window *> window_map;
 
+MSG msg;
+
 Window::Window(HINSTANCE h_instance)
 {
     _WindowProc = WindowProc;
@@ -70,22 +72,21 @@ bool Window::Update()
 
 void Window::MessageLoop()
 {
-    while (GetMessage(&_msg, NULL, 0, 0)) // GetMessage从调用线程的消息队列中取得一个消息并放于msg
+
+    while (GetMessage(&msg, NULL, 0, 0)) // GetMessage从调用线程的消息队列中取得一个消息并放于msg
     {
         //将虚拟键消息转换为字符消息
-        TranslateMessage(&_msg);
+        TranslateMessage(&msg);
         //将消息分发给窗口处理函数
-        DispatchMessage(&_msg);
+        DispatchMessage(&msg);
     }
 }
-
-
 
 // //窗口处理函数
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     auto tid = GetCurrentThreadId();
-    PrintLn("Thread Id: %d, Msg: %d, wParam: %d, lParam: %d", tid, uMsg, wParam, lParam);
+    PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
 
     auto p_window = window_map.find(hWnd)->second;
 
@@ -120,12 +121,12 @@ void Window::_Paint()
 
     SelectObject(hMemDC, hBackBmp);
 
-    _paint_thread = std::move(std::thread([this, hMemDC, h_dc]
+    _paint_thread = std::thread([this, hMemDC, h_dc]
     {
             DrawFunc(Painter(h_dc, hMemDC));
             DeleteObject(hMemDC);
 	        ReleaseDC(_h_wnd, h_dc); 
-    }));
+    });
 }
 
 Painter::Painter(HDC h_dc, HDC h_mem_dc): _h_dc(h_dc), _h_mem_dc(h_mem_dc) {}

@@ -38,18 +38,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 		{
 			for (int i = 0; i < 200; i += 3)
 			{
-				Draw(painter, i, RGB(0, 0xff, 0xff));
+				Draw(painter, i, RGB(0, i, 0xff - i));
+				painter.Flush();
+			}
+            for (int i = 0; i < 200; i += 3)
+			{
+				Draw(painter, i, RGB(0, 0xff - i, i));
 				painter.Flush();
 			}
 
-			Draw(painter, 600);
-			painter.Flush();
+			// Draw(painter, 600);
+			// painter.Flush();
 		}
 	};
 	window->DrawFunc = func;
 	window->Show();
-	window->Update();
-	window->MessageLoop();
+	Window::MessageLoop();
 	return 0;
 }
 
