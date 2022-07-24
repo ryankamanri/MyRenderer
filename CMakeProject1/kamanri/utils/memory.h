@@ -16,6 +16,10 @@ namespace Kamanri
                 return P<T>(new T(std::forward<Ts>(args)...));
             }
 
+        }
+    }
+}
+
 #define CHECK_MEMORY_IS_ALLOCATED(p, log_name, return_value)           \
     if (p == nullptr)                                                  \
     {                                                                  \
@@ -36,7 +40,3 @@ namespace Kamanri
                                   MyResult<T>::EXCEPTION, \
                                   code,                   \
                                   "The memory is not initialized"))
-
-        }
-    }
-}

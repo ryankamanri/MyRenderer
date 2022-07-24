@@ -85,6 +85,11 @@ namespace Kamanri
                 void PrintRecursive();
             };
 
+            using DefaultResult = Memory::P<MyResult<void *>>;
+
+            template<class T>
+            using PMyResult = Memory::P<MyResult<T>>;
+
             template <class T>
             MyResult<T>::MyResult()
             {
@@ -342,7 +347,12 @@ namespace Kamanri
                     this->_StackTrace);
             }
 
-            ///////////////////////////////////////////////////////////////////////////////////////
+
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 #define SOURCE_FILE(location) constexpr const char *SOURCE_FILE_LOCATION = location
 
@@ -360,13 +370,10 @@ namespace Kamanri
         return result;                                               \
     }
 
-            using DefaultResult = Memory::P<MyResult<void *>>;
+            
 
 #define DEFAULT_RESULT New<MyResult<void *>>()
 
 #define DEFAULT_RESULT_EXCEPTION(code, message) New<MyResult<void *>>(MyResult<void *>::EXCEPTION, code, message)
 
 #define RESULT_EXCEPTION(T, code, message) New<MyResult<T>>(MyResult<T>::EXCEPTION, code, message)
-        }
-    }
-}

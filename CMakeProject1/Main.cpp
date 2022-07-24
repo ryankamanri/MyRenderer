@@ -75,6 +75,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 
 	auto model = ObjModel();
 	model.Read("./out/floor.obj");
+	auto v = **model.GetVertice(3);
+	PrintLn("%f, %f, %f", v[0], v[1], v[2]);
 	system("pause");
 	return 0;
 }

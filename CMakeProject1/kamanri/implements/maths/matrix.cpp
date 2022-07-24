@@ -181,9 +181,9 @@ SMatrix &SMatrix::operator=(SMatrix &sm)
 /**
  * @brief return the n
  *
- * @return P<MyResult<std::size_t>>
+ * @return PMyResult<std::size_t>>
  */
-P<MyResult<std::size_t>> SMatrix::N() const
+PMyResult<std::size_t> SMatrix::N() const
 {
     if (_N == MYVECTOR_CODE_NOT_INITIALIZED_N)
     {
@@ -194,7 +194,7 @@ P<MyResult<std::size_t>> SMatrix::N() const
     return New<MyResult<std::size_t>>(_N);
 }
 
-P<MyResult<SMatrixElemType>> SMatrix::operator[](int index) const
+PMyResult<SMatrixElemType> SMatrix::operator[](int index) const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, psm, LOG_NAME, -1)
@@ -208,7 +208,7 @@ P<MyResult<SMatrixElemType>> SMatrix::operator[](int index) const
     return New<MyResult<SMatrixElemType>>(*(psm + index));
 }
 
-P<MyResult<SMatrixElemType>> SMatrix::Get(size_t row, size_t col) const
+PMyResult<SMatrixElemType> SMatrix::Get(size_t row, size_t col) const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, psm, LOG_NAME, -1)
@@ -222,7 +222,7 @@ P<MyResult<SMatrixElemType>> SMatrix::Get(size_t row, size_t col) const
     return New<MyResult<SMatrixElemType>>(*(psm + row * _N + col));
 }
 
-P<MyResult<Vector>> SMatrix::Get(size_t col) const
+PMyResult<Vector> SMatrix::Get(size_t col) const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(Vector, psm, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -448,9 +448,9 @@ DefaultResult SMatrix::operator*(Vector& v) const
 /**
  * @brief The transpose matrix. +A <==> A^T
  * 
- * @return P<MyResult<SMatrix>> 
+ * @return PMyResult<SMatrix>> 
  */
-P<MyResult<SMatrix>> SMatrix::operator+() const
+PMyResult<SMatrix> SMatrix::operator+() const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrix, psm, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -473,9 +473,9 @@ P<MyResult<SMatrix>> SMatrix::operator+() const
 /**
  * @brief The inverse matrix. -A <==> A^(-1)
  * 
- * @return P<MyResult<SMatrix>> 
+ * @return PMyResult<SMatrix>> 
  */
-P<MyResult<SMatrix>> SMatrix::operator-() const
+PMyResult<SMatrix> SMatrix::operator-() const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrix, psm, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -490,7 +490,7 @@ P<MyResult<SMatrix>> SMatrix::operator-() const
 
 }
 
-P<MyResult<SMatrix>> SMatrix::operator*() const
+PMyResult<SMatrix> SMatrix::operator*() const
 {
     auto psm = _SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrix, psm, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -563,7 +563,7 @@ DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) con
  * @param row_end 
  * @param col_from 
  * @param col_end 
- * @return P<MyResult<SMatrixElemType>> 
+ * @return PMyResult<SMatrixElemType>> 
  */
 SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::size_t>& row_list, std::vector<std::size_t>& col_list) const
 {
@@ -624,7 +624,7 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
     return result;
 }
 
-P<MyResult<SMatrixElemType>> SMatrix::Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const
+PMyResult<SMatrixElemType> SMatrix::Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const
 {
     auto pSM = this->_SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -658,7 +658,7 @@ P<MyResult<SMatrixElemType>> SMatrix::Determinant(std::vector<std::size_t> row_l
 
 }
 
-P<MyResult<SMatrixElemType>> SMatrix::Determinant() const
+PMyResult<SMatrixElemType> SMatrix::Determinant() const
 {
     auto pSM = this->_SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)
@@ -694,9 +694,9 @@ SMatrixElemType SMatrix::_AComplement(SMatrixElemType *psm, std::vector<size_t> 
  * 
  * @param row 
  * @param col 
- * @return P<MyResult<SMatrixElemType>> 
+ * @return PMyResult<SMatrixElemType>> 
  */
-P<MyResult<SMatrixElemType>> SMatrix::AComplement(size_t row, size_t col) const
+PMyResult<SMatrixElemType> SMatrix::AComplement(size_t row, size_t col) const
 {
     auto pSM = this->_SM.get();
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, LOG_NAME, MYMATRIX_CODE_NOT_INITIALIZED_MATRIX)

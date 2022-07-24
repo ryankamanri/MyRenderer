@@ -31,10 +31,10 @@ namespace Kamanri
                 Utils::Memory::P<Vector> Copy() const;
                 Vector &operator=(Vector &v);
                 // Get the size of the Vector.
-                Utils::Memory::P<Utils::Result::MyResult<std::size_t>> N() const;
+                Utils::Result::PMyResult<std::size_t> N() const;
 
                 // Get the value of the Vector by index
-                Utils::Memory::P<Utils::Result::MyResult<VectorElemType>> operator[](int n) const;
+                Utils::Result::PMyResult<VectorElemType> operator[](int n) const;
                 // setter
                 Utils::Result::DefaultResult Set(size_t index, VectorElemType value) const;
                 Utils::Result::DefaultResult SetAll(VectorElemType value = 0) const;
@@ -51,8 +51,8 @@ namespace Kamanri
                 Utils::Result::DefaultResult operator*=(VectorElemType value);
 
                 // Dot product
-                Utils::Memory::P<Utils::Result::MyResult<VectorElemType>> operator*(Vector const &v) const;
-                Utils::Memory::P<Utils::Result::MyResult<VectorElemType>> operator*(std::initializer_list<VectorElemType> list) const;
+                Utils::Result::PMyResult<VectorElemType> operator*(Vector const &v) const;
+                Utils::Result::PMyResult<VectorElemType> operator*(std::initializer_list<VectorElemType> list) const;
 
                 Utils::Result::DefaultResult PrintVector(bool is_print = true, const char *decimal_count = "2") const;
 

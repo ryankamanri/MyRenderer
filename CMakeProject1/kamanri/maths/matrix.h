@@ -37,12 +37,12 @@ namespace Kamanri
                 Utils::Memory::P<SMatrix> Copy();
                 SMatrix &operator=(SMatrix &sm);
                 // Get the size of the Matrix.
-                Utils::Memory::P<Utils::Result::MyResult<std::size_t>> N() const;
+                Utils::Result::PMyResult<std::size_t> N() const;
 
                 // Get the value of the Vector by index
-                Utils::Memory::P<Utils::Result::MyResult<SMatrixElemType>> operator[](int n) const;
-                Utils::Memory::P<Utils::Result::MyResult<SMatrixElemType>> Get(size_t row, size_t col) const;
-                Utils::Memory::P<Utils::Result::MyResult<Vectors::Vector>> Get(size_t col) const;
+                Utils::Result::PMyResult<SMatrixElemType> operator[](int n) const;
+                Utils::Result::PMyResult<SMatrixElemType> Get(size_t row, size_t col) const;
+                Utils::Result::PMyResult<Vectors::Vector> Get(size_t col) const;
                 // Setter
                 Utils::Result::DefaultResult Set(size_t row, size_t col, SMatrixElemType value) const;
                 Utils::Result::DefaultResult Set(size_t col, Vectors::Vector const &v) const;
@@ -63,20 +63,20 @@ namespace Kamanri
                 Utils::Result::DefaultResult operator*(Vectors::Vector &v) const;
 
                 // Transpose matrix
-                Utils::Memory::P<Utils::Result::MyResult<SMatrix>> operator+() const;
+                Utils::Result::PMyResult<SMatrix> operator+() const;
                 // Inverse matrix
-                Utils::Memory::P<Utils::Result::MyResult<SMatrix>> operator-() const;
+                Utils::Result::PMyResult<SMatrix> operator-() const;
                 // Adjoint matrix
-                Utils::Memory::P<Utils::Result::MyResult<SMatrix>> operator*() const;
+                Utils::Result::PMyResult<SMatrix> operator*() const;
 
                 Utils::Result::DefaultResult PrintMatrix(bool is_print = true, const char *decimal_count = "2") const;
 
                 // The determinant
-                Utils::Memory::P<Utils::Result::MyResult<SMatrixElemType>> Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
-                Utils::Memory::P<Utils::Result::MyResult<SMatrixElemType>> Determinant() const;
+                Utils::Result::PMyResult<SMatrixElemType> Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
+                Utils::Result::PMyResult<SMatrixElemType> Determinant() const;
 
                 // algebraic complement
-                Utils::Memory::P<Utils::Result::MyResult<SMatrixElemType>> AComplement(size_t row, size_t col) const;
+                Utils::Result::PMyResult<SMatrixElemType> AComplement(size_t row, size_t col) const;
 
             private:
                 // The pointer indicated to square matrix.
