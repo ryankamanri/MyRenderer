@@ -3,7 +3,7 @@
 #
 cmake_minimum_required (VERSION 3.8)
 
-project(CMakeTest)
+project(MyRenderer)
 set( CMAKE_BUILD_TYPE "Debug" )
 set(CMAKE_CXX_STANDARD 11)
 
@@ -16,8 +16,8 @@ file(GLOB_RECURSE KAMANRI ./kamanri/implements/*.cpp)
 add_library(kamanri ${KAMANRI})
 
 
-add_executable (CMakeProject1 Main.cpp)
-target_link_libraries(CMakeProject1 kamanri)
+add_executable(MyRenderer Main.cpp)
+target_link_libraries(MyRenderer kamanri)
 
 # Add dependencies
 
