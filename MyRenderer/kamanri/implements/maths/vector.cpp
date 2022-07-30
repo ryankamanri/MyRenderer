@@ -1,3 +1,4 @@
+#include <math.h>
 #include "../../maths/vectors.h"
 #include "../../utils/logs.h"
 #include "../../utils/memory.h"
@@ -30,6 +31,8 @@ Vector::Vector(Vector &v) : _V(std::move(v._V)), _N(v._N)
 {
     v._N = MYVECTOR_NOT_INITIALIZED_N;
 }
+
+
 
 Vector::Vector(std::initializer_list<VectorElemType> list)
 {
@@ -308,6 +311,33 @@ DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) cons
         Print(formatStr.c_str(), value);
     }
     PrintLn();
+
+    return DEFAULT_RESULT;
+}
+
+DefaultResult Vector::Unitization()
+{
+    auto pv = _V.get();
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
+
+    double length_square = 0;
+    for(auto i = 0; i < _N; i++)
+    {
+        length_square += pow(*(pv + i), 2);
+    }
+
+    if(length_square == 0)
+    {
+        // the length of vector is 0, need not to unitization.
+        return DEFAULT_RESULT;
+    }
+
+    auto length = sqrt(length_square);
+
+    for(auto i = 0; i <_N; i++)
+    {
+        *(pv + i) /= length;
+    }
 
     return DEFAULT_RESULT;
 }

@@ -130,10 +130,23 @@ DefaultResult ObjModel::Read(std::string const &file_name)
     return DEFAULT_RESULT;
 }
 
+size_t ObjModel::GetVerticeSize() const
+{
+    return _vertices.size();
+}
+size_t ObjModel::GetVerticeNormalSize() const
+{
+    return _vertice_normals.size();
+}
+size_t ObjModel::GetVerticeTextureSize() const
+{
+    return _vertice_textures.size();
+}
+
 PMyResult<std::vector<double>> ObjModel::GetVertice(int index) const
 {
     auto size = _vertices.size();
-    if(size <= index)
+    if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
@@ -144,7 +157,7 @@ PMyResult<std::vector<double>> ObjModel::GetVertice(int index) const
 PMyResult<std::vector<double>> ObjModel::GetVerticeNormal(int index) const
 {
     auto size = _vertice_normals.size();
-    if(size <= index)
+    if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
@@ -155,7 +168,7 @@ PMyResult<std::vector<double>> ObjModel::GetVerticeNormal(int index) const
 PMyResult<std::vector<double>> ObjModel::GetVerticeTexture(int index) const
 {
     auto size = _vertice_textures.size();
-    if(size <= index)
+    if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
@@ -166,7 +179,7 @@ PMyResult<std::vector<double>> ObjModel::GetVerticeTexture(int index) const
 PMyResult<Face> ObjModel::GetFace(int index) const
 {
     auto size = _faces.size();
-    if(size <= index)
+    if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(Face, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");

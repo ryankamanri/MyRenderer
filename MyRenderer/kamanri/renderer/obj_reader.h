@@ -24,6 +24,9 @@ namespace Kamanri
             {
                 public:
                     Utils::Result::DefaultResult Read(std::string const& file_name);
+                    size_t GetVerticeSize() const;
+                    size_t GetVerticeNormalSize() const;
+                    size_t GetVerticeTextureSize() const;
                     Utils::Result::PMyResult<std::vector<double>> GetVertice(int index) const;
                     Utils::Result::PMyResult<std::vector<double>> GetVerticeNormal(int index) const;
                     Utils::Result::PMyResult<std::vector<double>> GetVerticeTexture(int index) const;

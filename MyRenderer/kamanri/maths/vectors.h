@@ -56,6 +56,8 @@ namespace Kamanri
 
                 Utils::Result::DefaultResult PrintVector(bool is_print = true, const char *decimal_count = "2") const;
 
+                Utils::Result::DefaultResult Unitization();
+
             private:
                 // The pointer indicated to vector.
                 Utils::Memory::P<VectorElemType> _V;
