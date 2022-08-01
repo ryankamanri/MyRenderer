@@ -69,7 +69,7 @@ bool Triangle3D::IsIn(double x, double y)
     auto v2_v3_xy_determinant = **v2_v3_xy.Determinant();
     auto v3_v1_xy_determinant = **v3_v1_xy.Determinant();
 
-    if(v1_v2_xy_determinant * v2_v3_xy_determinant >= 0 && v2_v3_xy_determinant * v3_v1_xy_determinant >= 0)
+    if (v1_v2_xy_determinant * v2_v3_xy_determinant >= 0 && v2_v3_xy_determinant * v3_v1_xy_determinant >= 0 && v3_v1_xy_determinant * v1_v2_xy_determinant >= 0)
     {
         return true;
     }

@@ -141,4 +141,3 @@ void Window::_Paint()
 
 Painter::Painter(HDC h_dc, HDC h_mem_dc): _h_dc(h_dc), _h_mem_dc(h_mem_dc) {}
 WINBOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, _h_mem_dc, 0, 0, SRCCOPY); }
-COLORREF Painter::Dot(int x, int y, COLORREF color) const { return SetPixel(_h_mem_dc, x, y, color); }

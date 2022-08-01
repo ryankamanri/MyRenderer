@@ -52,12 +52,20 @@ namespace Kamanri
                 unsigned int _screen_width;
 
                 unsigned int _screen_height;
+
+                void SetAngles();
+
             public:
                 Camera() = default;
                 Camera(Maths::Vectors::Vector location, Maths::Vectors::Vector direction, Maths::Vectors::Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height);
                 Camera(Camera const& camera);
                 void SetVertices(std::vector<Maths::Vectors::Vector>& vertices, std::vector<Maths::Vectors::Vector> &vertices_transform);
                 Utils::Result::DefaultResult Transform();
+                inline Maths::Vectors::Vector &GetLocation() { return _location; }
+                inline Maths::Vectors::Vector &GetDirection() { return _direction; }
+                inline Maths::Vectors::Vector &GetUpper() { return _upper; }
+                
+                
             };
             
             

@@ -80,3 +80,30 @@ double World3D::Depth(double x, double y)
 
     return depth;
 }
+
+bool World3D::GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height)
+{
+    min_width = DBL_MAX;
+    min_height = DBL_MAX;
+    max_width = 0;
+    max_height = 0;
+
+    double x;
+    double y;
+
+    for (auto i = _vertices_transform.begin(); i != _vertices_transform.end(); i++)
+    {
+        x = **(*i)[0];
+        y = **(*i)[1];
+        if(x < min_width)
+            min_width = x;
+        if(x > max_width)
+            max_width = x;
+        if(y < min_height)
+            min_height = y;
+        if(y > max_height)
+            max_height = y;
+    }
+
+    return true;
+}

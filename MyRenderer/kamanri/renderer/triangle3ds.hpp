@@ -21,9 +21,6 @@ namespace Kamanri
                 double _b;
                 double _c;
 
-                
-
-
 
             public:
                 Triangle3D(std::vector<Maths::Vectors::Vector>& vertices_transform, int offset, int v1, int v2, int v3);

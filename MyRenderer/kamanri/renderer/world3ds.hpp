@@ -37,7 +37,7 @@ namespace Kamanri
                 World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera);
                 Utils::Result::DefaultResult Build();
                 double Depth(double x, double y);
-
+                bool GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height);
             };
             
             

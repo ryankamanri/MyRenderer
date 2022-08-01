@@ -46,9 +46,28 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
     }
     _upper = upper;
 
-    _beta = asin(**_direction[1]);
-    _alpha = asin((**_direction[0]) / cos(_beta));
-    _gamma = asin(**_upper[0]);
+    SetAngles();
+}
+
+void Camera::SetAngles()
+{
+    _beta = asin(**_direction[1]); // beta (-PI/2, PI/2)
+    _alpha = asin((**_direction[0]) / cos(_beta)); // alpha (-PI, PI)
+    if(**_direction[2] > 0)
+    {
+        if(_alpha > 0) 
+            _alpha = M_PI - _alpha;
+        else
+            _alpha = -M_PI - _alpha;
+    }
+    _gamma = asin(**_upper[0]); // gamma (-PI, PI)
+    if(**_upper[1] < 0)
+    {
+        if(_gamma > 0)
+            _gamma = M_PI - _gamma;
+        else
+            _gamma = -M_PI - _gamma;
+    }
 }
 
 Camera::Camera(Camera const &camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
@@ -66,6 +85,8 @@ void Camera::SetVertices(std::vector<Maths::Vectors::Vector> &vertices, std::vec
 DefaultResult Camera::Transform()
 {
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, LOG_NAME, CAMERA_CODE_NULL_POINTER_PVERTICES)
+
+    SetAngles();
 
     Log::Trace(LOG_NAME, "vertices count: %d", _pvertices->size());
     //

@@ -13,7 +13,7 @@ namespace Kamanri
             public:
                 Painter(HDC h_dc, HDC h_mem_dc);
                 WINBOOL Flush() const;
-                COLORREF Dot(int x, int y, COLORREF color) const;
+                inline COLORREF Dot(int x, int y, COLORREF color) const { return SetPixel(_h_mem_dc, x, y, color); };
 
             private:
                 HDC _h_dc;
