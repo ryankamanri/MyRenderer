@@ -1,7 +1,7 @@
 #include <math.h>
 #include <algorithm>
-#include "../../maths/matrix.h"
-#include "../../utils/logs.h"
+#include "../../maths/matrix.hpp"
+#include "../../utils/logs.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
@@ -586,7 +586,7 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
         {
             result *= -1;
         }
-        Log::Trace(LOG_NAME, "2d d: %f", result);
+
         return result;
     }
 
@@ -603,15 +603,13 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
         row_list.erase(row_list.begin());
         //////////////////////// calculate sub result
         auto value = *(psm + _N * row_first + col_first);
-        Log::Trace(LOG_NAME, "col: %d, row: %d, val: %f", col_first, row_first, value);
-        Log::Trace(LOG_NAME, "col_first: %d, col_first_sorted: %d, row_first: %d, row_first_sorted: %d", col_first, col_first_sorted, row_first, row_first_sorted);
+
         // use -1^(a+b) * n * |A*_ab| to calculate
         auto result_sub = (
             _Determinant(psm, row_list, col_list) * 
             value * 
             (((row_first_sorted + col_first_sorted) % 2 == 0) ? 1.f : -1.f));
 
-        Log::Trace(LOG_NAME, "sub result: %f", result_sub);
         result += result_sub;
 
         //////////////////////// calculate sub result
@@ -620,7 +618,6 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
 
     col_list.insert(col_list.begin(), col_first);
 
-    Log::Trace(LOG_NAME, "result: %f", result);
     return result;
 }
 

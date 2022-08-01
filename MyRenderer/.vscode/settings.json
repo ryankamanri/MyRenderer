@@ -64,7 +64,8 @@
         "iomanip": "cpp",
         "numeric": "cpp",
         "typeindex": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "algorithm": "cpp"
     },
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json",
     "C_Cpp.errorSquiggles": "Disabled"

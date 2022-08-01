@@ -1,8 +1,8 @@
 #pragma once
 #include <initializer_list>
-#include "../utils/memory.h"
-#include "../utils/result.h"
-#include "vectors.h"
+#include "../utils/memory.hpp"
+#include "../utils/result.hpp"
+#include "vectors.hpp"
 
 namespace Kamanri
 {

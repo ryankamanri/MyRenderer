@@ -1,7 +1,7 @@
 #include <math.h>
-#include "../../maths/vectors.h"
-#include "../../utils/logs.h"
-#include "../../utils/memory.h"
+#include "../../maths/vectors.hpp"
+#include "../../utils/logs.hpp"
+#include "../../utils/memory.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
@@ -32,7 +32,21 @@ Vector::Vector(Vector &v) : _V(std::move(v._V)), _N(v._N)
     v._N = MYVECTOR_NOT_INITIALIZED_N;
 }
 
+Vector::Vector(Vector const& v)
+{
+    auto pv_old = v._V.get();
+    CHECK_MEMORY_IS_ALLOCATED(pv_old, LOG_NAME, )
 
+    _N = v._N;
+    _V = P<VectorElemType>(new VectorElemType[_N]);
+    auto pv_new = _V.get();
+
+    for(size_t i = 0; i < _N; i++)
+    {
+        *(pv_new + i) = *(pv_old + i);
+    }
+
+}
 
 Vector::Vector(std::initializer_list<VectorElemType> list)
 {
@@ -72,6 +86,28 @@ P<Vector> Vector::Copy() const
     }
 
     return new_v;
+}
+
+DefaultResult Vector::CopyFrom(Vector const& v)
+{
+    auto pv = _V.get();
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
+    auto pv2 = v._V.get();
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv2, LOG_NAME, MYVECTOR_CODE_NOT_INITIALIZED_VECTOR)
+
+    if(_N != v._N)
+    {
+        Log::Error(LOG_NAME, "This vector n is %d but copy from the vector which n is %d", _N, v._N);
+        return DEFAULT_RESULT_EXCEPTION(MYVECTOR_CODE_NOT_EQUEL_N, "Not equal n");
+    }
+
+    for(size_t i = 0; i < _N; i++)
+    {
+        *(pv + i) = *(pv2 + i);
+    }
+
+    return DEFAULT_RESULT;
+
 }
 
 Vector& Vector::operator=(Vector& v)
@@ -215,9 +251,9 @@ DefaultResult Vector::operator*=(Vector const& v)
         return DEFAULT_RESULT_EXCEPTION(MYVECTOR_CODE_NOT_EQUEL_N, "Two vectors of unequal length");
     }
 
-    if(n1 != 3)
+    if(n1 != 3 && n1 != 4)
     {
-        auto message = "Call of Vector::operator*=: Vector has not cross product when n != 3";
+        auto message = "Call of Vector::operator*=: Vector has not cross product when n != 3 or 4";
         Log::Error(LOG_NAME, message);
         return DEFAULT_RESULT_EXCEPTION(MYVECTOR_CODE_INVALID_OPERATION, message);
     }
@@ -229,6 +265,11 @@ DefaultResult Vector::operator*=(Vector const& v)
     *pv = v0;
     *(pv + 1) = v1;
     *(pv + 2) = v2;
+
+    if(n1 == 4)
+    {
+        *(pv + 3) = *(pv + 3) * *(pv2 + 3);
+    }
 
     return DEFAULT_RESULT;
     

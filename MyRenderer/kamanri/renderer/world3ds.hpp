@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
-#include "cameras.h"
-#include "obj_reader.h"
-#include "triangle3ds.h"
-#include "../maths/vectors.h"
+#include "cameras.hpp"
+#include "obj_reader.hpp"
+#include "triangle3ds.hpp"
+#include "../maths/vectors.hpp"
 
 namespace Kamanri
 {
@@ -16,9 +16,9 @@ namespace Kamanri
             {
             private:
                 /* data */
-                std::vector<Triangle3Ds::Triangle3D> _triangles;
             public:
                 Environment() = default;
+                std::vector<Triangle3Ds::Triangle3D> triangles;
             };
             
 
@@ -28,12 +28,16 @@ namespace Kamanri
             {
             private:
                 /* data */
-                Cameras::Camera _camera;
-                std::vector<Maths::Vectors::Vector> _space_dots;
+                Cameras::Camera& _camera;
+                std::vector<Maths::Vectors::Vector> _vertices;
+                std::vector<Maths::Vectors::Vector> _vertices_transform;
                 Environment _environment;
 
             public:
                 World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera);
+                Utils::Result::DefaultResult Build();
+                double Depth(double x, double y);
+
             };
             
             

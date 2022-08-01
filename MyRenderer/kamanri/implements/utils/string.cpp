@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#include "../../utils/string.h"
+#include "../../utils/string.hpp"
 
 
 std::vector<std::string> Kamanri::Utils::String::Split(const std::string &str, const std::string &delim, bool is_remove_empty)

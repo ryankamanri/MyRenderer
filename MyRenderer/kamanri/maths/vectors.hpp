@@ -1,7 +1,7 @@
 #pragma once
 #include <initializer_list>
-#include "../utils/memory.h"
-#include "../utils/result.h"
+#include "../utils/memory.hpp"
+#include "../utils/result.hpp"
 
 namespace Kamanri
 {
@@ -27,8 +27,10 @@ namespace Kamanri
                 Vector();
                 explicit Vector(size_t n);
                 Vector(Vector &v);
+                Vector(Vector const& v);
                 Vector(std::initializer_list<VectorElemType> list);
                 Utils::Memory::P<Vector> Copy() const;
+                Utils::Result::DefaultResult CopyFrom(Vector const& v);
                 Vector &operator=(Vector &v);
                 // Get the size of the Vector.
                 Utils::Result::PMyResult<std::size_t> N() const;
@@ -45,7 +47,7 @@ namespace Kamanri
                 Utils::Result::DefaultResult operator-=(Vector const &v);
                 Utils::Result::DefaultResult operator-=(std::initializer_list<VectorElemType> list);
 
-                // Cross product (Only n == 3 works )
+                // Cross product (Only n == 3 || 4 works )
                 Utils::Result::DefaultResult operator*=(Vector const &v);
                 Utils::Result::DefaultResult operator*=(std::initializer_list<VectorElemType> list);
                 Utils::Result::DefaultResult operator*=(VectorElemType value);

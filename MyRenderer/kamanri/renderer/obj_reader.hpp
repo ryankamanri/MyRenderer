@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "../utils/result.h"
+#include "../utils/result.hpp"
 namespace Kamanri
 {
     namespace Renderer
@@ -27,6 +27,7 @@ namespace Kamanri
                     size_t GetVerticeSize() const;
                     size_t GetVerticeNormalSize() const;
                     size_t GetVerticeTextureSize() const;
+                    size_t GetFaceSize() const;
                     Utils::Result::PMyResult<std::vector<double>> GetVertice(int index) const;
                     Utils::Result::PMyResult<std::vector<double>> GetVerticeNormal(int index) const;
                     Utils::Result::PMyResult<std::vector<double>> GetVerticeTexture(int index) const;

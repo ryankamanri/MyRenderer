@@ -1,4 +1,4 @@
-#include "../../utils/logs.h"
+#include "../../utils/logs.hpp"
 
 using namespace Kamanri::Utils::Logs;
 

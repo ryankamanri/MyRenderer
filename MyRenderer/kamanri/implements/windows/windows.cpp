@@ -1,7 +1,7 @@
 #include <thread>
 #include <map>
-#include "../../utils/logs.h"
-#include "../../windows/windows.h"
+#include "../../utils/logs.hpp"
+#include "../../windows/windows.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Windows::Windows;
@@ -10,6 +10,8 @@ const int DEFAULT_LENGTH = 600;
 
 const int WINDOW_WIDTH = DEFAULT_LENGTH;
 const int WINDOW_HEIGHT = DEFAULT_LENGTH;
+
+const bool IS_PRINT = false;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -94,7 +96,7 @@ void Window::MessageLoop()
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     auto tid = GetCurrentThreadId();
-    PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
+    if(IS_PRINT) PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
 
     auto p_window = window_map.find(hWnd)->second;
 

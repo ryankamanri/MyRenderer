@@ -1,7 +1,7 @@
 #pragma once
-#include "logs.h"
-#include "thread.h"
-#include "memory.h"
+#include "logs.hpp"
+#include "thread.hpp"
+#include "memory.hpp"
 #include <string>
 #include <vector>
 
@@ -372,8 +372,8 @@ namespace Kamanri
 
             
 
-#define DEFAULT_RESULT New<MyResult<void *>>()
+#define DEFAULT_RESULT Kamanri::Utils::Memory::New<MyResult<void *>>()
 
-#define DEFAULT_RESULT_EXCEPTION(code, message) New<MyResult<void *>>(MyResult<void *>::EXCEPTION, code, message)
+#define DEFAULT_RESULT_EXCEPTION(code, message) Kamanri::Utils::Memory::New<MyResult<void *>>(MyResult<void *>::EXCEPTION, code, message)
 
-#define RESULT_EXCEPTION(T, code, message) New<MyResult<T>>(MyResult<T>::EXCEPTION, code, message)
+#define RESULT_EXCEPTION(T, code, message) Kamanri::Utils::Memory::New<MyResult<T>>(MyResult<T>::EXCEPTION, code, message)

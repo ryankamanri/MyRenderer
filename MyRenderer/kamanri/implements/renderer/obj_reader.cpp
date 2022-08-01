@@ -1,7 +1,7 @@
 #include <fstream>
-#include "../../utils/logs.h"
-#include "../../renderer/obj_reader.h"
-#include "../../utils/string.h"
+#include "../../utils/logs.hpp"
+#include "../../renderer/obj_reader.hpp"
+#include "../../utils/string.hpp"
 
 using namespace Kamanri::Utils::Memory;
 using namespace Kamanri::Renderer::ObjReader;
@@ -141,6 +141,10 @@ size_t ObjModel::GetVerticeNormalSize() const
 size_t ObjModel::GetVerticeTextureSize() const
 {
     return _vertice_textures.size();
+}
+size_t ObjModel::GetFaceSize() const
+{
+    return _faces.size();
 }
 
 PMyResult<std::vector<double>> ObjModel::GetVertice(int index) const
