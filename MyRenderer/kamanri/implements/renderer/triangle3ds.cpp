@@ -17,6 +17,7 @@ Triangle3D::Triangle3D(std::vector<Maths::Vectors::Vector>& vertices_transform, 
 
 void Triangle3D::PrintTriangle(bool is_print) const
 {
+    if(!is_print) return;
     PrintLn("offset: %d, a: %f, b: %f, c: %f", _offset, _a, _b, _c);
     _vertices_transform[_v1].PrintVector();
     _vertices_transform[_v2].PrintVector();

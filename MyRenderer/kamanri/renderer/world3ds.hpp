@@ -34,8 +34,8 @@ namespace Kamanri
                 Environment _environment;
 
             public:
-                World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera);
-                Utils::Result::DefaultResult Build();
+                World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool is_print = false);
+                Utils::Result::DefaultResult Build(bool is_print = false);
                 double Depth(double x, double y);
                 bool GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height);
             };

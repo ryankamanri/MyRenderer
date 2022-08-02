@@ -12,7 +12,7 @@ using namespace Kamanri::Utils::Result;
 
 constexpr const char* LOG_NAME = "Kamanri::Renderer::World3D";
 
-World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera): _camera(camera)
+World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool is_print): _camera(camera)
 {
 
     _camera.SetVertices(_vertices, _vertices_transform);
@@ -51,17 +51,17 @@ World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera): _ca
     for(auto i = 0; i < _environment.triangles.size(); i++)
     {
         auto triangle = _environment.triangles[i];
-        triangle.PrintTriangle();
+        triangle.PrintTriangle(is_print);
     }
 }
 
-DefaultResult World3D::Build()
+DefaultResult World3D::Build(bool is_print)
 {
     Log::Info(LOG_NAME, "Start to build the world...");
     for(auto i = _environment.triangles.begin(); i != _environment.triangles.end(); i++)
     {
         i->Build();
-        i->PrintTriangle();
+        i->PrintTriangle(is_print);
     }
 
     return DEFAULT_RESULT;

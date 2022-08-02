@@ -28,13 +28,15 @@ using namespace Kamanri::Renderer::World3Ds;
 SOURCE_FILE("../Main.cpp");
 constexpr const char *LOG_NAME = "Main";
 
-void DrawFunc(Painter painter)
+void DrawFunc(PainterFactor painter_factor)
 {
+	auto painter = painter_factor.CreatePainter();
+
 	auto model = ObjModel();
 	model.Read("./out/skybox.obj");
 
 	// Camera camera({0, 2, 3, 1}, {0, -1, -1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
-	Camera camera({0, 0, 5, 1}, {0, -0.2, -1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
+	Camera camera({0, 2, -5, 1}, {0, -0.1, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
 
 	World3D world = World3D(model, camera);
 
@@ -50,17 +52,13 @@ void DrawFunc(Painter painter)
 
 	while (true)
 	{
-		Log::Trace(LOG_NAME, "Direction transform: ");
-		camera.GetDirection().PrintVector();
+
 		revolve_matrix * camera.GetDirection();
-		camera.GetDirection().PrintVector();
-		Log::Trace(LOG_NAME, "Location transform: ");
-		camera.GetLocation().PrintVector();
 		revolve_matrix * camera.GetLocation();
-		camera.GetLocation().PrintVector();
+
 
 		//
-		camera.Transform();
+		camera.Transform(true);
 
 		world.Build();
 
@@ -87,12 +85,13 @@ void DrawFunc(Painter painter)
 				if(j > 600 || j < 0) continue;
 				depth = world.Depth(i, j);
 				color = -(int)(255 / (depth / 5));
-				// if(depth != -DBL_MAX) Log::Trace(LOG_NAME, "x: %d, y: %d, depth: %f, color: %d", i, j, depth, color);
+
 				painter.Dot(i, j, RGB(color, color, color));
 			}
-			painter.Flush();
+			
 		}
-
+		painter.Flush();
+		painter_factor.Clean(painter);
 		Log::Info(LOG_NAME, "Finish a frame render.");
 	}
 }
@@ -109,7 +108,7 @@ void OpenWindow(HINSTANCE hInstance)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-
+	// Log::Level(DEBUG_LEVEL);
 	OpenWindow(hInstance);
 
 	system("pause");

@@ -117,27 +117,56 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void Window::_Paint()
 {
-    //开始绘图
-    auto h_dc = GetDC(_h_wnd);
+    _paint_thread = std::thread([this]
+    {
+        DrawFunc(PainterFactor(_h_wnd));
+    });
+}
 
+
+
+PainterFactor::PainterFactor(HWND h_wnd): _h_wnd(h_wnd)
+{
+    _h_dc = GetDC(_h_wnd);
+
+    _h_black_dc = CreateCompatibleDC(_h_dc);
+    HBITMAP hBackBmp = CreateCompatibleBitmap(_h_dc, WINDOW_WIDTH, WINDOW_HEIGHT);
+    SelectObject(_h_black_dc, hBackBmp);
+}
+
+PainterFactor::~PainterFactor()
+{
+    ReleaseDC(_h_wnd, _h_dc);
+}
+
+Painter PainterFactor::CreatePainter()
+{
     // on paint
     //创建内存DC（先放到内存中）
-    HDC hMemDC = CreateCompatibleDC(h_dc);
+    HDC h_draw_dc = CreateCompatibleDC(_h_dc);
+
     //创建一张兼容位图
     // note:
     //这要注意,如果创建和内存DC兼容的位图就只有黑白色,不会有彩色
     //所以要创建实际对象DC.窗口DC或静态控件DC兼容的内存位图
-    HBITMAP hBackBmp = CreateCompatibleBitmap(h_dc, 600, 600);
+    HBITMAP hBackBmp = CreateCompatibleBitmap(_h_dc, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    SelectObject(hMemDC, hBackBmp);
+    SelectObject(h_draw_dc, hBackBmp);
 
-    _paint_thread = std::thread([this, hMemDC, h_dc]
-    {
-            DrawFunc(Painter(h_dc, hMemDC));
-            DeleteObject(hMemDC);
-	        ReleaseDC(_h_wnd, h_dc); 
-    });
+    return Painter(_h_dc, h_draw_dc);
 }
 
-Painter::Painter(HDC h_dc, HDC h_mem_dc): _h_dc(h_dc), _h_mem_dc(h_mem_dc) {}
-WINBOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, _h_mem_dc, 0, 0, SRCCOPY); }
+void PainterFactor::Clean(Painter& painter)
+{
+    BitBlt(painter._h_draw_dc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, _h_black_dc, 0, 0, SRCCOPY);
+}
+
+
+Painter::Painter(HDC h_dc, HDC h_mem_dc): _h_dc(h_dc), _h_draw_dc(h_mem_dc) {}
+
+Painter::~Painter()
+{
+    DeleteObject(_h_draw_dc);
+}
+
+WINBOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, _h_draw_dc, 0, 0, SRCCOPY); }
