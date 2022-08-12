@@ -36,7 +36,7 @@ void DrawFunc(PainterFactor painter_factor)
 	model.Read("./out/skybox.obj");
 
 	// Camera camera({0, 2, 3, 1}, {0, -1, -1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
-	Camera camera({0, 2, -5, 1}, {0, -0.1, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
+	Camera camera({0, 2, -5, 1}, {0, -1, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
 
 	World3D world = World3D(model, camera);
 

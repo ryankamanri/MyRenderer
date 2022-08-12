@@ -106,51 +106,27 @@ DefaultResult Camera::Transform(bool is_print)
 
     Log::Trace(LOG_NAME, "a5*4*3 * a2*1 * v:");
 
-    SMatrix a1 = 
-    {
-        1, 0, 0, -lx,
-        0, 1, 0, -ly,
-        0, 0, 1, -lz,
-        0, 0, 0, 1  
-    };
+    // SMatrix a1 = 
+    // {
+    //     1, 0, 0, -lx,
+    //     0, 1, 0, -ly,
+    //     0, 0, 1, -lz,
+    //     0, 0, 0, 1  
+    // };
 
-    SMatrix a2 = 
-    {
-        cos_a, -sin_a_sin_b, sin_a_cos_b, 0,
-        0, cos_b, sin_b, 0,
-        -sin_a, -cos_a_sin_b, cos_a_cos_b, 0,
-        0, 0, 0, 1
-    };
+    // SMatrix a2 = 
+    // {
+    //     cos_a, 0, sin_a, 0,
+    //     -sin_a_sin_b, cos_b, cos_a_sin_b, 0,
+    //     -sin_a_cos_b, -sin_b, cos_a_cos_b, 0,
+    //     0, 0, 0, 1
+    // };
 
-    SMatrix a2_1 = 
-    {
-        1, 0, 0, 0,
-        0, cos_b, sin_b, 0,
-        0, -sin_b, cos_b, 0,
-        0, 0, 0, 1
-    };
-
-    SMatrix a2_2 = 
-    {
-        cos_a, 0, sin_a, 0,
-        0, 1, 0, 0,
-        -sin_a, 0, cos_a, 0,
-        0, 0, 0, 1
-    };
-
-    SMatrix a2_3 = 
-    {
-        cos_b, sin_b, 0, 0,
-        -sin_b, cos_b, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    };
-    
     SMatrix a21 = 
     {
-        cos_a, -sin_a_sin_b, sin_a_cos_b, -lx * cos_a + ly * sin_a_sin_b - lz * sin_a_cos_b,
-        0, cos_b, sin_b, -ly * cos_b - lz * sin_b,
-        -sin_a, -cos_a_sin_b, cos_a_cos_b, lx * sin_a + ly * cos_a_sin_b - lz * cos_a_cos_b,
+        cos_a, 0, sin_a, -lx * cos_a - lz * sin_a,
+        -sin_a_sin_b, cos_b, cos_a_sin_b, lx * sin_a_sin_b - ly * cos_b - lz * cos_a_sin_b,
+        -sin_a_cos_b, -sin_b, cos_a_cos_b, lx * sin_a_cos_b + ly * sin_b - lz * cos_a_cos_b,
         0, 0, 0, 1
     };
 
@@ -171,15 +147,7 @@ DefaultResult Camera::Transform(bool is_print)
         Log::Trace(LOG_NAME, "Start a vertice transform...");
         
         _pvertices_transform->at(i).PrintVector(is_print);
-        // a21 * _pvertices_transform->at(i);
-        a1 * _pvertices_transform->at(i);
-        _pvertices_transform->at(i).PrintVector(is_print);
-        a2_1 * _pvertices_transform->at(i);
-        _pvertices_transform->at(i).PrintVector(is_print);
-        a2_2 * _pvertices_transform->at(i);
-        _pvertices_transform->at(i).PrintVector(is_print);
-        a2_3 * _pvertices_transform->at(i);
-        _pvertices_transform->at(i).PrintVector(is_print);
+        a21 * _pvertices_transform->at(i);
 
         a543 * _pvertices_transform->at(i);
         _pvertices_transform->at(i).PrintVector(is_print);
