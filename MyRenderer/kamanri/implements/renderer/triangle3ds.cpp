@@ -19,18 +19,22 @@ void Triangle3D::PrintTriangle(bool is_print) const
 {
     if(!is_print) return;
     PrintLn("offset: %d, a: %f, b: %f, c: %f", _offset, _a, _b, _c);
-    _vertices_transform[_v1].PrintVector();
-    _vertices_transform[_v2].PrintVector();
-    _vertices_transform[_v3].PrintVector();
+    _vertices_transform[_offset + _v1].PrintVector();
+    _vertices_transform[_offset + _v2].PrintVector();
+    _vertices_transform[_offset + _v3].PrintVector();
 }
 
 void Triangle3D::Build()
 {
+    auto v1 = _offset + _v1;
+    auto v2 = _offset + _v2;
+    auto v3 = _offset + _v3;
+
     SMatrix vertices_matrix = 
     {
-        **_vertices_transform[_v1][0], **_vertices_transform[_v1][1], **_vertices_transform[_v1][2],
-        **_vertices_transform[_v2][0], **_vertices_transform[_v2][1], **_vertices_transform[_v2][2],
-        **_vertices_transform[_v3][0], **_vertices_transform[_v3][1], **_vertices_transform[_v3][2]
+        **_vertices_transform[v1][0], **_vertices_transform[v1][1], **_vertices_transform[v1][2],
+        **_vertices_transform[v2][0], **_vertices_transform[v2][1], **_vertices_transform[v2][2],
+        **_vertices_transform[v3][0], **_vertices_transform[v3][1], **_vertices_transform[v3][2]
     };
 
     Vector abc_vec = {1, 1, 1};
@@ -44,12 +48,17 @@ void Triangle3D::Build()
 
 bool Triangle3D::IsIn(double x, double y)
 {
-    auto v1_x = **_vertices_transform[_v1][0];
-    auto v1_y = **_vertices_transform[_v1][1];
-    auto v2_x = **_vertices_transform[_v2][0];
-    auto v2_y = **_vertices_transform[_v2][1];
-    auto v3_x = **_vertices_transform[_v3][0];
-    auto v3_y = **_vertices_transform[_v3][1];
+    auto v1 = _offset + _v1;
+    auto v2 = _offset + _v2;
+    auto v3 = _offset + _v3;
+
+    auto v1_x = **_vertices_transform[v1][0];
+    auto v1_y = **_vertices_transform[v1][1];
+    auto v2_x = **_vertices_transform[v2][0];
+    auto v2_y = **_vertices_transform[v2][1];
+    auto v3_x = **_vertices_transform[v3][0];
+    auto v3_y = **_vertices_transform[v3][1];
+    
     SMatrix v1_v2_xy = 
     {
         v2_x - v1_x, x - v1_x,

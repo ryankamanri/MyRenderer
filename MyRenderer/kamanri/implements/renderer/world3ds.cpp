@@ -12,17 +12,19 @@ using namespace Kamanri::Utils::Result;
 
 constexpr const char* LOG_NAME = "Kamanri::Renderer::World3D";
 
-World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool is_print): _camera(camera)
+World3D::World3D(Cameras::Camera& camera): _camera(camera)
 {
-
     _camera.SetVertices(_vertices, _vertices_transform);
+}
 
+DefaultResult World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_print)
+{
     auto dot_offset = (int)_vertices.size();
 
-    for(auto i = 0; i < model.GetVerticeSize(); i++)
+    for(auto i = 0; i < model.GetVertexSize(); i++)
     {
-        auto vertice = **model.GetVertice(i);
-        Vector vector = {vertice[0], vertice[1], vertice[2], 1};
+        auto vertex = **model.GetVertex(i);
+        Vector vector = {vertex[0], vertex[1], vertex[2], 1};
         _vertices.push_back(vector);
         _vertices_transform.push_back(vector);
     }
@@ -31,17 +33,18 @@ World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool
     for(auto i = 0; i < model.GetFaceSize(); i++)
     {
         auto face = **model.GetFace(i);
-        if(face.vertice_indexes.size() > 4)
+        if(face.vertex_indexes.size() > 4)
         {
-            Log::Error(LOG_NAME, "Can not handle `face.vertice_indexes() > 4`");
-            return;
+            auto message = "Can not handle `face.vertex_indexes() > 4`";
+            Log::Error(LOG_NAME, message);
+            return DEFAULT_RESULT_EXCEPTION(WORLD3D_CODE_UNHANDLED_EXCEPTION, message);
         }
-        if(face.vertice_indexes.size() == 4)
+        if(face.vertex_indexes.size() == 4)
         {
-            auto triangle = Triangle3D(_vertices_transform, dot_offset, face.vertice_indexes[0] - 1, face.vertice_indexes[3] - 1, face.vertice_indexes[2] - 1);
+            auto triangle = Triangle3D(_vertices_transform, dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[3] - 1, face.vertex_indexes[2] - 1);
             this->_environment.triangles.push_back(triangle);
         }
-        auto triangle2 = Triangle3D(_vertices_transform, dot_offset, face.vertice_indexes[0] - 1, face.vertice_indexes[1] - 1, face.vertice_indexes[2] - 1);
+        auto triangle2 = Triangle3D(_vertices_transform, dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[1] - 1, face.vertex_indexes[2] - 1);
         
         _environment.triangles.push_back(triangle2);
     }
@@ -53,6 +56,8 @@ World3D::World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool
         auto triangle = _environment.triangles[i];
         triangle.PrintTriangle(is_print);
     }
+
+    return DEFAULT_RESULT;
 }
 
 DefaultResult World3D::Build(bool is_print)

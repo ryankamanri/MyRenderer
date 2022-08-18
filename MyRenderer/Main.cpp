@@ -8,6 +8,7 @@
 #include "kamanri/utils/logs.hpp"
 #include "kamanri/windows/windows.hpp"
 #include "kamanri/utils/result.hpp"
+#include "kamanri/utils/iterator.hpp"
 #include "kamanri/maths/matrix.hpp"
 #include "kamanri/maths/vectors.hpp"
 #include "kamanri/renderer/obj_reader.hpp"
@@ -17,6 +18,7 @@
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
 using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Utils::Iterator;
 using namespace Kamanri::Utils::Thread;
 using namespace Kamanri::Maths::Vectors;
 using namespace Kamanri::Maths::Matrix;
@@ -32,13 +34,15 @@ void DrawFunc(PainterFactor painter_factor)
 {
 	auto painter = painter_factor.CreatePainter();
 
-	auto model = ObjModel();
-	model.Read("./out/skybox.obj");
+	auto jet = ObjModel("./out/jet.obj");
+	auto floor = ObjModel("./out/floor.obj");
 
-	// Camera camera({0, 2, 3, 1}, {0, -1, -1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
-	Camera camera({0, 2, -5, 1}, {0, -1, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
+	auto camera = Camera({0, 1, -5, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
 
-	World3D world = World3D(model, camera);
+	auto world = World3D(camera);
+
+	world.AddObjModel(floor);
+	world.AddObjModel(jet);
 
 	// revolve matrix
 	double theta = M_PI / 12;
@@ -58,7 +62,7 @@ void DrawFunc(PainterFactor painter_factor)
 
 
 		//
-		camera.Transform(true);
+		camera.Transform();
 
 		world.Build();
 
@@ -74,8 +78,33 @@ void DrawFunc(PainterFactor painter_factor)
 		auto max_width_int = (int)max_width;
 		auto max_height_int = (int)max_height;
 
+
+
+		Log::Debug(LOG_NAME, "Start to render...");
+
+		// auto width_range = Range(min_width_int, max_width_int);
+		
+		// std::transform(width_range.begin(), width_range.end(), width_range.begin(), 
+		// [&world, &painter, min_height_int, max_height_int](int i) 
+		// {
+		// 	if(i > 600 || i < 0)
+		// 		return i;
+		// 	for (int j = min_height_int; j <= max_height_int && j <= 600 && j >= 0; j++)
+		// 	{
+		// 		if(j > 600 || j < 0) continue;
+
+		// 		auto color = -(int)(255 / (world.Depth(i, j) / 5));
+
+		// 		painter.Dot(i, j, RGB(color, color, color));
+		// 	}
+		// 	return i;
+		// });
+
+
 		double depth;
 		int color;
+
+		// auto thread_pool = ThreadPool(4);
 
 		for (int i = min_width_int; i <= max_width_int; i++)
 		{
@@ -90,6 +119,7 @@ void DrawFunc(PainterFactor painter_factor)
 			}
 			
 		}
+		
 		painter.Flush();
 		painter_factor.Clean(painter);
 		Log::Info(LOG_NAME, "Finish a frame render.");
@@ -108,9 +138,14 @@ void OpenWindow(HINSTANCE hInstance)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	// Log::Level(DEBUG_LEVEL);
+	Log::Level(DEBUG_LEVEL);
 	OpenWindow(hInstance);
 
+	// auto range = Range(1, 10);
+	// for (auto i = range.begin(); i != range.end(); i++)
+	// {
+	// 	*i = 0;
+	// }
 	system("pause");
 	return 0;
 }

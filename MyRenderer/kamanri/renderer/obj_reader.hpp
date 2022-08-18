@@ -15,28 +15,30 @@ namespace Kamanri
             class Face
             {
                 public:
-                    std::vector<int> vertice_indexes;
-                    std::vector<int> vertice_texture_indexes;
-                    std::vector<int> vertice_normal_indexes;
+                    std::vector<int> vertex_indexes;
+                    std::vector<int> vertex_texture_indexes;
+                    std::vector<int> vertex_normal_indexes;
             };
 
             class ObjModel
             {
                 public:
+                    ObjModel() = default;
+                    explicit ObjModel(std::string const &file_name);
                     Utils::Result::DefaultResult Read(std::string const& file_name);
-                    size_t GetVerticeSize() const;
-                    size_t GetVerticeNormalSize() const;
-                    size_t GetVerticeTextureSize() const;
+                    size_t GetVertexSize() const;
+                    size_t GetVertexNormalSize() const;
+                    size_t GetVertexTextureSize() const;
                     size_t GetFaceSize() const;
-                    Utils::Result::PMyResult<std::vector<double>> GetVertice(int index) const;
-                    Utils::Result::PMyResult<std::vector<double>> GetVerticeNormal(int index) const;
-                    Utils::Result::PMyResult<std::vector<double>> GetVerticeTexture(int index) const;
+                    Utils::Result::PMyResult<std::vector<double>> GetVertex(int index) const;
+                    Utils::Result::PMyResult<std::vector<double>> GetVertexNormal(int index) const;
+                    Utils::Result::PMyResult<std::vector<double>> GetVertexTexture(int index) const;
                     Utils::Result::PMyResult<Face> GetFace(int index) const;
 
                 private:
                     std::vector<std::vector<double>> _vertices;
-                    std::vector<std::vector<double>> _vertice_normals;
-                    std::vector<std::vector<double>> _vertice_textures;
+                    std::vector<std::vector<double>> _vertex_normals;
+                    std::vector<std::vector<double>> _vertex_textures;
                     std::vector<Face> _faces;
             };
         }

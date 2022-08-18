@@ -144,7 +144,7 @@ DefaultResult Camera::Transform(bool is_print)
     {
         _pvertices_transform->at(i).CopyFrom(_pvertices->at(i));
 
-        Log::Trace(LOG_NAME, "Start a vertice transform...");
+        Log::Trace(LOG_NAME, "Start a vertex transform...");
         
         _pvertices_transform->at(i).PrintVector(is_print);
         a21 * _pvertices_transform->at(i);

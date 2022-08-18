@@ -11,6 +11,16 @@ using namespace Kamanri::Utils::String;
 
 constexpr const char *LOG_NAME = "Kamanri::Renderer::ObjReader";
 
+ObjModel::ObjModel(std::string const& file_name)
+{
+    auto result = Read(file_name);
+    if(result->IsException())
+    {
+        Log::Error(LOG_NAME, "An Exception occured while initing the ObjModel:");
+        result->Print();
+    }
+}
+
 DefaultResult ObjModel::Read(std::string const &file_name)
 {
     std::ifstream fs(file_name);
@@ -38,12 +48,12 @@ DefaultResult ObjModel::Read(std::string const &file_name)
         {
             try
             {
-                auto vertice_texture = std::vector<double>();
+                auto vertex_texture = std::vector<double>();
                 for (int i = 1; i < vec_size; i++)
                 {
-                    vertice_texture.push_back(std::stod(splited_str_vec[i]));
+                    vertex_texture.push_back(std::stod(splited_str_vec[i]));
                 }
-                _vertice_textures.push_back(vertice_texture);
+                _vertex_textures.push_back(vertex_texture);
             }
             catch (std::exception e)
             {
@@ -57,7 +67,7 @@ DefaultResult ObjModel::Read(std::string const &file_name)
         {
             try
             {
-                _vertice_normals.push_back({std::stod(splited_str_vec[1]),
+                _vertex_normals.push_back({std::stod(splited_str_vec[1]),
                                             std::stod(splited_str_vec[2]),
                                             std::stod(splited_str_vec[3])});
             }
@@ -73,12 +83,12 @@ DefaultResult ObjModel::Read(std::string const &file_name)
         {
             try
             {
-                auto vertice = std::vector<double>();
+                auto vertex = std::vector<double>();
                 for (int i = 1; i < vec_size; i++)
                 {
-                    vertice.push_back(std::stod(splited_str_vec[i]));
+                    vertex.push_back(std::stod(splited_str_vec[i]));
                 }
-                _vertices.push_back(vertice);
+                _vertices.push_back(vertex);
             }
             catch (std::exception e)
             {
@@ -96,20 +106,20 @@ DefaultResult ObjModel::Read(std::string const &file_name)
             {
                 for (int i = 1; i < vec_size; i++)
                 {
-                    auto about_vertice_indexes = Split(splited_str_vec[i], "/");
-                    auto indexes_size = about_vertice_indexes.size();
+                    auto about_vertex_indexes = Split(splited_str_vec[i], "/");
+                    auto indexes_size = about_vertex_indexes.size();
 
-                    if (about_vertice_indexes[0].length() != 0)
+                    if (about_vertex_indexes[0].length() != 0)
                     {
-                        face.vertice_indexes.push_back(std::stoi(about_vertice_indexes[0]));
+                        face.vertex_indexes.push_back(std::stoi(about_vertex_indexes[0]));
                     }
-                    if (indexes_size > 1 && about_vertice_indexes[1].length() != 0)
+                    if (indexes_size > 1 && about_vertex_indexes[1].length() != 0)
                     {
-                        face.vertice_texture_indexes.push_back(std::stoi(about_vertice_indexes[1]));
+                        face.vertex_texture_indexes.push_back(std::stoi(about_vertex_indexes[1]));
                     }
-                    if (indexes_size > 2 && about_vertice_indexes[2].length() != 0)
+                    if (indexes_size > 2 && about_vertex_indexes[2].length() != 0)
                     {
-                        face.vertice_normal_indexes.push_back(std::stoi(about_vertice_indexes[2]));
+                        face.vertex_normal_indexes.push_back(std::stoi(about_vertex_indexes[2]));
                     }
                 }
             }
@@ -130,24 +140,24 @@ DefaultResult ObjModel::Read(std::string const &file_name)
     return DEFAULT_RESULT;
 }
 
-size_t ObjModel::GetVerticeSize() const
+size_t ObjModel::GetVertexSize() const
 {
     return _vertices.size();
 }
-size_t ObjModel::GetVerticeNormalSize() const
+size_t ObjModel::GetVertexNormalSize() const
 {
-    return _vertice_normals.size();
+    return _vertex_normals.size();
 }
-size_t ObjModel::GetVerticeTextureSize() const
+size_t ObjModel::GetVertexTextureSize() const
 {
-    return _vertice_textures.size();
+    return _vertex_textures.size();
 }
 size_t ObjModel::GetFaceSize() const
 {
     return _faces.size();
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVertice(int index) const
+PMyResult<std::vector<double>> ObjModel::GetVertex(int index) const
 {
     auto size = _vertices.size();
     if (size <= index)
@@ -158,26 +168,26 @@ PMyResult<std::vector<double>> ObjModel::GetVertice(int index) const
     return New<MyResult<std::vector<double>>>(_vertices[index]);
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVerticeNormal(int index) const
+PMyResult<std::vector<double>> ObjModel::GetVertexNormal(int index) const
 {
-    auto size = _vertice_normals.size();
+    auto size = _vertex_normals.size();
     if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<std::vector<double>>>(_vertice_normals[index]);
+    return New<MyResult<std::vector<double>>>(_vertex_normals[index]);
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVerticeTexture(int index) const
+PMyResult<std::vector<double>> ObjModel::GetVertexTexture(int index) const
 {
-    auto size = _vertice_textures.size();
+    auto size = _vertex_textures.size();
     if (size <= index)
     {
         Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<std::vector<double>>>(_vertice_textures[index]);
+    return New<MyResult<std::vector<double>>>(_vertex_textures[index]);
 }
 
 PMyResult<Face> ObjModel::GetFace(int index) const

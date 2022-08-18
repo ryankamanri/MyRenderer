@@ -11,6 +11,8 @@ namespace Kamanri
     {
         namespace World3Ds
         {
+
+            constexpr int WORLD3D_CODE_UNHANDLED_EXCEPTION = 0;
             
             class Environment
             {
@@ -34,7 +36,8 @@ namespace Kamanri
                 Environment _environment;
 
             public:
-                World3D(ObjReader::ObjModel const& model, Cameras::Camera& camera, bool is_print = false);
+                World3D(Cameras::Camera& camera);
+                Utils::Result::DefaultResult AddObjModel(ObjReader::ObjModel const &model, bool is_print = false);
                 Utils::Result::DefaultResult Build(bool is_print = false);
                 double Depth(double x, double y);
                 bool GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height);
