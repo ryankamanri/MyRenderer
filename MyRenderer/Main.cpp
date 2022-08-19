@@ -37,7 +37,7 @@ void DrawFunc(PainterFactor painter_factor)
 	auto jet = ObjModel("./out/jet.obj");
 	auto floor = ObjModel("./out/floor.obj");
 
-	auto camera = Camera({0, 1, -5, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
+	auto camera = Camera({0, 0.5, -3, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
 
 	auto world = World3D(camera);
 
@@ -82,42 +82,22 @@ void DrawFunc(PainterFactor painter_factor)
 
 		Log::Debug(LOG_NAME, "Start to render...");
 
-		// auto width_range = Range(min_width_int, max_width_int);
-		
-		// std::transform(width_range.begin(), width_range.end(), width_range.begin(), 
-		// [&world, &painter, min_height_int, max_height_int](int i) 
-		// {
-		// 	if(i > 600 || i < 0)
-		// 		return i;
-		// 	for (int j = min_height_int; j <= max_height_int && j <= 600 && j >= 0; j++)
-		// 	{
-		// 		if(j > 600 || j < 0) continue;
-
-		// 		auto color = -(int)(255 / (world.Depth(i, j) / 5));
-
-		// 		painter.Dot(i, j, RGB(color, color, color));
-		// 	}
-		// 	return i;
-		// });
-
-
-		double depth;
 		int color;
-
-		// auto thread_pool = ThreadPool(4);
 
 		for (int i = min_width_int; i <= max_width_int; i++)
 		{
-			if(i > 600 || i < 0) continue;
+
+			if (i > 600 || i < 0)
+				return;
 			for (int j = min_height_int; j <= max_height_int && j <= 600 && j >= 0; j++)
 			{
-				if(j > 600 || j < 0) continue;
-				depth = world.Depth(i, j);
-				color = -(int)(255 / (depth / 5));
+				if (j > 600 || j < 0)
+					continue;
+
+				color = -(int)(255 / (world.Depth(i, j) / 5));
 
 				painter.Dot(i, j, RGB(color, color, color));
 			}
-			
 		}
 		
 		painter.Flush();
@@ -141,11 +121,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine,
 	Log::Level(DEBUG_LEVEL);
 	OpenWindow(hInstance);
 
-	// auto range = Range(1, 10);
-	// for (auto i = range.begin(); i != range.end(); i++)
-	// {
-	// 	*i = 0;
-	// }
 	system("pause");
 	return 0;
 }
