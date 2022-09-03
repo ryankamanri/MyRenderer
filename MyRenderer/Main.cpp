@@ -41,26 +41,38 @@ void DrawFunc(PainterFactor painter_factor)
 
 	auto world = World3D(camera);
 
-	world.AddObjModel(floor);
-	world.AddObjModel(jet);
+	auto floor_obj = **world.AddObjModel(floor);
+	auto jet_obj = **world.AddObjModel(jet);
+
+	SMatrix bigger_jet = 
+	{
+		4, 0, 0, 0,
+		0, 4, 0, 0,
+		0, 0, 4, 0,
+		0, 0, 0, 1
+	};
+
+	jet_obj.Transform(bigger_jet);
+
 
 	// revolve matrix
-	double theta = M_PI / 12;
+	double theta = M_PI / 24;
 	SMatrix revolve_matrix =
 		{
-			cos(theta), 0, -sin(theta), 0,
-			0, 1, 0, 0,
-			sin(theta), 0, cos(theta), 0,
+			1, 0, 0, 0,
+			0, cos(theta), -sin(theta), 0,
+			0, sin(theta), cos(theta), 0,
 			0, 0, 0, 1
 		};
 
 	while (true)
 	{
+		auto direction = *camera.Direction().Copy();
 
-		revolve_matrix * camera.GetDirection();
-		revolve_matrix * camera.GetLocation();
+		revolve_matrix * camera.Direction();
+		revolve_matrix * camera.Location();
 
-
+		camera.InverseUpperWithDirection(direction);
 		//
 		camera.Transform();
 
@@ -118,7 +130,7 @@ void OpenWindow(HINSTANCE hInstance)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	Log::Level(DEBUG_LEVEL);
+	Log::Level(INFO_LEVEL);
 	OpenWindow(hInstance);
 
 	system("pause");

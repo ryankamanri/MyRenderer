@@ -35,6 +35,19 @@ namespace Kamanri
                 void Print() const;
             };
 
+            // The `MyResult` class which provides capacity of returning exceptions.
+            //
+            // Note that:
+            // - the parameter `data` only receive lvalue.
+            // - need the default Constructor.
+            // - need the Copy Constructor of type T.
+            // - need the `operator=` of type T to initialze the result.
+            // For the instance:
+            // ```
+            // Object() = default;
+            // Object(Object& obj);
+            // Object& operator=(Object& obj);
+            // ```
             template <class T>
             class MyResult
             {
@@ -356,21 +369,37 @@ namespace Kamanri
 
 #define SOURCE_FILE(location) constexpr const char *SOURCE_FILE_LOCATION = location
 
-#define THROW_EXCEPTION_FOR_TYPE(T, result, line)                    \
-    if (result->IsException())                                       \
-    {                                                                \
-        result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
-        return result->As<T>();                                      \
+#define TRY_FOR_TYPE(T, result, line)                             \
+    auto res = result;                                            \
+    if (res->IsException())                                       \
+    {                                                             \
+        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
+        return res->As<T>();                                      \
     }
 
-#define THROW_EXCEPTION(result, line)                                \
-    if (result->IsException())                                       \
-    {                                                                \
-        result->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
-        return result;                                               \
+#define DEFAULT_TRY_FOR_TYPE(T, result)                     \
+    auto res = result;                                      \
+    if (res->IsException())                                 \
+    {                                                       \
+        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION)); \
+        return res->As<T>();                                \
     }
 
-            
+#define TRY(result, line)                                         \
+    auto res = result;                                            \
+    if (res->IsException())                                       \
+    {                                                             \
+        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
+        return res;                                               \
+    }
+
+#define DEFAULT_TRY(result)                                 \
+    auto res = result;                                      \
+    if (res->IsException())                                 \
+    {                                                       \
+        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION)); \
+        return res;                                         \
+    }
 
 #define DEFAULT_RESULT Kamanri::Utils::Memory::New<MyResult<void *>>()
 

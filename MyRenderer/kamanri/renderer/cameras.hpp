@@ -9,6 +9,7 @@ namespace Kamanri
         namespace Cameras
         {
             constexpr const int CAMERA_CODE_NULL_POINTER_PVERTICES = 100;
+            constexpr const int CAMERA_CODE_INVALID_VECTOR_LENGTH = 200;
             class Camera
             {
             private:
@@ -18,8 +19,8 @@ namespace Kamanri
                 // need 4d vector
                 Maths::Vectors::Vector _location;
                 Maths::Vectors::Vector _direction;
-                // the upper direction only need 3d vector
-                Maths::Vectors::Vector _upper;
+                // the upward direction only need 3d vector
+                Maths::Vectors::Vector _upward;
 
                 // angles
                 /**
@@ -53,7 +54,7 @@ namespace Kamanri
 
                 unsigned int _screen_height;
 
-                void SetAngles();
+                void SetAngles(bool is_print = false);
 
             public:
                 Camera() = default;
@@ -61,9 +62,16 @@ namespace Kamanri
                 Camera(Camera const& camera);
                 void SetVertices(std::vector<Maths::Vectors::Vector>& vertices, std::vector<Maths::Vectors::Vector> &vertices_transform);
                 Utils::Result::DefaultResult Transform(bool is_print = false);
-                inline Maths::Vectors::Vector &GetLocation() { return _location; }
-                inline Maths::Vectors::Vector &GetDirection() { return _direction; }
-                inline Maths::Vectors::Vector &GetUpper() { return _upper; }
+                /**
+                 * @brief Inverse the upper vector when the upper of direction changed.
+                 * 
+                 * @param last_direction 
+                 * @return Utils::Result::DefaultResult 
+                 */
+                Utils::Result::DefaultResult InverseUpperWithDirection(Maths::Vectors::Vector const& last_direction);
+                inline Maths::Vectors::Vector &Location() { return _location; }
+                inline Maths::Vectors::Vector &Direction() { return _direction; }
+                inline Maths::Vectors::Vector &Upper() { return _upward; }
                 
                 
             };

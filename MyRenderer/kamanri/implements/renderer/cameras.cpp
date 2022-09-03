@@ -44,30 +44,52 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
         upp_set_res->Print();
         upp_unit_res->Print();
     }
-    _upper = upper;
+    _upward = upper;
 
     SetAngles();
 }
 
-void Camera::SetAngles()
+/**
+ * @brief FIxed asin, filtered the situation of x > 1 and x < -1
+ * 
+ * @param x 
+ * @return double 
+ */
+inline double Arcsin(double x)
 {
-    _beta = asin(**_direction[1]); // beta (-PI/2, PI/2)
-    _alpha = asin((**_direction[0]) / cos(_beta)); // alpha (-PI, PI)
-    if(**_direction[2] > 0)
+    return x > 1 ? 1 : (x < -1 ? -1 : asin(x));
+}
+
+void Camera::SetAngles(bool is_print)
+{
+    _beta = Arcsin(_direction.GetFast(1)); // beta (-PI/2, PI/2)
+
+    _alpha = Arcsin((_direction.GetFast(0)) / cos(_beta)); // alpha (-PI, PI)
+
+    if(_direction.GetFast(2) > 0)
     {
         if(_alpha > 0) 
             _alpha = M_PI - _alpha;
         else
             _alpha = -M_PI - _alpha;
     }
-    _gamma = asin(**_upper[0]); // gamma (-PI, PI)
-    if(**_upper[1] < 0)
+
+    _gamma = Arcsin(_upward.GetFast(0)); // gamma (-PI, PI)
+
+    if(_upward.GetFast(1) < 0)
     {
         if(_gamma > 0)
             _gamma = M_PI - _gamma;
         else
             _gamma = -M_PI - _gamma;
     }
+
+    Log::Trace(LOG_NAME, "The direction vector:");
+
+    _direction.PrintVector(is_print);
+
+    Log::Trace(LOG_NAME, "alpha = %.2f, beta = %.2f, gamma = %.2f",
+        _alpha, _beta, _gamma);
 }
 
 Camera::Camera(Camera const &camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
@@ -86,7 +108,7 @@ DefaultResult Camera::Transform(bool is_print)
 {
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, LOG_NAME, CAMERA_CODE_NULL_POINTER_PVERTICES)
 
-    SetAngles();
+    SetAngles(is_print);
 
     Log::Trace(LOG_NAME, "vertices count: %d", _pvertices->size());
     //
@@ -100,9 +122,10 @@ DefaultResult Camera::Transform(bool is_print)
     auto cos_a_cos_b = cos_a * cos_b;
     auto sin_g = sin(_gamma);
     auto cos_g = cos(_gamma);
-    auto lx = **_location[0];
-    auto ly = **_location[1];
-    auto lz = **_location[2];
+    auto lx = _location.GetFast(0);
+    auto ly = _location.GetFast(1);
+    auto lz = _location.GetFast(2);
+
 
     Log::Trace(LOG_NAME, "a5*4*3 * a2*1 * v:");
 
@@ -148,12 +171,35 @@ DefaultResult Camera::Transform(bool is_print)
         
         _pvertices_transform->at(i).PrintVector(is_print);
         a21 * _pvertices_transform->at(i);
-
+        _pvertices_transform->at(i).PrintVector(is_print);
         a543 * _pvertices_transform->at(i);
         _pvertices_transform->at(i).PrintVector(is_print);
-        _pvertices_transform->at(i) *= (1 / **(_pvertices_transform->at(i)[3]));
+        _pvertices_transform->at(i) *= (1 / (_pvertices_transform->at(i).GetFast(3)));
         _pvertices_transform->at(i).PrintVector(is_print);
     }
     //
+    return DEFAULT_RESULT;
+}
+
+DefaultResult Camera::InverseUpperWithDirection(Maths::Vectors::Vector const &last_direction)
+{
+    auto last_direction_n = **last_direction.N();
+    if (last_direction_n != 4)
+    {
+        Log::Error(LOG_NAME, "Invalid last_direction length %d", last_direction_n);
+        return DEFAULT_RESULT_EXCEPTION(CAMERA_CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
+    }
+
+    Vector upward_before = {0, 1, 0, 0};
+    Vector upward_after = {0, 1, 0, 0};
+
+    upward_before *= last_direction;
+    upward_after *= _direction;
+
+    if (**(upward_before * upward_after) < 0)
+    {
+        _upward *= -1;
+    }
+
     return DEFAULT_RESULT;
 }

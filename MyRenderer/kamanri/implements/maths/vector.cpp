@@ -149,6 +149,20 @@ P<MyResult<VectorElemType>> Vector::operator[](int n) const
     return New<MyResult<VectorElemType>>(*(pv + n));
 }
 
+VectorElemType Vector::GetFast(int n) const
+{
+    auto pv = _V.get();
+    CHECK_MEMORY_IS_ALLOCATED(pv, LOG_NAME, -1)
+
+    if(n < 0 || n > this->_N)
+    {
+        Log::Error(LOG_NAME, "Index %d out of bound %d", n, this->_N);
+        return INVALID_VECTOR_ELEM_TYPE_VALUE;
+    }
+
+    return *(pv + n);
+}
+
 DefaultResult Vector::Set(size_t index, VectorElemType value) const
 {
     auto pv = _V.get();

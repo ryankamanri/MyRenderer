@@ -11,6 +11,8 @@ namespace Kamanri
         {
             using VectorElemType = double;
 
+            constexpr VectorElemType INVALID_VECTOR_ELEM_TYPE_VALUE = -1;
+
             constexpr int MYVECTOR_NOT_INITIALIZED_N = 0;
 
             // Codes
@@ -37,6 +39,10 @@ namespace Kamanri
 
                 // Get the value of the Vector by index
                 Utils::Result::PMyResult<VectorElemType> operator[](int n) const;
+
+                // Get without result
+                VectorElemType GetFast(int n) const;
+
                 // setter
                 Utils::Result::DefaultResult Set(size_t index, VectorElemType value) const;
                 Utils::Result::DefaultResult SetAll(VectorElemType value = 0) const;

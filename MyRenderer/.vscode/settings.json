@@ -67,7 +67,8 @@
         "random": "cpp",
         "algorithm": "cpp",
         "condition_variable": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "mutex": "cpp"
     },
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json",
     "C_Cpp.errorSquiggles": "Disabled"

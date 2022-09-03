@@ -46,38 +46,38 @@ void Triangle3D::Build()
     _c = **abc_vec[2];
 }
 
+#define Determinant(a00, a01, a10, a11) ((a00) * (a11) - (a10) * (a01))
+
 bool Triangle3D::IsIn(double x, double y)
 {
     auto v1 = _offset + _v1;
     auto v2 = _offset + _v2;
     auto v3 = _offset + _v3;
 
-    auto v1_x = **_vertices_transform[v1][0];
-    auto v1_y = **_vertices_transform[v1][1];
-    auto v2_x = **_vertices_transform[v2][0];
-    auto v2_y = **_vertices_transform[v2][1];
-    auto v3_x = **_vertices_transform[v3][0];
-    auto v3_y = **_vertices_transform[v3][1];
-    
-    SMatrix v1_v2_xy = 
-    {
+    auto v1_x = _vertices_transform[v1].GetFast(0);
+    auto v1_y = _vertices_transform[v1].GetFast(1);
+    auto v2_x = _vertices_transform[v2].GetFast(0);
+    auto v2_y = _vertices_transform[v2].GetFast(1);
+    auto v3_x = _vertices_transform[v3].GetFast(0);
+    auto v3_y = _vertices_transform[v3].GetFast(1);
+
+
+
+    auto v1_v2_xy_determinant = Determinant
+    (
         v2_x - v1_x, x - v1_x,
         v2_y - v1_y, y - v1_y
-    };
-    SMatrix v2_v3_xy = 
-    {
+    );
+    auto v2_v3_xy_determinant = Determinant
+    (
         v3_x - v2_x, x - v2_x,
         v3_y - v2_y, y - v2_y
-    };
-    SMatrix v3_v1_xy = 
-    {
+    );
+    auto v3_v1_xy_determinant = Determinant
+    (
         v1_x - v3_x, x - v3_x,
         v1_y - v3_y, y - v3_y
-    };
-
-    auto v1_v2_xy_determinant = **v1_v2_xy.Determinant();
-    auto v2_v3_xy_determinant = **v2_v3_xy.Determinant();
-    auto v3_v1_xy_determinant = **v3_v1_xy.Determinant();
+    );
 
     if (v1_v2_xy_determinant * v2_v3_xy_determinant >= 0 && v2_v3_xy_determinant * v3_v1_xy_determinant >= 0 && v3_v1_xy_determinant * v1_v2_xy_determinant >= 0)
     {

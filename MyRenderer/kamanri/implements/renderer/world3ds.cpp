@@ -3,21 +3,50 @@
 #include "../../renderer/world3ds.hpp"
 #include "../../renderer/triangle3ds.hpp"
 #include "../../utils/result.hpp"
+#include "../../maths/matrix.hpp"
+#include "../../utils/memory.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Renderer::World3Ds;
 using namespace Kamanri::Renderer::Triangle3Ds;
 using namespace Kamanri::Maths::Vectors;
+using namespace Kamanri::Maths::Matrix;
 using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Utils::Memory;
 
 constexpr const char* LOG_NAME = "Kamanri::Renderer::World3D";
+SOURCE_FILE("kamanri/implements/renderer/world3d.cpp");
 
 World3D::World3D(Cameras::Camera& camera): _camera(camera)
 {
     _camera.SetVertices(_vertices, _vertices_transform);
 }
 
-DefaultResult World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_print)
+Object::Object(std::vector<Maths::Vectors::Vector>& vertices, int offset, int length): _pvertices(&vertices), _offset(offset), _length(length){}
+
+Object::Object(Object& obj): _pvertices(obj._pvertices), _offset(obj._offset), _length(obj._length)
+{
+
+}
+
+Object& Object::operator=(Object& obj)
+{
+    _pvertices = obj._pvertices;
+    _offset = obj._offset;
+    _length = obj._length;
+    return *this;
+}
+
+DefaultResult Object::Transform(SMatrix const& transform_matrix) const
+{
+    for(int i = _offset; i < _offset + _length; i++)
+    {
+        TRY(transform_matrix * (*_pvertices)[i], 28);
+    }
+    return DEFAULT_RESULT;
+}
+
+PMyResult<Object> World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_print)
 {
     auto dot_offset = (int)_vertices.size();
 
@@ -37,7 +66,7 @@ DefaultResult World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_pri
         {
             auto message = "Can not handle `face.vertex_indexes() > 4`";
             Log::Error(LOG_NAME, message);
-            return DEFAULT_RESULT_EXCEPTION(WORLD3D_CODE_UNHANDLED_EXCEPTION, message);
+            return RESULT_EXCEPTION(Object, WORLD3D_CODE_UNHANDLED_EXCEPTION, message);
         }
         if(face.vertex_indexes.size() == 4)
         {
@@ -50,14 +79,13 @@ DefaultResult World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_pri
     }
 
     // do check
-    Log::Info(LOG_NAME, "Start to init World3D...");
     for(auto i = 0; i < _environment.triangles.size(); i++)
     {
-        auto triangle = _environment.triangles[i];
-        triangle.PrintTriangle(is_print);
+        _environment.triangles[i].PrintTriangle(is_print);
     }
 
-    return DEFAULT_RESULT;
+    Object result_object(_vertices, dot_offset, (int)model.GetVertexSize());
+    return New<MyResult<Object>>(result_object);
 }
 
 DefaultResult World3D::Build(bool is_print)
@@ -98,8 +126,8 @@ bool World3D::GetMinMaxWidthHeight(double &min_width, double &min_height, double
 
     for (auto i = _vertices_transform.begin(); i != _vertices_transform.end(); i++)
     {
-        x = **(*i)[0];
-        y = **(*i)[1];
+        x = i->GetFast(0);
+        y = i->GetFast(1);
         if(x < min_width)
             min_width = x;
         if(x > max_width)

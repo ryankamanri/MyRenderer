@@ -7,6 +7,11 @@ namespace Kamanri
     {
         namespace Triangle3Ds
         {
+            /**
+             * @brief The Triangle3D class is designed to represent a triangle consist of 3 vertices, 
+             * it will be the object of projection transformation and be rendered to screen.
+             * 
+             */
             class Triangle3D
             {
             private:
