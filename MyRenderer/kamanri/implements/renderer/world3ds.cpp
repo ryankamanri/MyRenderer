@@ -5,6 +5,7 @@
 #include "../../utils/result.hpp"
 #include "../../maths/matrix.hpp"
 #include "../../utils/memory.hpp"
+#include "../../utils/string.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Renderer::World3Ds;
@@ -14,12 +15,13 @@ using namespace Kamanri::Maths::Matrix;
 using namespace Kamanri::Utils::Result;
 using namespace Kamanri::Utils::Memory;
 
-constexpr const char* LOG_NAME = "Kamanri::Renderer::World3D";
-SOURCE_FILE("kamanri/implements/renderer/world3d.cpp");
+constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World3Ds);
 
 World3D::World3D(Cameras::Camera& camera): _camera(camera)
 {
     _camera.SetVertices(_vertices, _vertices_transform);
+    
+    _buffers.Init(_camera.ScreenWidth(), _camera.ScreenHeight());
 }
 
 Object::Object(std::vector<Maths::Vectors::Vector>& vertices, int offset, int length): _pvertices(&vertices), _offset(offset), _length(length){}
@@ -41,9 +43,66 @@ DefaultResult Object::Transform(SMatrix const& transform_matrix) const
 {
     for(int i = _offset; i < _offset + _length; i++)
     {
-        TRY(transform_matrix * (*_pvertices)[i], 28);
+        TRY(transform_matrix * (*_pvertices)[i]);
     }
     return DEFAULT_RESULT;
+}
+
+void Buffers::Init(unsigned int width, unsigned int height)
+{
+    _width = width;
+    _height = height;
+    z_buffer = P<double>(new double[width * height]);
+    
+}
+
+
+void Buffers::WriteToZBufferFrom(Triangle3D const &t)
+{
+    int min_width;
+    int min_height;
+    int max_width;
+    int max_height;
+
+    t.GetMinMaxWidthHeight(min_width, min_height, max_width, max_height);
+
+    auto p_z_buffer = z_buffer.get();
+    double *p_z_buffer_i_j;
+    double t_z;
+
+    for (int i = min_width; i <= max_width; i++)
+    {
+
+        if (i >= _width || i < 0)
+            continue;
+        for (int j = min_height; j <= max_height; j++)
+        {
+            if (j >= _height || j < 0)
+                continue;
+
+            if(!t.IsIn(i, j)) 
+                continue;
+
+            // start to compare the depth
+            p_z_buffer_i_j = p_z_buffer + i * _height + j;
+            t_z = t.Z(i, j);
+            if(t_z > *p_z_buffer_i_j)
+                *p_z_buffer_i_j = t_z;
+                
+        }
+    }
+}
+void Buffers::CleanZBuffer() const
+{
+    auto p_z_buffer = z_buffer.get();
+
+    for(auto i = 0; i < _width; i++)
+    {
+        for(auto j = 0; j < _height; j++)
+        {
+            *(p_z_buffer + i * _height + j) = -DBL_MAX;
+        }
+    }
 }
 
 PMyResult<Object> World3D::AddObjModel(ObjReader::ObjModel const &model, bool is_print)
@@ -91,52 +150,23 @@ PMyResult<Object> World3D::AddObjModel(ObjReader::ObjModel const &model, bool is
 DefaultResult World3D::Build(bool is_print)
 {
     Log::Info(LOG_NAME, "Start to build the world...");
+    _buffers.CleanZBuffer();
     for(auto i = _environment.triangles.begin(); i != _environment.triangles.end(); i++)
     {
         i->Build();
         i->PrintTriangle(is_print);
+        _buffers.WriteToZBufferFrom(*i);
     }
 
     return DEFAULT_RESULT;
 }
 
-double World3D::Depth(double x, double y)
+double World3D::Depth(int x, int y)
 {
-    double depth = -DBL_MAX;
-    for(auto i = _environment.triangles.begin(); i != _environment.triangles.end(); i++)
-    {
-        if(!i->IsIn(x, y)) continue;
-        auto z = i->Z(x, y);
-        if(z <= depth) continue;
-        depth = z;
-    }
-
-    return depth;
+    
+    x = x % _buffers.Height();
+    y = y % _buffers.Width();
+    
+    return *(_buffers.z_buffer.get() + x * _buffers.Height() + y);
 }
 
-bool World3D::GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height)
-{
-    min_width = DBL_MAX;
-    min_height = DBL_MAX;
-    max_width = 0;
-    max_height = 0;
-
-    double x;
-    double y;
-
-    for (auto i = _vertices_transform.begin(); i != _vertices_transform.end(); i++)
-    {
-        x = i->GetFast(0);
-        y = i->GetFast(1);
-        if(x < min_width)
-            min_width = x;
-        if(x > max_width)
-            max_width = x;
-        if(y < min_height)
-            min_height = y;
-        if(y > max_height)
-            max_height = y;
-    }
-
-    return true;
-}

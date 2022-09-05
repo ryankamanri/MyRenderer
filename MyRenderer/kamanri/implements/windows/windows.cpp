@@ -6,10 +6,10 @@
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Windows::Windows;
 
-const int DEFAULT_LENGTH = 600;
 
-const int WINDOW_WIDTH = DEFAULT_LENGTH;
-const int WINDOW_HEIGHT = DEFAULT_LENGTH;
+
+int WINDOW_WIDTH;
+int WINDOW_HEIGHT;
 
 const bool IS_PRINT = false;
 
@@ -23,8 +23,10 @@ std::map<HWND, Window *> window_map;
 
 MSG msg;
 
-Window::Window(HINSTANCE h_instance)
+Window::Window(HINSTANCE h_instance, int window_width, int window_height)
 {
+    WINDOW_WIDTH = window_width;
+    WINDOW_HEIGHT = window_height;
     _WindowProc = WindowProc;
     // 1.设计窗口类
     TCHAR szAppClassName[] = TEXT("ZWX");

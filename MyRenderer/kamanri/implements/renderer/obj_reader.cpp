@@ -9,7 +9,7 @@ using namespace Kamanri::Utils::Result;
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::String;
 
-constexpr const char *LOG_NAME = "Kamanri::Renderer::ObjReader";
+constexpr const char *LOG_NAME = STR(Kamanri::Renderer::ObjReader);
 
 ObjModel::ObjModel(std::string const& file_name)
 {

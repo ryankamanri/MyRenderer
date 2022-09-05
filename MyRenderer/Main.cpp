@@ -14,6 +14,7 @@
 #include "kamanri/renderer/obj_reader.hpp"
 #include "kamanri/renderer/cameras.hpp"
 #include "kamanri/renderer/world3ds.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
@@ -27,41 +28,42 @@ using namespace Kamanri::Renderer::ObjReader;
 using namespace Kamanri::Renderer::Cameras;
 using namespace Kamanri::Renderer::World3Ds;
 
-SOURCE_FILE("../Main.cpp");
+// SOURCE_FILE("../Main.cpp");
 constexpr const char *LOG_NAME = "Main";
+const int WINDOW_LENGTH = 600;
 
 void DrawFunc(PainterFactor painter_factor)
 {
 	auto painter = painter_factor.CreatePainter();
 
-	auto jet = ObjModel("./out/jet.obj");
+	auto j20 = ObjModel("./out/j20.obj");
 	auto floor = ObjModel("./out/floor.obj");
 
-	auto camera = Camera({0, 0.5, -3, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, 600, 600);
+	auto camera = Camera({0, 0.5, -3, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, WINDOW_LENGTH, WINDOW_LENGTH);
 
 	auto world = World3D(camera);
 
 	auto floor_obj = **world.AddObjModel(floor);
-	auto jet_obj = **world.AddObjModel(jet);
+	auto j20_obj = **world.AddObjModel(j20);
 
-	SMatrix bigger_jet = 
+	SMatrix bigger_j20 = 
 	{
-		4, 0, 0, 0,
-		0, 4, 0, 0,
-		0, 0, 4, 0,
+		0.01, 0, 0, 0,
+		0, 0, 0.01, 0,
+		0, 0.01, 0, 0,
 		0, 0, 0, 1
 	};
 
-	jet_obj.Transform(bigger_jet);
+	j20_obj.Transform(bigger_j20);
 
 
 	// revolve matrix
-	double theta = M_PI / 24;
+	double theta = M_PI / 64;
 	SMatrix revolve_matrix =
 		{
-			1, 0, 0, 0,
-			0, cos(theta), -sin(theta), 0,
-			0, sin(theta), cos(theta), 0,
+			cos(theta), 0, -sin(theta), 0,
+			0, 1, 0, 0,
+			sin(theta), 0, cos(theta), 0,
 			0, 0, 0, 1
 		};
 
@@ -78,35 +80,19 @@ void DrawFunc(PainterFactor painter_factor)
 
 		world.Build();
 
-		double min_width;
-		double min_height;
-		double max_width;
-		double max_height;
-
-		world.GetMinMaxWidthHeight(min_width, min_height, max_width, max_height);
-
-		auto min_width_int = (int)min_width;
-		auto min_height_int = (int)min_height;
-		auto max_width_int = (int)max_width;
-		auto max_height_int = (int)max_height;
-
-
-
-		Log::Debug(LOG_NAME, "Start to render...");
+		Log::Info(LOG_NAME, "Start to render...");
 
 		int color;
 
-		for (int i = min_width_int; i <= max_width_int; i++)
+		for (int i = 0; i <= WINDOW_LENGTH; i++)
 		{
 
-			if (i > 600 || i < 0)
-				return;
-			for (int j = min_height_int; j <= max_height_int && j <= 600 && j >= 0; j++)
+			for (int j = 0; j <= WINDOW_LENGTH; j++)
 			{
-				if (j > 600 || j < 0)
-					continue;
+				auto depth = world.Depth(i, j);
+				if(depth == -DBL_MAX) continue;
 
-				color = -(int)(255 / (world.Depth(i, j) / 5));
+				color = -(int)(255 / (depth / 5));
 
 				painter.Dot(i, j, RGB(color, color, color));
 			}
@@ -121,17 +107,23 @@ void DrawFunc(PainterFactor painter_factor)
 void OpenWindow(HINSTANCE hInstance)
 {
 
-	auto window = New<Window>(hInstance);
+	auto window = New<Window>(hInstance, WINDOW_LENGTH, WINDOW_LENGTH);
 
 	window->DrawFunc = DrawFunc;
 	window->Show();
 	Window::MessageLoop();
 }
 
+
+
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Log::Level(INFO_LEVEL);
 	OpenWindow(hInstance);
+
+	
+	
 
 	system("pause");
 	return 0;

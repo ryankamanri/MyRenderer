@@ -41,6 +41,21 @@ namespace Kamanri
                     Object& operator=(Object& obj);
                     Utils::Result::DefaultResult Transform(Maths::Matrix::SMatrix const& transform_matrix) const;
             };
+
+            class Buffers
+            {
+                private:
+                    unsigned int _width;
+                    unsigned int _height;
+                public:
+                    
+                    Utils::Memory::P<double> z_buffer;
+                    void Init(unsigned int width, unsigned int height);
+                    void CleanZBuffer() const;
+                    void WriteToZBufferFrom(Triangle3Ds::Triangle3D const& t);
+                    inline int Width() const { return _width; }
+                    inline int Height() const { return _height; }
+            };
             
 
             class World3D
@@ -61,12 +76,13 @@ namespace Kamanri
 
                 Environment _environment;
 
+                Buffers _buffers;
+
             public:
                 World3D(Cameras::Camera& camera);
                 Utils::Result::PMyResult<Object> AddObjModel(ObjReader::ObjModel const &model, bool is_print = false);
                 Utils::Result::DefaultResult Build(bool is_print = false);
-                double Depth(double x, double y);
-                bool GetMinMaxWidthHeight(double &min_width, double &min_height, double &max_width, double& max_height);
+                double Depth(int x, int y);
             };
             
             

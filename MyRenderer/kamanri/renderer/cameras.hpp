@@ -69,9 +69,13 @@ namespace Kamanri
                  * @return Utils::Result::DefaultResult 
                  */
                 Utils::Result::DefaultResult InverseUpperWithDirection(Maths::Vectors::Vector const& last_direction);
+
                 inline Maths::Vectors::Vector &Location() { return _location; }
                 inline Maths::Vectors::Vector &Direction() { return _direction; }
                 inline Maths::Vectors::Vector &Upper() { return _upward; }
+
+                inline unsigned int ScreenWidth() const { return _screen_width; }
+                inline unsigned int ScreenHeight() const { return _screen_height; }
                 
                 
             };

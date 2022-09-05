@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "../../maths/matrix.hpp"
 #include "../../utils/logs.hpp"
+#include "../../utils/string.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
@@ -9,7 +10,7 @@ using namespace Kamanri::Utils::Result;
 using namespace Kamanri::Maths::Vectors;
 using namespace Kamanri::Maths::Matrix;
 
-constexpr const char *LOG_NAME = "mymatrix";
+constexpr const char *LOG_NAME = STR(Kamanri::Maths::Matrix);
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Global helper functions
@@ -270,9 +271,17 @@ DefaultResult SMatrix::Set(size_t col, Vector const& v) const
         return DEFAULT_RESULT_EXCEPTION(MYMATRIX_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
+    auto v_n = **v.N();
+
+    if(v_n != _N)
+    {
+        Log::Error(LOG_NAME, "Call of SMatrix::Set: Unequal length of Smatrix and Vector: %d and %d", _N, v_n);
+        return DEFAULT_RESULT_EXCEPTION(MYMATRIX_CODE_NOT_EQUEL_N, "Unequal length of Smatrix and Vector");
+    }
+
     for (size_t row = 0; row < _N; row++)
     {
-        *(psm + row * _N + col) = **v[(int)row];
+        *(psm + row * _N + col) = v.GetFast((int)row);
     }
 
     return DEFAULT_RESULT;
@@ -377,7 +386,7 @@ DefaultResult SMatrix::operator*=(SMatrix const& sm)
         Vector out_v(_N);
         for(size_t col = 0; col < _N; col++)
         {
-            auto hat = **(v)[(int)col];
+            auto hat = v.GetFast((int)col);
             auto this_col = **this_temp->Get(col);
 
             this_col *= hat;
@@ -435,7 +444,7 @@ DefaultResult SMatrix::operator*(Vector& v) const
 
     for (size_t col = 0; col < _N; col++)
     {
-        auto hat = **(v_temp)[(int)col];
+        auto hat = v_temp.GetFast((int)col);
         auto this_col = **Get(col);
 
         this_col *= hat;

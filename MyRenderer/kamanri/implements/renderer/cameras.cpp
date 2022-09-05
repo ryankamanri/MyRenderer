@@ -2,6 +2,7 @@
 #include "../../utils/logs.hpp"
 #include "../../renderer/cameras.hpp"
 #include "../../maths/matrix.hpp"
+#include "../../utils/string.hpp"
 
 using namespace Kamanri::Renderer::Cameras;
 using namespace Kamanri::Utils::Logs;
@@ -10,7 +11,7 @@ using namespace Kamanri::Maths::Matrix;
 using namespace Kamanri::Utils::Memory;
 using namespace Kamanri::Utils::Result;
 
-constexpr const char *LOG_NAME = "Kamanri::Renderer::Cameras";
+constexpr const char *LOG_NAME = STR(Kamanri::Renderer::Cameras);
 
 Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height) : _nearer_dest(nearer_dest), _further_dest(further_dest), _screen_width(screen_width), _screen_height(screen_height)
 {
@@ -57,7 +58,7 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
  */
 inline double Arcsin(double x)
 {
-    return x > 1 ? 1 : (x < -1 ? -1 : asin(x));
+    return x > 1 ? asin(1) : (x < -1 ? asin(-1) : asin(x));
 }
 
 void Camera::SetAngles(bool is_print)

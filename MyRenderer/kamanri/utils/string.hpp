@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#define STR(x) #x
+
 namespace Kamanri
 {
     namespace Utils

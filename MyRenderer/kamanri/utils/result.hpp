@@ -367,38 +367,20 @@ namespace Kamanri
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#define SOURCE_FILE(location) constexpr const char *SOURCE_FILE_LOCATION = location
-
-#define TRY_FOR_TYPE(T, result, line)                             \
-    auto res = result;                                            \
-    if (res->IsException())                                       \
-    {                                                             \
-        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
-        return res->As<T>();                                      \
-    }
-
-#define DEFAULT_TRY_FOR_TYPE(T, result)                     \
-    auto res = result;                                      \
-    if (res->IsException())                                 \
+#define TRY_FOR_TYPE(T, result)                             \
+    auto _res_ = result;                                    \
+    if (_res_->IsException())                               \
     {                                                       \
-        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION)); \
-        return res->As<T>();                                \
+        _res_->PushToStack(StackTrace(__FILE__, __LINE__)); \
+        return _res_->As<T>();                              \
     }
 
-#define TRY(result, line)                                         \
-    auto res = result;                                            \
-    if (res->IsException())                                       \
-    {                                                             \
-        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION, line)); \
-        return res;                                               \
-    }
-
-#define DEFAULT_TRY(result)                                 \
-    auto res = result;                                      \
-    if (res->IsException())                                 \
+#define TRY(result)                                         \
+    auto _res_ = result;                                    \
+    if (_res_->IsException())                               \
     {                                                       \
-        res->PushToStack(StackTrace(SOURCE_FILE_LOCATION)); \
-        return res;                                         \
+        _res_->PushToStack(StackTrace(__FILE__, __LINE__)); \
+        return _res_;                                         \
     }
 
 #define DEFAULT_RESULT Kamanri::Utils::Memory::New<MyResult<void *>>()

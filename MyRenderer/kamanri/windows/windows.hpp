@@ -41,7 +41,7 @@ namespace Kamanri
             class Window
             {
             public:
-                Window(HINSTANCE h_instance);
+                Window(HINSTANCE h_instance, int window_width = 600, int window_height = 600);
                 ~Window();
                 bool Show();
                 bool Update();

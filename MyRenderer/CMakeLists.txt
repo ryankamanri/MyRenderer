@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD 11)
 
 
 # Debug Build
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 # Release Build, Ofast
-# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)

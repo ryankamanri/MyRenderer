@@ -2,6 +2,7 @@
 #include "../../maths/vectors.hpp"
 #include "../../utils/logs.hpp"
 #include "../../utils/memory.hpp"
+#include "../../utils/string.hpp"
 
 using namespace Kamanri::Utils::Logs;
 using namespace Kamanri::Utils::Memory;
@@ -9,7 +10,7 @@ using namespace Kamanri::Utils::Result;
 using namespace Kamanri::Maths::Vectors;
 
 
-constexpr const char *LOG_NAME = "myvector";
+constexpr const char *LOG_NAME = STR(Kamanri::Maths::Vectors);
 
 Vector::Vector() = default;
 
