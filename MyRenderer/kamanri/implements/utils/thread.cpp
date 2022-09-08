@@ -36,7 +36,7 @@ Kamanri::Utils::Thread::ThreadPool::ThreadPool(size_t threads) : stop(false)
                         task = std::move(this->tasks.front());
                         this->tasks.pop();
 
-                        Logs::Log::Debug("ThreadPool", "Thread Id: %d, Task Count: %d", GetCurrentThreadId(), this->tasks.size());
+                        Log::Debug("ThreadPool", "Thread Id: %d, Task Count: %d", GetCurrentThreadId(), this->tasks.size());
                         if (this->tasks.empty())
                         {
                             this->empty_condition.notify_all();
@@ -51,7 +51,7 @@ Kamanri::Utils::Thread::ThreadPool::ThreadPool(size_t threads) : stop(false)
 auto Kamanri::Utils::Thread::ThreadPool::Join() -> void
 {
     std::unique_lock<std::mutex> lock(empty_join_mutex);
-    Logs::Log::Debug("ThreadPool::Join", "Thread Id: %d, Task Count: %d", GetCurrentThreadId(), this->tasks.size());
+    Log::Debug("ThreadPool::Join", "Thread Id: %d, Task Count: %d", GetCurrentThreadId(), this->tasks.size());
     this->empty_condition.wait(lock, [this]()
                                { return this->tasks.empty(); });
 }

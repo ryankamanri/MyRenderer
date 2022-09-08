@@ -1,22 +1,34 @@
 #include <fstream>
 #include "../../utils/logs.hpp"
-#include "../../renderer/obj_reader.hpp"
+#include "../../renderer/obj_model.hpp"
 #include "../../utils/string.hpp"
 
-using namespace Kamanri::Utils::Memory;
-using namespace Kamanri::Renderer::ObjReader;
-using namespace Kamanri::Utils::Result;
-using namespace Kamanri::Utils::Logs;
+
+using namespace Kamanri::Utils;
+using namespace Kamanri::Renderer;
 using namespace Kamanri::Utils::String;
 
-constexpr const char *LOG_NAME = STR(Kamanri::Renderer::ObjReader);
+namespace Kamanri
+{
+    namespace Renderer
+    {
+
+        namespace __ObjModel
+        {
+            constexpr const char *LOG_NAME = STR(Kamanri::Renderer::ObjModel);
+        } // namespace ObjModel$
+
+    } // namespace Renderer
+
+} // namespace Kamanri
+
 
 ObjModel::ObjModel(std::string const& file_name)
 {
     auto result = Read(file_name);
     if(result->IsException())
     {
-        Log::Error(LOG_NAME, "An Exception occured while initing the ObjModel:");
+        Log::Error(__ObjModel::LOG_NAME, "An Exception occured while initing the ObjModel:");
         result->Print();
     }
 }
@@ -29,14 +41,14 @@ DefaultResult ObjModel::Read(std::string const &file_name)
     if (file_name.compare(file_name.length() - 4, 4, ".obj") != 0)
     {
         auto message = "The file %s is not the type of .obj";
-        Log::Error(LOG_NAME, message, file_name.c_str());
-        return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_INVALID_TYPE, message);
+        Log::Error(__ObjModel::LOG_NAME, message, file_name.c_str());
+        return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_INVALID_TYPE, message);
     }
 
     if (!fs.good())
     {
-        Log::Error(LOG_NAME, "Cannot Open The File %s", file_name.c_str());
-        return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_CANNOT_READ_FILE, "Cannot Open The File");
+        Log::Error(__ObjModel::LOG_NAME, "Cannot Open The File %s", file_name.c_str());
+        return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_CANNOT_READ_FILE, "Cannot Open The File");
     }
 
     while (std::getline(fs, str))
@@ -57,9 +69,9 @@ DefaultResult ObjModel::Read(std::string const &file_name)
             }
             catch (std::exception e)
             {
-                Log::Error(LOG_NAME, e.what());
-                Log::Warn(LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
-                return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_READING_EXCEPTION, e.what());
+                Log::Error(__ObjModel::LOG_NAME, e.what());
+                Log::Warn(__ObjModel::LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
+                return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_READING_EXCEPTION, e.what());
             }
             continue;
         }
@@ -73,9 +85,9 @@ DefaultResult ObjModel::Read(std::string const &file_name)
             }
             catch (std::exception e)
             {
-                Log::Error(LOG_NAME, e.what());
-                Log::Warn(LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
-                return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_READING_EXCEPTION, e.what());
+                Log::Error(__ObjModel::LOG_NAME, e.what());
+                Log::Warn(__ObjModel::LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
+                return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_READING_EXCEPTION, e.what());
             }
             continue;
         }
@@ -92,16 +104,16 @@ DefaultResult ObjModel::Read(std::string const &file_name)
             }
             catch (std::exception e)
             {
-                Log::Error(LOG_NAME, e.what());
-                Log::Warn(LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
-                return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_READING_EXCEPTION, e.what());
+                Log::Error(__ObjModel::LOG_NAME, e.what());
+                Log::Warn(__ObjModel::LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
+                return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_READING_EXCEPTION, e.what());
             }
 
             continue;
         }
         if (str.compare(0, 1, "f") == 0)
         {
-            auto face = Face();
+            auto face = ObjModel$::Face();
             try
             {
                 for (int i = 1; i < vec_size; i++)
@@ -125,9 +137,9 @@ DefaultResult ObjModel::Read(std::string const &file_name)
             }
             catch (std::exception e)
             {
-                Log::Error(LOG_NAME, e.what());
-                Log::Warn(LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
-                return DEFAULT_RESULT_EXCEPTION(OBJ_READER_CODE_READING_EXCEPTION, e.what());
+                Log::Error(__ObjModel::LOG_NAME, e.what());
+                Log::Warn(__ObjModel::LOG_NAME, "While str = '%s' and split str vec size = %d", str.c_str(), vec_size);
+                return DEFAULT_RESULT_EXCEPTION(ObjModel$::CODE_READING_EXCEPTION, e.what());
             }
             _faces.push_back(face);
 
@@ -162,10 +174,10 @@ PMyResult<std::vector<double>> ObjModel::GetVertex(int index) const
     auto size = _vertices.size();
     if (size <= index)
     {
-        Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<std::vector<double>>>(_vertices[index]);
+    return New<Result<std::vector<double>>>(_vertices[index]);
 }
 
 PMyResult<std::vector<double>> ObjModel::GetVertexNormal(int index) const
@@ -173,10 +185,10 @@ PMyResult<std::vector<double>> ObjModel::GetVertexNormal(int index) const
     auto size = _vertex_normals.size();
     if (size <= index)
     {
-        Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<std::vector<double>>>(_vertex_normals[index]);
+    return New<Result<std::vector<double>>>(_vertex_normals[index]);
 }
 
 PMyResult<std::vector<double>> ObjModel::GetVertexTexture(int index) const
@@ -184,19 +196,19 @@ PMyResult<std::vector<double>> ObjModel::GetVertexTexture(int index) const
     auto size = _vertex_textures.size();
     if (size <= index)
     {
-        Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<std::vector<double>>>(_vertex_textures[index]);
+    return New<Result<std::vector<double>>>(_vertex_textures[index]);
 }
 
-PMyResult<Face> ObjModel::GetFace(int index) const
+PMyResult<ObjModel$::Face> ObjModel::GetFace(int index) const
 {
     auto size = _faces.size();
     if (size <= index)
     {
-        Log::Error(LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(Face, OBJ_READER_CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(ObjModel$::Face, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<MyResult<Face>>(_faces[index]);
+    return New<Result<ObjModel$::Face>>(_faces[index]);
 }

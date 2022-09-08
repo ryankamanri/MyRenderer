@@ -6,29 +6,21 @@
 #include <float.h>
 #include <math.h>
 #include "kamanri/utils/logs.hpp"
-#include "kamanri/windows/windows.hpp"
+#include "kamanri/windows/window.hpp"
 #include "kamanri/utils/result.hpp"
-#include "kamanri/utils/iterator.hpp"
 #include "kamanri/maths/matrix.hpp"
-#include "kamanri/maths/vectors.hpp"
-#include "kamanri/renderer/obj_reader.hpp"
-#include "kamanri/renderer/cameras.hpp"
-#include "kamanri/renderer/world3ds.hpp"
+#include "kamanri/maths/vector.hpp"
 #include "kamanri/utils/string.hpp"
+#include "kamanri/renderer/world/world3d.hpp"
+#include "kamanri/renderer/obj_model.hpp"
 
-using namespace Kamanri::Utils::Logs;
-using namespace Kamanri::Utils::Memory;
-using namespace Kamanri::Utils::Result;
-using namespace Kamanri::Utils::Iterator;
-using namespace Kamanri::Utils::Thread;
-using namespace Kamanri::Maths::Vectors;
-using namespace Kamanri::Maths::Matrix;
-using namespace Kamanri::Windows::Windows;
-using namespace Kamanri::Renderer::ObjReader;
-using namespace Kamanri::Renderer::Cameras;
-using namespace Kamanri::Renderer::World3Ds;
+using namespace Kamanri::Utils;
+using namespace Kamanri::Maths;
+using namespace Kamanri::Windows;
+using namespace Kamanri::Renderer;
+using namespace Kamanri::Renderer::World;
 
-// SOURCE_FILE("../Main.cpp");
+
 constexpr const char *LOG_NAME = "Main";
 const int WINDOW_LENGTH = 600;
 
@@ -119,11 +111,9 @@ void OpenWindow(HINSTANCE hInstance)
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	Log::Level(INFO_LEVEL);
+	Log::Level(Log$::INFO_LEVEL);
 	OpenWindow(hInstance);
 
-	
-	
 
 	system("pause");
 	return 0;

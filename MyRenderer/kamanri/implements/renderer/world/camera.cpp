@@ -1,30 +1,58 @@
 #include <math.h>
-#include "../../utils/logs.hpp"
-#include "../../renderer/cameras.hpp"
-#include "../../maths/matrix.hpp"
-#include "../../utils/string.hpp"
+#include "../../../utils/logs.hpp"
+#include "../../../renderer/world/camera.hpp"
+#include "../../../maths/matrix.hpp"
+#include "../../../utils/string.hpp"
 
-using namespace Kamanri::Renderer::Cameras;
-using namespace Kamanri::Utils::Logs;
-using namespace Kamanri::Maths::Vectors;
-using namespace Kamanri::Maths::Matrix;
-using namespace Kamanri::Utils::Memory;
-using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Utils;
+using namespace Kamanri::Renderer::World;
+using namespace Kamanri::Renderer::World::Camera$;
+using namespace Kamanri::Maths;
 
-constexpr const char *LOG_NAME = STR(Kamanri::Renderer::Cameras);
+
+namespace Kamanri
+{
+    namespace Renderer
+    {
+        namespace World
+        {
+            namespace __Camera
+            {
+                constexpr const char *LOG_NAME = STR(Kamanri::Renderer::World::Camera);
+
+                /**
+                 * @brief FIxed asin, filtered the situation of x > 1 and x < -1
+                 *
+                 * @param x
+                 * @return double
+                 */
+                inline double Arcsin(double x)
+                {
+                    return x > 1 ? asin(1) : (x < -1 ? asin(-1) : asin(x));
+                }
+            } // namespace __Camera
+            
+        } // namespace World
+        
+    } // namespace Renderer
+    
+} // namespace Kamanri
+
+using namespace Kamanri::Renderer::World::__Camera;
+
 
 Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height) : _nearer_dest(nearer_dest), _further_dest(further_dest), _screen_width(screen_width), _screen_height(screen_height)
 {
     if (**location.N() != 4 || **direction.N() != 4 || **upper.N() != 4)
     {
-        Log::Error(LOG_NAME, "Invalid vector length. location length: %d, direction length: %d, upper length: %d",
+        Log::Error(__Camera::LOG_NAME, "Invalid vector length. location length: %d, direction length: %d, upper length: %d",
                    **location.N(), **direction.N(), **upper.N());
         return;
     }
 
     if (**location[3] != 1 || **direction[3] != 0 || **upper[3] != 0)
     {
-        Log::Error(LOG_NAME, "Invalid vector type. valid location/direction/upper type: 1/0/0 but given %.0f/%.0f/%.0f", **location[3], **direction[3], **upper[3]);
+        Log::Error(__Camera::LOG_NAME, "Invalid vector type. valid location/direction/upper type: 1/0/0 but given %.0f/%.0f/%.0f", **location[3], **direction[3], **upper[3]);
         return;
     }
 
@@ -32,7 +60,7 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
     auto dir_unit_res = direction.Unitization();
     if (dir_unit_res->IsException())
     {
-        Log::Error(LOG_NAME, "Failed to unitization direction caused by:");
+        Log::Error(__Camera::LOG_NAME, "Failed to unitization direction caused by:");
         dir_unit_res->Print();
     }
     _direction = direction;
@@ -41,7 +69,7 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
     auto upp_unit_res = upper.Unitization();
     if (upp_set_res->IsException() || upp_unit_res->IsException())
     {
-        Log::Error(LOG_NAME, "Failed to set or unitization upper caused by:");
+        Log::Error(__Camera::LOG_NAME, "Failed to set or unitization upper caused by:");
         upp_set_res->Print();
         upp_unit_res->Print();
     }
@@ -50,16 +78,7 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
     SetAngles();
 }
 
-/**
- * @brief FIxed asin, filtered the situation of x > 1 and x < -1
- * 
- * @param x 
- * @return double 
- */
-inline double Arcsin(double x)
-{
-    return x > 1 ? asin(1) : (x < -1 ? asin(-1) : asin(x));
-}
+
 
 void Camera::SetAngles(bool is_print)
 {
@@ -85,11 +104,11 @@ void Camera::SetAngles(bool is_print)
             _gamma = -M_PI - _gamma;
     }
 
-    Log::Trace(LOG_NAME, "The direction vector:");
+    Log::Trace(__Camera::LOG_NAME, "The direction vector:");
 
     _direction.PrintVector(is_print);
 
-    Log::Trace(LOG_NAME, "alpha = %.2f, beta = %.2f, gamma = %.2f",
+    Log::Trace(__Camera::LOG_NAME, "alpha = %.2f, beta = %.2f, gamma = %.2f",
         _alpha, _beta, _gamma);
 }
 
@@ -99,7 +118,7 @@ Camera::Camera(Camera const &camera) : _pvertices(camera._pvertices), _alpha(cam
     _direction = *camera._direction.Copy();
 }
 
-void Camera::SetVertices(std::vector<Maths::Vectors::Vector> &vertices, std::vector<Maths::Vectors::Vector> &vertices_transform)
+void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transform)
 {
     _pvertices = &vertices;
     _pvertices_transform = &vertices_transform;
@@ -107,11 +126,11 @@ void Camera::SetVertices(std::vector<Maths::Vectors::Vector> &vertices, std::vec
 
 DefaultResult Camera::Transform(bool is_print)
 {
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, LOG_NAME, CAMERA_CODE_NULL_POINTER_PVERTICES)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES)
 
     SetAngles(is_print);
 
-    Log::Trace(LOG_NAME, "vertices count: %d", _pvertices->size());
+    Log::Trace(__Camera::LOG_NAME, "vertices count: %d", _pvertices->size());
     //
     auto sin_a = sin(_alpha);
     auto cos_a = cos(_alpha);
@@ -128,7 +147,7 @@ DefaultResult Camera::Transform(bool is_print)
     auto lz = _location.GetFast(2);
 
 
-    Log::Trace(LOG_NAME, "a5*4*3 * a2*1 * v:");
+    Log::Trace(__Camera::LOG_NAME, "a5*4*3 * a2*1 * v:");
 
     // SMatrix a1 = 
     // {
@@ -168,7 +187,7 @@ DefaultResult Camera::Transform(bool is_print)
     {
         _pvertices_transform->at(i).CopyFrom(_pvertices->at(i));
 
-        Log::Trace(LOG_NAME, "Start a vertex transform...");
+        Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
         
         _pvertices_transform->at(i).PrintVector(is_print);
         a21 * _pvertices_transform->at(i);
@@ -182,13 +201,13 @@ DefaultResult Camera::Transform(bool is_print)
     return DEFAULT_RESULT;
 }
 
-DefaultResult Camera::InverseUpperWithDirection(Maths::Vectors::Vector const &last_direction)
+DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direction)
 {
     auto last_direction_n = **last_direction.N();
     if (last_direction_n != 4)
     {
-        Log::Error(LOG_NAME, "Invalid last_direction length %d", last_direction_n);
-        return DEFAULT_RESULT_EXCEPTION(CAMERA_CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
+        Log::Error(__Camera::LOG_NAME, "Invalid last_direction length %d", last_direction_n);
+        return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
     }
 
     Vector upward_before = {0, 1, 0, 0};

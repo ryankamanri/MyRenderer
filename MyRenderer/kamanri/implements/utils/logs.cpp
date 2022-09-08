@@ -1,6 +1,6 @@
 #include "../../utils/logs.hpp"
 
-using namespace Kamanri::Utils::Logs;
+using namespace Kamanri::Utils;
 
 LogLevel Log::_level;
 

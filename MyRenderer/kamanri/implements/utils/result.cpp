@@ -1,8 +1,7 @@
 #include "../../utils/result.hpp"
 #include <fstream>
 
-using namespace Kamanri::Utils::Logs;
-using namespace Kamanri::Utils::Result;
+using namespace Kamanri::Utils::Result$;
 
 StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _File(file), _Line(line), _LineCount(lineCount)
 {

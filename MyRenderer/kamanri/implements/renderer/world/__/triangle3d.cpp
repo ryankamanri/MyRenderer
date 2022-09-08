@@ -1,18 +1,40 @@
 #include <float.h>
-#include "../../renderer/triangle3ds.hpp"
-#include "../../utils/logs.hpp"
-#include "../../maths/vectors.hpp"
-#include "../../maths/matrix.hpp"
-#include "../../utils/string.hpp"
+#include "../../../../renderer/world/__/triangle3d.hpp"
+#include "../../../../utils/logs.hpp"
+#include "../../../../maths/vector.hpp"
+#include "../../../../maths/matrix.hpp"
+#include "../../../../utils/string.hpp"
 
-using namespace Kamanri::Renderer::Triangle3Ds;
-using namespace Kamanri::Utils::Logs;
-using namespace Kamanri::Maths::Vectors;
-using namespace Kamanri::Maths::Matrix;
+using namespace Kamanri::Utils;
+using namespace Kamanri::Renderer::World::__;
+using namespace Kamanri::Maths;
+using namespace Kamanri::Maths;
 
-constexpr const char* LOG_NAME = STR(Kamanri::Renderer::Triangle3Ds);
+namespace Kamanri
+{
+    namespace Renderer
+    {
+        namespace World
+        {
+            namespace __
+            {
+                namespace Triangle3D$
+                {
+                    constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Triangle3D);
+                } // namespace Triangle3D$
+                
+            } // namespace __
+            
+        } // namespace World
+        
+    } // namespace Renderer
+    
+} // namespace Kamanri
 
-Triangle3D::Triangle3D(std::vector<Maths::Vectors::Vector>& vertices_transform, int offset, int v1, int v2, int v3): _vertices_transform(vertices_transform), _offset(offset), _v1(v1), _v2(v2), _v3(v3)
+
+
+
+Triangle3D::Triangle3D(std::vector<Maths::Vector>& vertices_transform, int offset, int v1, int v2, int v3): _vertices_transform(vertices_transform), _offset(offset), _v1(v1), _v2(v2), _v3(v3)
 {
 
 }
