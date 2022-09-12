@@ -27,7 +27,7 @@ namespace Kamanri
             // handle of window
             HWND _h_wnd;
             // window message process callback
-            LRESULT CALLBACK (*_WindowProc)(HWND, UINT, WPARAM, LPARAM);
+            LRESULT (*_WindowProc)(HWND, UINT, WPARAM, LPARAM);
 
             std::thread _paint_thread;
         };

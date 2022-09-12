@@ -2,9 +2,9 @@
 //
 #include <iostream>
 #include <thread>
-#include <time.h>
-#include <float.h>
-#include <math.h>
+#include <cfloat>
+#include <cmath>
+#include "kamanri/maths/math.hpp"
 #include "kamanri/utils/logs.hpp"
 #include "kamanri/windows/window.hpp"
 #include "kamanri/utils/result.hpp"
@@ -28,15 +28,20 @@ void DrawFunc(PainterFactor painter_factor)
 {
 	auto painter = painter_factor.CreatePainter();
 
+	// in vscode
 	auto j20 = ObjModel("./out/j20.obj");
 	auto floor = ObjModel("./out/floor.obj");
+
+	// in vs
+	// auto j20 = ObjModel("../../j20.obj");
+	// auto floor = ObjModel("../../floor.obj");
 
 	auto camera = Camera({0, 0.5, -3, 1}, {0, 0, 1, 0}, {0, 1, 0, 0}, -1, -10, WINDOW_LENGTH, WINDOW_LENGTH);
 
 	auto world = World3D(camera);
 
-	auto floor_obj = **world.AddObjModel(floor);
-	auto j20_obj = **world.AddObjModel(j20);
+	auto floor_obj = *world.AddObjModel(floor);
+	auto j20_obj = *world.AddObjModel(j20);
 
 	SMatrix bigger_j20 = 
 	{
@@ -50,7 +55,7 @@ void DrawFunc(PainterFactor painter_factor)
 
 
 	// revolve matrix
-	double theta = M_PI / 64;
+	double theta = PI / 64;
 	SMatrix revolve_matrix =
 		{
 			cos(theta), 0, -sin(theta), 0,
@@ -84,7 +89,7 @@ void DrawFunc(PainterFactor painter_factor)
 				auto depth = world.Depth(i, j);
 				if(depth == -DBL_MAX) continue;
 
-				color = -(int)(255 / (depth / 5));
+				color = -(int)(255 / (depth / 1500)); // depth range [1500, inf)
 
 				painter.Dot(i, j, RGB(color, color, color));
 			}
@@ -99,22 +104,22 @@ void DrawFunc(PainterFactor painter_factor)
 void OpenWindow(HINSTANCE hInstance)
 {
 
-	auto window = New<Window>(hInstance, WINDOW_LENGTH, WINDOW_LENGTH);
+	Window window(hInstance, WINDOW_LENGTH, WINDOW_LENGTH);
 
-	window->DrawFunc = DrawFunc;
-	window->Show();
+	window.DrawFunc = DrawFunc;
+	window.Show();
 	Window::MessageLoop();
 }
 
 
 
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
+int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Log::Level(Log$::INFO_LEVEL);
 	OpenWindow(hInstance);
 
-
 	system("pause");
 	return 0;
+
 }

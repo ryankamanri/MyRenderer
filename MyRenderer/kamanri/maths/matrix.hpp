@@ -37,15 +37,17 @@ namespace Kamanri
             SMatrix(SMatrix &sm);
             SMatrix(std::initializer_list<SMatrixElemType> list);
             SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
+            Utils::DefaultResult Reset(std::initializer_list<SMatrixElemType> list);
+            Utils::DefaultResult Reset(std::initializer_list<std::vector<SMatrixElemType>> v_list);
             Utils::P<SMatrix> Copy();
             SMatrix &operator=(SMatrix &sm);
             // Get the size of the Matrix.
-            Utils::PMyResult<std::size_t> N() const;
+            Utils::Result<std::size_t> N() const;
 
             // Get the value of the Vector by index
-            Utils::PMyResult<SMatrixElemType> operator[](int n) const;
-            Utils::PMyResult<SMatrixElemType> Get(size_t row, size_t col) const;
-            Utils::PMyResult<Vector> Get(size_t col) const;
+            Utils::Result<SMatrixElemType> operator[](int n) const;
+            Utils::Result<SMatrixElemType> Get(size_t row, size_t col) const;
+            Utils::Result<Vector> Get(size_t col) const;
             // Setter
             Utils::DefaultResult Set(size_t row, size_t col, SMatrixElemType value) const;
             Utils::DefaultResult Set(size_t col, Vector const &v) const;
@@ -66,20 +68,20 @@ namespace Kamanri
             Utils::DefaultResult operator*(Vector &v) const;
 
             // Transpose matrix
-            Utils::PMyResult<SMatrix> operator+() const;
+            Utils::Result<SMatrix> operator+() const;
             // Inverse matrix
-            Utils::PMyResult<SMatrix> operator-() const;
+            Utils::Result<SMatrix> operator-() const;
             // Adjoint matrix
-            Utils::PMyResult<SMatrix> operator*() const;
+            Utils::Result<SMatrix> operator*() const;
 
             Utils::DefaultResult PrintMatrix(bool is_print = true, const char *decimal_count = "2") const;
 
             // The determinant
-            Utils::PMyResult<SMatrixElemType> Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
-            Utils::PMyResult<SMatrixElemType> Determinant() const;
+            Utils::Result<SMatrixElemType> Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
+            Utils::Result<SMatrixElemType> Determinant() const;
 
             // algebraic complement
-            Utils::PMyResult<SMatrixElemType> AComplement(size_t row, size_t col) const;
+            Utils::Result<SMatrixElemType> AComplement(size_t row, size_t col) const;
 
         private:
             // The pointer indicated to square matrix.

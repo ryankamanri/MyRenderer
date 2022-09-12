@@ -70,13 +70,13 @@ Window::Window(HINSTANCE h_instance, int window_width, int window_height)
     );
 
     window_map.insert(std::pair<HWND, Window *>(_h_wnd, this));
+    
 }
 
 Window::~Window()
 {
     auto begin = window_map.begin();
-    auto end = window_map.end();
-    for (auto i = begin; i != end; i++)
+    for (auto i = begin; i != window_map.end(); i++)
     {
         if(i->second == this)
         {
@@ -114,20 +114,25 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     auto tid = GetCurrentThreadId();
     if(__Window::IS_PRINT) PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
 
-    auto p_window = window_map.find(hWnd)->second;
-
-    switch (uMsg)
+    // the size of window_map equals 0 means no window is initialized.
+    if (window_map.size() != 0)
     {
-    case WM_PAINT: //窗口绘图消息
-        p_window->_Paint();
-        break;
-    case WM_CLOSE: //窗口关闭消息
-        DestroyWindow(hWnd);
-        break;
-    case WM_DESTROY: //窗口销毁消息
-        PostQuitMessage(0);
-        break;
+        auto p_window = window_map.find(hWnd)->second;
+
+        switch (uMsg)
+        {
+        case WM_PAINT: //窗口绘图消息
+            p_window->_Paint();
+            break;
+        case WM_CLOSE: //窗口关闭消息
+            DestroyWindow(hWnd);
+            break;
+        case WM_DESTROY: //窗口销毁消息
+            PostQuitMessage(0);
+            break;
+        }
     }
+
     return DefWindowProc(hWnd, uMsg, wParam, lParam); //默认的窗口处理函数
 }
 

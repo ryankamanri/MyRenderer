@@ -29,4 +29,4 @@ Painter::~Painter()
     DeleteObject(_h_draw_dc);
 }
 
-WINBOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, __Painter::WINDOW_WIDTH, __Painter::WINDOW_HEIGHT, _h_draw_dc, 0, 0, SRCCOPY); }
+BOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, __Painter::WINDOW_WIDTH, __Painter::WINDOW_HEIGHT, _h_draw_dc, 0, 0, SRCCOPY); }

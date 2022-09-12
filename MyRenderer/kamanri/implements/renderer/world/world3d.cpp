@@ -31,13 +31,13 @@ World3D::World3D(Camera& camera): _camera(camera)
     _buffers.Init(_camera.ScreenWidth(), _camera.ScreenHeight());
 }
 
-PMyResult<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
+Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 {
     auto dot_offset = (int)_vertices.size();
 
     for(auto i = 0; i < model.GetVertexSize(); i++)
     {
-        auto vertex = **model.GetVertex(i);
+        auto vertex = *model.GetVertex(i);
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
         _vertices.push_back(vector);
         _vertices_transform.push_back(vector);
@@ -46,7 +46,7 @@ PMyResult<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     for(auto i = 0; i < model.GetFaceSize(); i++)
     {
-        auto face = **model.GetFace(i);
+        auto face = *model.GetFace(i);
         if(face.vertex_indexes.size() > 4)
         {
             auto message = "Can not handle `face.vertex_indexes() > 4`";
@@ -70,7 +70,7 @@ PMyResult<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
     }
 
     Object result_object(_vertices, dot_offset, (int)model.GetVertexSize());
-    return New<Result<Object>>(result_object);
+    return Result<Object>(result_object);
 }
 
 DefaultResult World3D::Build(bool is_print)
@@ -93,5 +93,6 @@ double World3D::Depth(int x, int y)
     x = x % _buffers.Height();
     y = y % _buffers.Width();
     
-    return *(_buffers.z_buffer.get() + x * _buffers.Height() + y);
+    // return *(_buffers.z_buffer.get() + x * _buffers.Height() + y);
+    return _buffers.Get(x, y).z;
 }

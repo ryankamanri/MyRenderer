@@ -44,7 +44,7 @@ namespace Kamanri
 
             public:
                 World3D(Camera& camera);
-                Utils::PMyResult<Object> AddObjModel(ObjModel const &model, bool is_print = false);
+                Utils::Result<Object> AddObjModel(ObjModel const &model, bool is_print = false);
                 Utils::DefaultResult Build(bool is_print = false);
                 double Depth(int x, int y);
             };

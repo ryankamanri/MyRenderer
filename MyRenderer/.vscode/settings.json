@@ -68,7 +68,20 @@
         "algorithm": "cpp",
         "condition_variable": "cpp",
         "future": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "xtree": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "locale": "cpp",
+        "map": "cpp",
+        "queue": "cpp",
+        "stop_token": "cpp",
+        "xhash": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
     },
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\compile_commands.json",
     "C_Cpp.errorSquiggles": "Disabled"

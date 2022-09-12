@@ -33,14 +33,15 @@ namespace Kamanri
             Vector(Vector &v);
             Vector(Vector const &v);
             Vector(std::initializer_list<VectorElemType> list);
+            Utils::DefaultResult Reset(std::initializer_list<VectorElemType> list);
             Utils::P<Vector> Copy() const;
             Utils::DefaultResult CopyFrom(Vector const &v);
             Vector &operator=(Vector &v);
             // Get the size of the Vector.
-            Utils::PMyResult<std::size_t> N() const;
+            Utils::Result<std::size_t> N() const;
 
             // Get the value of the Vector by index
-            Utils::PMyResult<VectorElemType> operator[](int n) const;
+            Utils::Result<VectorElemType> operator[](int n) const;
 
             // Get without result
             VectorElemType GetFast(int n) const;
@@ -61,8 +62,8 @@ namespace Kamanri
             Utils::DefaultResult operator*=(VectorElemType value);
 
             // Dot product
-            Utils::PMyResult<VectorElemType> operator*(Vector const &v) const;
-            Utils::PMyResult<VectorElemType> operator*(std::initializer_list<VectorElemType> list) const;
+            Utils::Result<VectorElemType> operator*(Vector const &v) const;
+            Utils::Result<VectorElemType> operator*(std::initializer_list<VectorElemType> list) const;
 
             Utils::DefaultResult PrintVector(bool is_print = true, const char *decimal_count = "2") const;
 

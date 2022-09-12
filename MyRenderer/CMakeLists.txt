@@ -28,7 +28,11 @@ file(GLOB_RECURSE KAMANRI ./kamanri/implements/*.cpp)
 add_library(kamanri ${KAMANRI})
 
 
+# use in visual studio
+# add_executable(MyRenderer WIN32 Main.cpp)
+# use in general
 add_executable(MyRenderer Main.cpp)
+
 target_link_libraries(MyRenderer kamanri)
 
 # Add dependencies

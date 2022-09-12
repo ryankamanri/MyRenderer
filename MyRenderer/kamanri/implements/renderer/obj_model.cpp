@@ -26,10 +26,10 @@ namespace Kamanri
 ObjModel::ObjModel(std::string const& file_name)
 {
     auto result = Read(file_name);
-    if(result->IsException())
+    if(result.IsException())
     {
         Log::Error(__ObjModel::LOG_NAME, "An Exception occured while initing the ObjModel:");
-        result->Print();
+        result.Print();
     }
 }
 
@@ -169,7 +169,7 @@ size_t ObjModel::GetFaceSize() const
     return _faces.size();
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVertex(int index) const
+Result<std::vector<double>> ObjModel::GetVertex(int index) const
 {
     auto size = _vertices.size();
     if (size <= index)
@@ -177,10 +177,10 @@ PMyResult<std::vector<double>> ObjModel::GetVertex(int index) const
         Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<Result<std::vector<double>>>(_vertices[index]);
+    return Result<std::vector<double>>(_vertices[index]);
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVertexNormal(int index) const
+Result<std::vector<double>> ObjModel::GetVertexNormal(int index) const
 {
     auto size = _vertex_normals.size();
     if (size <= index)
@@ -188,10 +188,10 @@ PMyResult<std::vector<double>> ObjModel::GetVertexNormal(int index) const
         Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<Result<std::vector<double>>>(_vertex_normals[index]);
+    return Result<std::vector<double>>(_vertex_normals[index]);
 }
 
-PMyResult<std::vector<double>> ObjModel::GetVertexTexture(int index) const
+Result<std::vector<double>> ObjModel::GetVertexTexture(int index) const
 {
     auto size = _vertex_textures.size();
     if (size <= index)
@@ -199,10 +199,10 @@ PMyResult<std::vector<double>> ObjModel::GetVertexTexture(int index) const
         Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<Result<std::vector<double>>>(_vertex_textures[index]);
+    return Result<std::vector<double>>(_vertex_textures[index]);
 }
 
-PMyResult<ObjModel$::Face> ObjModel::GetFace(int index) const
+Result<ObjModel$::Face> ObjModel::GetFace(int index) const
 {
     auto size = _faces.size();
     if (size <= index)
@@ -210,5 +210,5 @@ PMyResult<ObjModel$::Face> ObjModel::GetFace(int index) const
         Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
         return RESULT_EXCEPTION(ObjModel$::Face, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
-    return New<Result<ObjModel$::Face>>(_faces[index]);
+    return Result<ObjModel$::Face>(_faces[index]);
 }

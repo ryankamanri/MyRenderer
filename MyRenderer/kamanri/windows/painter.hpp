@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include <Windows.h>
 #include <thread>
 #include "painter_factor.hpp"
 
@@ -13,7 +13,7 @@ namespace Kamanri
         public:
             Painter(HDC h_dc, HDC h_mem_dc, int window_width, int window_height);
             ~Painter();
-            WINBOOL Flush() const;
+            BOOL Flush() const;
             inline COLORREF Dot(int x, int y, COLORREF color) const { return SetPixel(_h_draw_dc, x, y, color); };
             friend void PainterFactor::Clean(Painter &painter);
 

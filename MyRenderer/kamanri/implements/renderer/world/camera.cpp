@@ -1,4 +1,5 @@
-#include <math.h>
+#include <cmath>
+#include "../../../maths/math.hpp"
 #include "../../../utils/logs.hpp"
 #include "../../../renderer/world/camera.hpp"
 #include "../../../maths/matrix.hpp"
@@ -30,6 +31,14 @@ namespace Kamanri
                 {
                     return x > 1 ? asin(1) : (x < -1 ? asin(-1) : asin(x));
                 }
+
+                // Camera::Transform
+                SMatrix a21(4);
+                SMatrix a543(4);
+
+                // Camera::InverseUpperWithDirection
+                Vector upward_before = {0, 1, 0, 0};
+                Vector upward_after = {0, 1, 0, 0};
             } // namespace __Camera
             
         } // namespace World
@@ -43,35 +52,35 @@ using namespace Kamanri::Renderer::World::__Camera;
 
 Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height) : _nearer_dest(nearer_dest), _further_dest(further_dest), _screen_width(screen_width), _screen_height(screen_height)
 {
-    if (**location.N() != 4 || **direction.N() != 4 || **upper.N() != 4)
+    if (*location.N() != 4 || *direction.N() != 4 || *upper.N() != 4)
     {
         Log::Error(__Camera::LOG_NAME, "Invalid vector length. location length: %d, direction length: %d, upper length: %d",
-                   **location.N(), **direction.N(), **upper.N());
+                   *location.N(), *direction.N(), *upper.N());
         return;
     }
 
-    if (**location[3] != 1 || **direction[3] != 0 || **upper[3] != 0)
+    if (*location[3] != 1 || *direction[3] != 0 || *upper[3] != 0)
     {
-        Log::Error(__Camera::LOG_NAME, "Invalid vector type. valid location/direction/upper type: 1/0/0 but given %.0f/%.0f/%.0f", **location[3], **direction[3], **upper[3]);
+        Log::Error(__Camera::LOG_NAME, "Invalid vector type. valid location/direction/upper type: 1/0/0 but given %.0f/%.0f/%.0f", *location[3], *direction[3], *upper[3]);
         return;
     }
 
     _location = location;
     auto dir_unit_res = direction.Unitization();
-    if (dir_unit_res->IsException())
+    if (dir_unit_res.IsException())
     {
         Log::Error(__Camera::LOG_NAME, "Failed to unitization direction caused by:");
-        dir_unit_res->Print();
+        dir_unit_res.Print();
     }
     _direction = direction;
 
     auto upp_set_res = upper.Set(2, 0);
     auto upp_unit_res = upper.Unitization();
-    if (upp_set_res->IsException() || upp_unit_res->IsException())
+    if (upp_set_res.IsException() || upp_unit_res.IsException())
     {
         Log::Error(__Camera::LOG_NAME, "Failed to set or unitization upper caused by:");
-        upp_set_res->Print();
-        upp_unit_res->Print();
+        upp_set_res.Print();
+        upp_unit_res.Print();
     }
     _upward = upper;
 
@@ -89,9 +98,9 @@ void Camera::SetAngles(bool is_print)
     if(_direction.GetFast(2) > 0)
     {
         if(_alpha > 0) 
-            _alpha = M_PI - _alpha;
+            _alpha = PI - _alpha;
         else
-            _alpha = -M_PI - _alpha;
+            _alpha = -PI - _alpha;
     }
 
     _gamma = Arcsin(_upward.GetFast(0)); // gamma (-PI, PI)
@@ -99,9 +108,9 @@ void Camera::SetAngles(bool is_print)
     if(_upward.GetFast(1) < 0)
     {
         if(_gamma > 0)
-            _gamma = M_PI - _gamma;
+            _gamma = PI - _gamma;
         else
-            _gamma = -M_PI - _gamma;
+            _gamma = -PI - _gamma;
     }
 
     Log::Trace(__Camera::LOG_NAME, "The direction vector:");
@@ -123,6 +132,8 @@ void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths
     _pvertices = &vertices;
     _pvertices_transform = &vertices_transform;
 }
+
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 
 DefaultResult Camera::Transform(bool is_print)
 {
@@ -165,21 +176,53 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    SMatrix a21 = 
-    {
+    a21.Reset
+    ({
         cos_a, 0, sin_a, -lx * cos_a - lz * sin_a,
         -sin_a_sin_b, cos_b, cos_a_sin_b, lx * sin_a_sin_b - ly * cos_b - lz * cos_a_sin_b,
         -sin_a_cos_b, -sin_b, cos_a_cos_b, lx * sin_a_cos_b + ly * sin_b - lz * cos_a_cos_b,
         0, 0, 0, 1
-    };
+    });
 
-    SMatrix a543 = 
-    {
+    // SMatrix a3 = 
+    // {
+    //     cos_g, -sin_g, 0, 0,
+    //     sin_g, cos_g, 0, 0,
+    //     0, 0, 1, 0,
+    //     0, 0, 0, 1
+    // };
+
+    // SMatrix a4 = 
+    // {
+    //     _nearer_dest, 0, 0, 0,
+    //     0, _nearer_dest, 0, 0,
+    //     0, 0, _nearer_dest + _further_dest, -_nearer_dest * _further_dest,
+    //     0, 0, 1, 0 
+    // };
+
+    // SMatrix a5 = 
+    // {
+    //     _screen_width / 2, 0, 0, _screen_width / 2,
+    //     0, -_screen_height / 2, 0, _screen_height / 2,
+    //     0, 0, 1, 0,
+    //     0, 0, 0, 1
+    // };
+
+    // SMatrix a5 = 
+    // {
+    //     _screen_width / 2, 0, 0, _screen_width / 2,
+    //     0, -_screen_height / 2, 0, _screen_height / 2,
+    //     0, 0, min(_screen_width, _screen_height) / 2, 0,
+    //     0, 0, 0, 1
+    // };
+
+    a543.Reset
+    ({
         (double)_screen_width * _nearer_dest * cos_g / 2, -(double)_screen_width * _nearer_dest * sin_g / 2, (double)_screen_width / 2, 0,
         -(double)_screen_height * _nearer_dest * sin_g / 2, -(double)_screen_height * _nearer_dest * cos_g / 2, (double)_screen_height / 2, 0,
-        0, 0, _nearer_dest + _further_dest, -_nearer_dest * _further_dest,
+        0, 0, (_nearer_dest + _further_dest) * min(_screen_width, _screen_height) / 2, (-_nearer_dest * _further_dest) * min(_screen_width, _screen_height) / 2,
         0, 0, 1, 0
-    };
+    });
 
     // copy vertices_transform from vertices(origin) and transform it.
 
@@ -203,20 +246,20 @@ DefaultResult Camera::Transform(bool is_print)
 
 DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direction)
 {
-    auto last_direction_n = **last_direction.N();
+    auto last_direction_n = *last_direction.N();
     if (last_direction_n != 4)
     {
         Log::Error(__Camera::LOG_NAME, "Invalid last_direction length %d", last_direction_n);
         return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
     }
 
-    Vector upward_before = {0, 1, 0, 0};
-    Vector upward_after = {0, 1, 0, 0};
+    upward_before.Reset({0, 1, 0, 0});
+    upward_after.Reset({0, 1, 0, 0});
 
     upward_before *= last_direction;
     upward_after *= _direction;
 
-    if (**(upward_before * upward_after) < 0)
+    if (*(upward_before * upward_after) < 0)
     {
         _upward *= -1;
     }

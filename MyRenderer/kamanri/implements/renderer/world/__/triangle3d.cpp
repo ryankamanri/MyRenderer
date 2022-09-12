@@ -1,4 +1,4 @@
-#include <float.h>
+#include <cfloat>
 #include "../../../../renderer/world/__/triangle3d.hpp"
 #include "../../../../utils/logs.hpp"
 #include "../../../../maths/vector.hpp"
@@ -74,7 +74,7 @@ void Triangle3D::Build()
 
     Vector abc_vec = {1, 1, 1};
 
-    (**-vertices_matrix) * abc_vec;
+    (*-vertices_matrix) * abc_vec;
 
     _a = abc_vec.GetFast(0);
     _b = abc_vec.GetFast(1);

@@ -32,10 +32,10 @@ namespace Kamanri
             size_t GetVertexNormalSize() const;
             size_t GetVertexTextureSize() const;
             size_t GetFaceSize() const;
-            Utils::PMyResult<std::vector<double>> GetVertex(int index) const;
-            Utils::PMyResult<std::vector<double>> GetVertexNormal(int index) const;
-            Utils::PMyResult<std::vector<double>> GetVertexTexture(int index) const;
-            Utils::PMyResult<ObjModel$::Face> GetFace(int index) const;
+            Utils::Result<std::vector<double>> GetVertex(int index) const;
+            Utils::Result<std::vector<double>> GetVertexNormal(int index) const;
+            Utils::Result<std::vector<double>> GetVertexTexture(int index) const;
+            Utils::Result<ObjModel$::Face> GetFace(int index) const;
 
         private:
             std::vector<std::vector<double>> _vertices;

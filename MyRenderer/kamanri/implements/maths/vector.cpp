@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include "../../maths/vector.hpp"
 #include "../../utils/logs.hpp"
 #include "../../utils/memory.hpp"
@@ -60,6 +60,8 @@ Vector::Vector(Vector const& v)
 
 }
 
+
+
 Vector::Vector(std::initializer_list<VectorElemType> list)
 {
     this->_N = Vector$::NOT_INITIALIZED_N;
@@ -75,13 +77,31 @@ Vector::Vector(std::initializer_list<VectorElemType> list)
     this->_V = P<VectorElemType>(new VectorElemType[n]);
 
     auto begin = list.begin();
-    auto end = list.end();
     auto pV = this->_V.get();
 
-    for (size_t i = 0; begin + i < end; i++)
+    for (size_t i = 0; begin + i < list.end(); i++)
     {
         *(pV + i) = *(begin + i);
     }
+}
+
+DefaultResult Vector::Reset(std::initializer_list<VectorElemType> list)
+{
+    auto n = list.size();
+    if (n != _N)
+    {
+        Log::Error(__Vector::LOG_NAME, "The size of initializer list(%d) is not equal to vector(%d)", (int)n, _N);
+        return DEFAULT_RESULT_EXCEPTION(Vector$::CODE_NOT_EQUEL_N, "The size of initializer list is not equal to vector");
+    }
+
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V.get(), __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR);
+
+    for (size_t i = 0; list.begin() + i < list.end(); i++)
+    {
+        *(_V.get() + i) = *(list.begin() + i);
+    }
+
+    return DEFAULT_RESULT;
 }
 
 P<Vector> Vector::Copy() const
@@ -136,7 +156,7 @@ Vector& Vector::operator=(Vector& v)
     return *this;
 }
 
-P<Result<std::size_t>> Vector::N() const
+Result<std::size_t> Vector::N() const
 {
     if (_N == Vector$::CODE_NOT_INITIALIZED_N)
     {
@@ -144,10 +164,10 @@ P<Result<std::size_t>> Vector::N() const
         Log::Error(__Vector::LOG_NAME, message);
         return RESULT_EXCEPTION(std::size_t, Vector$::CODE_INVALID_OPERATION, message);
     }
-    return New<Result<std::size_t>>(_N);
+    return Result<std::size_t>(_N);
 }
 
-P<Result<VectorElemType>> Vector::operator[](int n) const
+Result<VectorElemType> Vector::operator[](int n) const
 {
     auto pv = _V.get();
     CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, __Vector::LOG_NAME, -1)
@@ -158,7 +178,7 @@ P<Result<VectorElemType>> Vector::operator[](int n) const
         return RESULT_EXCEPTION(VectorElemType, Vector$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    return New<Result<VectorElemType>>(*(pv + n));
+    return Result<VectorElemType>(*(pv + n));
 }
 
 VectorElemType Vector::GetFast(int n) const
@@ -320,7 +340,7 @@ DefaultResult Vector::operator*=(VectorElemType value)
     return DEFAULT_RESULT;
 }
 
-P<Result<VectorElemType>> Vector::operator*(Vector const& v) const
+Result<VectorElemType> Vector::operator*(Vector const& v) const
 {
     auto pv = _V.get();
     CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
@@ -343,10 +363,10 @@ P<Result<VectorElemType>> Vector::operator*(Vector const& v) const
         result += *(pv + i) * *(pv2 + i);
     }
 
-    return New<Result<VectorElemType>>(result);
+    return Result<VectorElemType>(result);
 }
 
-P<Result<VectorElemType>> Vector::operator*(std::initializer_list<VectorElemType> list) const
+Result<VectorElemType> Vector::operator*(std::initializer_list<VectorElemType> list) const
 {
     Vector v(list);
     return this->operator*(v);
