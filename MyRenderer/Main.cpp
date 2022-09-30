@@ -13,6 +13,7 @@
 #include "kamanri/utils/string.hpp"
 #include "kamanri/renderer/world/world3d.hpp"
 #include "kamanri/renderer/obj_model.hpp"
+#include "kamanri/renderer/tga_image.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
@@ -29,7 +30,7 @@ void DrawFunc(PainterFactor painter_factor)
 	auto painter = painter_factor.CreatePainter();
 
 	// in vscode
-	auto j20 = ObjModel("./out/j20.obj");
+	// auto j20 = ObjModel("./out/j20.obj");
 	auto floor = ObjModel("./out/floor.obj");
 
 	// in vs
@@ -41,17 +42,21 @@ void DrawFunc(PainterFactor painter_factor)
 	auto world = World3D(camera);
 
 	auto floor_obj = *world.AddObjModel(floor);
-	auto j20_obj = *world.AddObjModel(j20);
 
-	SMatrix bigger_j20 = 
-	{
-		0.01, 0, 0, 0,
-		0, 0, 0.01, 0,
-		0, 0.01, 0, 0,
-		0, 0, 0, 1
-	};
+	// auto j20_obj = *world.AddObjModel(j20);
 
-	j20_obj.Transform(bigger_j20);
+	// TGAImage img{};
+	// img.ReadTGAFile("out/j20.tga");
+
+	// SMatrix bigger_j20 = 
+	// {
+	// 	0.01, 0, 0, 0,
+	// 	0, 0, 0.01, 0,
+	// 	0, 0.01, 0, 0,
+	// 	0, 0, 0, 1
+	// };
+
+	// j20_obj.Transform(bigger_j20);
 
 
 	// revolve matrix
@@ -79,8 +84,6 @@ void DrawFunc(PainterFactor painter_factor)
 
 		Log::Info(LOG_NAME, "Start to render...");
 
-		int color;
-
 		for (int i = 0; i <= WINDOW_LENGTH; i++)
 		{
 
@@ -89,9 +92,12 @@ void DrawFunc(PainterFactor painter_factor)
 				auto depth = world.Depth(i, j);
 				if(depth == -DBL_MAX) continue;
 
-				color = -(int)(255 / (depth / 1500)); // depth range [1500, inf)
+				int color = -(int)(255 / (depth / 1500)); // depth range [1500, inf)
 
 				painter.Dot(i, j, RGB(color, color, color));
+
+				// auto color = img.Get(i, j);
+				// painter.Dot(i, j, color.bgr);
 			}
 		}
 		
@@ -113,12 +119,11 @@ void OpenWindow(HINSTANCE hInstance)
 
 
 
-
 int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	Log::Level(Log$::INFO_LEVEL);
 	OpenWindow(hInstance);
-
+	
 	system("pause");
 	return 0;
 

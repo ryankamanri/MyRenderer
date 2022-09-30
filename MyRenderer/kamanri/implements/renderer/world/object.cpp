@@ -25,7 +25,7 @@ DefaultResult Object::Transform(SMatrix const& transform_matrix) const
 {
     for(int i = _offset; i < _offset + _length; i++)
     {
-        TRY(transform_matrix * (*_pvertices)[i]);
+        ASSERT(transform_matrix * (*_pvertices)[i]);
     }
     return DEFAULT_RESULT;
 }

@@ -37,7 +37,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     for(auto i = 0; i < model.GetVertexSize(); i++)
     {
-        auto vertex = *model.GetVertex(i);
+        TRY_FOR_TYPE(Object, model.GetVertex(i), vertex);
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
         _vertices.push_back(vector);
         _vertices_transform.push_back(vector);
@@ -46,7 +46,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     for(auto i = 0; i < model.GetFaceSize(); i++)
     {
-        auto face = *model.GetFace(i);
+        TRY_FOR_TYPE(Object, model.GetFace(i), face);
         if(face.vertex_indexes.size() > 4)
         {
             auto message = "Can not handle `face.vertex_indexes() > 4`";
@@ -82,6 +82,15 @@ DefaultResult World3D::Build(bool is_print)
         i->Build();
         i->PrintTriangle(is_print);
         _buffers.WriteToZBufferFrom(*i);
+        // areal coordinate test
+        i->PrintTriangle(true);
+        if(i->IsIn(300, 500))
+        {
+            TRY_FOR_DEFAULT(i->ArealCoordinates(300, 500, true), ac_v);
+            PrintLn("The areal coordinate vector:");
+            ac_v.PrintVector(true);
+        }
+
     }
 
     return DEFAULT_RESULT;

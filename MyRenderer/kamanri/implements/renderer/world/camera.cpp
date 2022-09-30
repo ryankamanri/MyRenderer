@@ -233,9 +233,9 @@ DefaultResult Camera::Transform(bool is_print)
         Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
         
         _pvertices_transform->at(i).PrintVector(is_print);
-        a21 * _pvertices_transform->at(i);
+        ASSERT_FOR_DEFAULT( a21 * _pvertices_transform->at(i));
         _pvertices_transform->at(i).PrintVector(is_print);
-        a543 * _pvertices_transform->at(i);
+        ASSERT_FOR_DEFAULT(a543 * _pvertices_transform->at(i));
         _pvertices_transform->at(i).PrintVector(is_print);
         _pvertices_transform->at(i) *= (1 / (_pvertices_transform->at(i).GetFast(3)));
         _pvertices_transform->at(i).PrintVector(is_print);
@@ -246,7 +246,7 @@ DefaultResult Camera::Transform(bool is_print)
 
 DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direction)
 {
-    auto last_direction_n = *last_direction.N();
+    TRY_FOR_DEFAULT(last_direction.N(), last_direction_n);
     if (last_direction_n != 4)
     {
         Log::Error(__Camera::LOG_NAME, "Invalid last_direction length %d", last_direction_n);
@@ -256,8 +256,8 @@ DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direct
     upward_before.Reset({0, 1, 0, 0});
     upward_after.Reset({0, 1, 0, 0});
 
-    upward_before *= last_direction;
-    upward_after *= _direction;
+    ASSERT_FOR_DEFAULT(upward_before *= last_direction);
+    ASSERT_FOR_DEFAULT(upward_after *= _direction);
 
     if (*(upward_before * upward_after) < 0)
     {

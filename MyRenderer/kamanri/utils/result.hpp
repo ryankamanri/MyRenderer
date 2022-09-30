@@ -13,7 +13,7 @@ namespace Kamanri
         namespace Result$
         {
             constexpr int DEFAULT_CODE = 0;
-            constexpr int NORMAL_CODE = 200;
+            constexpr int NORM_CODE = 200;
             constexpr int GENERAL_EXCEPTION_CODE = 400;
             constexpr int NULL_POINTER_EXCEPTION_CODE = 401;
 
@@ -54,12 +54,12 @@ namespace Kamanri
         public:
             enum class Status
             {
-                NORMAL,
+                NORM,
                 EXCEPTION
             };
             // constructors
             Result();
-            Result(Result<T>&& result) noexcept;
+            Result(Result<T> &&result) noexcept;
             explicit Result(T data);
             Result(Result<T>::Status status, int code, std::string const &message);
             Result(Status status, int code, std::string const &message, T data, P<Result<T>> innerResult);
@@ -81,7 +81,7 @@ namespace Kamanri
             Result<T2> As(T2 data);
 
         private:
-            // 返回状态: NORMAL为正常返回, EXCEPTION为异常返回
+            // 返回状态: NORM为正常返回, EXCEPTION为异常返回
             Status _Status;
             // 状态码, 可自定义
             int _Code;
@@ -107,18 +107,17 @@ namespace Kamanri
         template <class T>
         Result<T>::Result()
         {
-            this->_Status = Result<T>::Status::NORMAL;
+            this->_Status = Result<T>::Status::NORM;
             this->_Code = Result$::DEFAULT_CODE;
             this->_Message = Result$::DEFAULT_MESSAGE;
             this->_InnerResult = nullptr;
         }
 
         template <class T>
-        Result<T>::Result(Result<T>&& result) noexcept: 
-        _Status(result._Status),
-        _Code(result._Code),
-        _Message(result._Message),
-        _Data(result._Data)
+        Result<T>::Result(Result<T> &&result) noexcept : _Status(result._Status),
+                                                         _Code(result._Code),
+                                                         _Message(result._Message),
+                                                         _Data(result._Data)
         {
             this->_InnerResult.reset(result._InnerResult.release());
             this->_StackTrace.assign(result._StackTrace.begin(), _StackTrace.end());
@@ -127,8 +126,8 @@ namespace Kamanri
         template <class T>
         Result<T>::Result(T data)
         {
-            this->_Status = Result<T>::Status::NORMAL;
-            this->_Code = Result$::NORMAL_CODE;
+            this->_Status = Result<T>::Status::NORM;
+            this->_Code = Result$::NORM_CODE;
             this->_Message = Result$::DEFAULT_MESSAGE;
             this->_Data = data;
             this->_InnerResult = nullptr;
@@ -327,17 +326,17 @@ namespace Kamanri
             if (this->_InnerResult == nullptr)
             {
                 return Result<T2>(
-                    this->_Status == Result<T>::EXCEPTION ? Result<T2>::EXCEPTION : Result<T2>::NORMAL,
+                    this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
                     this->_Code,
                     this->_Message,
                     P<Result<T2>>(nullptr),
                     this->_StackTrace);
             }
             return Result<T2>(
-                this->_Status == Result<T>::EXCEPTION ? Result<T2>::EXCEPTION : Result<T2>::NORMAL,
+                this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
                 this->_Code,
                 this->_Message,
-                this->_InnerResult->As<T2>(),
+                New<Result<T2>>(this->_InnerResult->As<T2>()),
                 this->_StackTrace);
         }
 
@@ -356,7 +355,7 @@ namespace Kamanri
             if (this->_InnerResult == nullptr)
             {
                 return Result<T2>(
-                    this->_Status == Result<T>::EXCEPTION ? Result<T2>::EXCEPTION : Result<T2>::NORMAL,
+                    this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
                     this->_Code,
                     this->_Message,
                     data,
@@ -364,11 +363,11 @@ namespace Kamanri
                     this->_StackTrace);
             }
             return Result<T2>(
-                this->_Status == Result<T>::EXCEPTION ? Result<T2>::EXCEPTION : Result<T2>::NORMAL,
+                this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
                 this->_Code,
                 this->_Message,
                 data,
-                this->_InnerResult->As(data),
+                New<Result<T2>>(this->_InnerResult->As(data)),
                 this->_StackTrace);
         }
 
@@ -377,21 +376,35 @@ namespace Kamanri
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#define TRY_FOR_TYPE(T, result)                                                      \
-    auto _res_ = result;                                                             \
-    if (_res_.IsException())                                                        \
-    {                                                                                \
-        _res_.PushToStack(Kamanri::Utils::Result$::StackTrace(__FILE__, __LINE__)); \
-        return _res_.As<T>();                                                       \
+// Unique Name Generator
+#define ___CAT___(a, b) a ## b
+#define __CAT__(a, b) ___CAT___(a, b)
+#define _UNIQUE_NAME_(prefix) __CAT__(prefix, __LINE__)
+#define _UNIQUE_RES_ _UNIQUE_NAME_(_res_)
+
+#define ASSERT(result)                                                                     \
+    auto _UNIQUE_RES_ = result;                                                            \
+    if (_UNIQUE_RES_.IsException())                                                        \
+    {                                                                                      \
+        _UNIQUE_RES_.PushToStack(Kamanri::Utils::Result$::StackTrace(__FILE__, __LINE__)); \
+        return _UNIQUE_RES_;                                                               \
     }
 
-#define TRY(result)                                                                  \
-    auto _res_ = result;                                                             \
-    if (_res_.IsException())                                                        \
-    {                                                                                \
-        _res_.PushToStack(Kamanri::Utils::Result$::StackTrace(__FILE__, __LINE__)); \
-        return _res_;                                                                \
+#define TRY(result, data) ASSERT(result) auto data = *_UNIQUE_RES_
+
+#define ASSERT_FOR_TYPE(T, result)                                                         \
+    auto _UNIQUE_RES_ = result;                                                            \
+    if (_UNIQUE_RES_.IsException())                                                        \
+    {                                                                                      \
+        _UNIQUE_RES_.PushToStack(Kamanri::Utils::Result$::StackTrace(__FILE__, __LINE__)); \
+        return _UNIQUE_RES_.As<T>();                                                       \
     }
+
+#define TRY_FOR_TYPE(T, result, out) ASSERT_FOR_TYPE(T, result) auto out = *_UNIQUE_RES_
+
+#define ASSERT_FOR_DEFAULT(result) ASSERT_FOR_TYPE(void *, result)
+
+#define TRY_FOR_DEFAULT(result, out) TRY_FOR_TYPE(void *, result, out)
 
 #define DEFAULT_RESULT Kamanri::Utils::Result<void *>()
 

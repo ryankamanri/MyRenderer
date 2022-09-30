@@ -18,7 +18,7 @@ namespace Kamanri
         {
             namespace __
             {
-                namespace Triangle3D$
+                namespace __Triangle3D
                 {
                     constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Triangle3D);
                 } // namespace Triangle3D$
@@ -43,9 +43,9 @@ void Triangle3D::PrintTriangle(bool is_print) const
 {
     if(!is_print) return;
     PrintLn("offset: %d, a: %f, b: %f, c: %f", _offset, _a, _b, _c);
-    _vertices_transform[_offset + _v1].PrintVector();
-    _vertices_transform[_offset + _v2].PrintVector();
-    _vertices_transform[_offset + _v3].PrintVector();
+    _po_v1->PrintVector();
+    _po_v2->PrintVector();
+    _po_v3->PrintVector();
 }
 
 
@@ -54,22 +54,26 @@ void Triangle3D::PrintTriangle(bool is_print) const
 
 void Triangle3D::Build()
 {
-    _o_v1 = _offset + _v1;
-    _o_v2 = _offset + _v2;
-    _o_v3 = _offset + _v3;
+    _o_i1 = _offset + _v1;
+    _o_i2 = _offset + _v2;
+    _o_i3 = _offset + _v3;
 
-    _o_v1_x = _vertices_transform[_o_v1].GetFast(0);
-    _o_v1_y = _vertices_transform[_o_v1].GetFast(1);
-    _o_v2_x = _vertices_transform[_o_v2].GetFast(0);
-    _o_v2_y = _vertices_transform[_o_v2].GetFast(1);
-    _o_v3_x = _vertices_transform[_o_v3].GetFast(0);
-    _o_v3_y = _vertices_transform[_o_v3].GetFast(1);
+    _po_v1 = &_vertices_transform[_o_i1];
+    _po_v2 = &_vertices_transform[_o_i2];
+    _po_v3 = &_vertices_transform[_o_i3];
+
+    _o_v1_x = _po_v1->GetFast(0);
+    _o_v1_y = _po_v1->GetFast(1);
+    _o_v2_x = _po_v2->GetFast(0);
+    _o_v2_y = _po_v2->GetFast(1);
+    _o_v3_x = _po_v3->GetFast(0);
+    _o_v3_y = _po_v3->GetFast(1);
 
     SMatrix vertices_matrix = 
     {
-        _vertices_transform[_o_v1].GetFast(0), _vertices_transform[_o_v1].GetFast(1), _vertices_transform[_o_v1].GetFast(2),
-        _vertices_transform[_o_v2].GetFast(0), _vertices_transform[_o_v2].GetFast(1), _vertices_transform[_o_v2].GetFast(2),
-        _vertices_transform[_o_v3].GetFast(0), _vertices_transform[_o_v3].GetFast(1), _vertices_transform[_o_v3].GetFast(2)
+        _po_v1->GetFast(0), _po_v1->GetFast(1), _po_v1->GetFast(2),
+        _po_v2->GetFast(0), _po_v2->GetFast(1), _po_v2->GetFast(2),
+        _po_v3->GetFast(0), _po_v3->GetFast(1), _po_v3->GetFast(2)
     };
 
     Vector abc_vec = {1, 1, 1};
@@ -129,4 +133,35 @@ bool Triangle3D::GetMinMaxWidthHeight(int &min_width, int &min_height, int &max_
 
     
     return true;
+}
+
+Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) const
+{
+    if(!IsIn(x, y))
+    {
+        Log::Error(__Triangle3D::LOG_NAME, "The target is not in Triangle");
+        RESULT_EXCEPTION(Vector, Triangle3D$::CODE_NOT_IN_TRIANGLE, "The target is not in Triangle");
+    }
+    Vector target = {x, y, Z(x, y), 1};
+
+    Log::Trace("The target is:");
+    target.PrintVector(is_print);
+    // (v1, v2, v3, 0) (alpha, beta, gamma, 1)^T = target
+    SMatrix a = 
+    {
+        { _o_v1_x, _o_v1_y, _po_v1->GetFast(2), 1},
+        { _o_v2_x, _o_v2_y, _po_v2->GetFast(2), 1},
+        { _o_v3_x, _o_v3_y, _po_v3->GetFast(2), 1},
+        {0, 0, 0, 1}
+    };
+
+    Log::Trace("The a is:");
+    a.PrintMatrix(is_print);
+
+    TRY_FOR_TYPE(Vector, -a, _a);
+
+    Log::Trace("The -a is:");
+    _a.PrintMatrix(is_print);
+    ASSERT_FOR_TYPE(Vector, _a * target);
+    return Result<Vector>(target);
 }

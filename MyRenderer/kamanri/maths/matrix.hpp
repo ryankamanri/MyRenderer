@@ -15,6 +15,7 @@ namespace Kamanri
         {
             // values
             constexpr int NOT_INITIALIZED_N = 0;
+            constexpr SMatrixElemType NOT_INITIALIZED_VALUE = -1;
 
             // Codes
             constexpr int CODE_NOT_INITIALIZED_N = 101;
@@ -88,6 +89,10 @@ namespace Kamanri
             Utils::P<SMatrixElemType> _SM;
             // The length of the square amtrix.
             std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
+
+            SMatrixElemType _Get(size_t row, size_t col) const;
+
+            Vector _Get(size_t col) const;
             // Calculate the determinant of matrix recursively
             SMatrixElemType _Determinant(SMatrixElemType *psm, std::vector<std::size_t> &row_list, std::vector<std::size_t> &col_list) const;
 

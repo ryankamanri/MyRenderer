@@ -262,6 +262,20 @@ Result<SMatrixElemType> SMatrix::operator[](int index) const
     return Result<SMatrixElemType>(*(psm + index));
 }
 
+SMatrixElemType SMatrix::_Get(size_t row, size_t col) const
+{
+    auto psm = _SM.get();
+
+    if (row > _N || col > _N)
+    {
+        Log::Error(__SMatrix::LOG_NAME, "Index %d or %d out of bound %d", row, col, this->_N);
+        return SMatrix$::NOT_INITIALIZED_VALUE;
+    }
+
+    return *(psm + row * _N + col);
+}
+
+
 Result<SMatrixElemType> SMatrix::Get(size_t row, size_t col) const
 {
     auto psm = _SM.get();
@@ -274,6 +288,26 @@ Result<SMatrixElemType> SMatrix::Get(size_t row, size_t col) const
     }
 
     return Result<SMatrixElemType>(*(psm + row * _N + col));
+}
+
+Vector SMatrix::_Get(size_t col) const
+{
+    auto psm = _SM.get();
+
+    if (col > _N)
+    {
+        Log::Error(__SMatrix::LOG_NAME, "Index %d out of bound %d", col, this->_N);
+        return {};
+    }
+
+    Vector v(_N);
+
+    for (size_t i = 0; i < _N; i++)
+    {
+        v.Set(i, *(psm + i * _N + col));
+    }
+
+    return v;
 }
 
 Result<Vector> SMatrix::Get(size_t col) const
@@ -324,7 +358,7 @@ DefaultResult SMatrix::Set(size_t col, Vector const& v) const
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    auto v_n = *v.N();
+    TRY_FOR_DEFAULT(v.N(), v_n);
 
     if(v_n != _N)
     {
@@ -435,12 +469,12 @@ DefaultResult SMatrix::operator*=(SMatrix const& sm)
         // for every column of sm as a vector v
         // carculate the transform this matrix * v
         // let the x-column, y-column multiply x-hat, y-hat... of v.
-        auto v = *sm.Get(col_sm);
+        auto v = sm._Get(col_sm);
         Vector out_v(_N);
         for(size_t col = 0; col < _N; col++)
         {
             auto hat = v.GetFast((int)col);
-            auto this_col = *this_temp->Get(col);
+            auto this_col = this_temp->_Get(col);
 
             this_col *= hat;
             out_v += this_col;
@@ -483,7 +517,7 @@ DefaultResult SMatrix::operator*(Vector& v) const
     CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
     
     size_t n1 = _N;
-    size_t n2 = *v.N();
+    TRY_FOR_DEFAULT(v.N(), n2);
 
     if (n1 != n2)
     {
@@ -498,7 +532,7 @@ DefaultResult SMatrix::operator*(Vector& v) const
     for (size_t col = 0; col < _N; col++)
     {
         auto hat = v_temp.GetFast((int)col);
-        auto this_col = *Get(col);
+        auto this_col = _Get(col);
 
         this_col *= hat;
         v += this_col;
@@ -545,8 +579,8 @@ Result<SMatrix> SMatrix::operator-() const
     // use AA* == |A|E
     // A^(-1) == A* / |A|
     auto pm_asm = operator*();
-    auto d = *Determinant();
-    *pm_asm *= (1 / d);
+    TRY_FOR_TYPE(SMatrix, Determinant(), d);
+    ASSERT_FOR_TYPE(SMatrix, *pm_asm *= (1 / d));
 
     return pm_asm;
 
