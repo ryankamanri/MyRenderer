@@ -1,9 +1,9 @@
 #include <cfloat>
-#include "../../../../renderer/world/__/triangle3d.hpp"
-#include "../../../../utils/logs.hpp"
-#include "../../../../maths/vector.hpp"
-#include "../../../../maths/matrix.hpp"
-#include "../../../../utils/string.hpp"
+#include "kamanri/renderer/world/__/triangle3d.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/maths/vector.hpp"
+#include "kamanri/maths/matrix.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Renderer::World::__;
@@ -144,7 +144,7 @@ Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) c
     }
     Vector target = {x, y, Z(x, y), 1};
 
-    Log::Trace("The target is:");
+    Log::Trace(__Triangle3D::LOG_NAME,"The target is:");
     target.PrintVector(is_print);
     // (v1, v2, v3, 0) (alpha, beta, gamma, 1)^T = target
     SMatrix a = 
@@ -155,12 +155,12 @@ Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) c
         {0, 0, 0, 1}
     };
 
-    Log::Trace("The a is:");
+    Log::Trace(__Triangle3D::LOG_NAME, "The a is:");
     a.PrintMatrix(is_print);
 
-    TRY_FOR_TYPE(Vector, -a, _a);
+    auto _a = TRY_FOR_TYPE(Vector, -a);
 
-    Log::Trace("The -a is:");
+    Log::Trace(__Triangle3D::LOG_NAME, "The -a is:");
     _a.PrintMatrix(is_print);
     ASSERT_FOR_TYPE(Vector, _a * target);
     return Result<Vector>(target);

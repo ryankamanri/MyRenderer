@@ -1,4 +1,4 @@
-#include "../../windows/painter_factor.hpp"
+#include "kamanri/windows/painter_factor.hpp"
 
 using namespace Kamanri::Windows;
 

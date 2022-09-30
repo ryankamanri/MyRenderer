@@ -1,7 +1,7 @@
 #include <fstream>
-#include "../../utils/logs.hpp"
-#include "../../renderer/obj_model.hpp"
-#include "../../utils/string.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/renderer/obj_model.hpp"
+#include "kamanri/utils/string.hpp"
 
 
 using namespace Kamanri::Utils;

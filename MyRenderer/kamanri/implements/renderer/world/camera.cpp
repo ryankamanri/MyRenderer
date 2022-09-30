@@ -1,9 +1,9 @@
 #include <cmath>
-#include "../../../maths/math.hpp"
-#include "../../../utils/logs.hpp"
-#include "../../../renderer/world/camera.hpp"
-#include "../../../maths/matrix.hpp"
-#include "../../../utils/string.hpp"
+#include "kamanri/maths/math.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/renderer/world/camera.hpp"
+#include "kamanri/maths/matrix.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Renderer::World;
@@ -246,7 +246,7 @@ DefaultResult Camera::Transform(bool is_print)
 
 DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direction)
 {
-    TRY_FOR_DEFAULT(last_direction.N(), last_direction_n);
+    auto last_direction_n = TRY_FOR_DEFAULT(last_direction.N());
     if (last_direction_n != 4)
     {
         Log::Error(__Camera::LOG_NAME, "Invalid last_direction length %d", last_direction_n);

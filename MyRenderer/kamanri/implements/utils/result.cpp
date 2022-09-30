@@ -1,9 +1,9 @@
-#include "../../utils/result.hpp"
+#include "kamanri/utils/result.hpp"
 #include <fstream>
 
 using namespace Kamanri::Utils::Result$;
 
-StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _File(file), _Line(line), _LineCount(lineCount)
+StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _file(file), _line(line), _line_count(lineCount)
 {
     // auto get the statement
 
@@ -34,14 +34,14 @@ StackTrace::StackTrace(std::string const& file, int line, int lineCount) : _File
         return;
     }
 
-    _Statement = statement;
+    _statement = statement;
 }
 
 void StackTrace::Print() const
 {
-    PrintLn("\tat %s, Line %d - %d", this->_File.c_str(), this->_Line, this->_Line + this->_LineCount);
-    if (!_Statement.empty())
+    PrintLn("\tat %s, Line %d - %d", this->_file.c_str(), this->_line, this->_line + this->_line_count);
+    if (!_statement.empty())
     {
-        PrintLn("\t\t%s", _Statement.c_str());
+        PrintLn("\t\t%s", _statement.c_str());
     }
 }

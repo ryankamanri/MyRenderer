@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../utils/memory.hpp"
+#include "kamanri/utils/memory.hpp"
 #include "triangle3d.hpp"
 #include "frame_buffer.hpp"
 

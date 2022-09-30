@@ -1,8 +1,8 @@
 #include <cmath>
 #include <algorithm>
-#include "../../maths/matrix.hpp"
-#include "../../utils/logs.hpp"
-#include "../../utils/string.hpp"
+#include "kamanri/maths/matrix.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
@@ -358,7 +358,7 @@ DefaultResult SMatrix::Set(size_t col, Vector const& v) const
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    TRY_FOR_DEFAULT(v.N(), v_n);
+    auto v_n = TRY_FOR_DEFAULT(v.N());
 
     if(v_n != _N)
     {
@@ -517,7 +517,7 @@ DefaultResult SMatrix::operator*(Vector& v) const
     CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
     
     size_t n1 = _N;
-    TRY_FOR_DEFAULT(v.N(), n2);
+    auto n2 = TRY_FOR_DEFAULT(v.N());
 
     if (n1 != n2)
     {
@@ -579,7 +579,7 @@ Result<SMatrix> SMatrix::operator-() const
     // use AA* == |A|E
     // A^(-1) == A* / |A|
     auto pm_asm = operator*();
-    TRY_FOR_TYPE(SMatrix, Determinant(), d);
+    auto d = TRY_FOR_TYPE(SMatrix, Determinant());
     ASSERT_FOR_TYPE(SMatrix, *pm_asm *= (1 / d));
 
     return pm_asm;

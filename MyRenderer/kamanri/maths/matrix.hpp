@@ -1,7 +1,7 @@
 #pragma once
 #include <initializer_list>
-#include "../utils/memory.hpp"
-#include "../utils/result.hpp"
+#include "kamanri/utils/memory.hpp"
+#include "kamanri/utils/result.hpp"
 #include "vector.hpp"
 
 namespace Kamanri

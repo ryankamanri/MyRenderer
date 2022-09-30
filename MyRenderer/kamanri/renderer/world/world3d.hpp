@@ -1,13 +1,13 @@
 #pragma once
 #include <vector>
 #include "camera.hpp"
-#include "../obj_model.hpp"
+#include "kamanri/renderer/obj_model.hpp"
 #include "object.hpp"
 #include "__/triangle3d.hpp"
 #include "__/environment.hpp"
 #include "__/buffers.hpp"
-#include "../../maths/vector.hpp"
-#include "../../maths/matrix.hpp"
+#include "kamanri/maths/vector.hpp"
+#include "kamanri/maths/matrix.hpp"
 
 namespace Kamanri
 {

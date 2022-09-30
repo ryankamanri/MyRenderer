@@ -1,6 +1,6 @@
 #include <cfloat>
-#include "../../../../utils/string.hpp"
-#include "../../../../renderer/world/__/buffers.hpp"
+#include "kamanri/utils/string.hpp"
+#include "kamanri/renderer/world/__/buffers.hpp"
 
 
 using namespace Kamanri::Renderer::World::__;

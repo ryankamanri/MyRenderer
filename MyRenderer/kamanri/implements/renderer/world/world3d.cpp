@@ -1,5 +1,5 @@
-#include "../../../renderer/world/world3d.hpp"
-#include "../../../utils/string.hpp"
+#include "kamanri/renderer/world/world3d.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Maths;
@@ -37,7 +37,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     for(auto i = 0; i < model.GetVertexSize(); i++)
     {
-        TRY_FOR_TYPE(Object, model.GetVertex(i), vertex);
+        auto vertex = TRY_FOR_TYPE(Object, model.GetVertex(i));
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
         _vertices.push_back(vector);
         _vertices_transform.push_back(vector);
@@ -46,7 +46,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     for(auto i = 0; i < model.GetFaceSize(); i++)
     {
-        TRY_FOR_TYPE(Object, model.GetFace(i), face);
+        auto face = TRY_FOR_TYPE(Object, model.GetFace(i));
         if(face.vertex_indexes.size() > 4)
         {
             auto message = "Can not handle `face.vertex_indexes() > 4`";
@@ -86,7 +86,7 @@ DefaultResult World3D::Build(bool is_print)
         i->PrintTriangle(true);
         if(i->IsIn(300, 500))
         {
-            TRY_FOR_DEFAULT(i->ArealCoordinates(300, 500, true), ac_v);
+            auto ac_v = TRY_FOR_DEFAULT(i->ArealCoordinates(300, 500, true));
             PrintLn("The areal coordinate vector:");
             ac_v.PrintVector(true);
         }

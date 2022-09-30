@@ -1,7 +1,7 @@
 #include <thread>
 #include <map>
-#include "../../utils/logs.hpp"
-#include "../../windows/window.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/windows/window.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Windows;

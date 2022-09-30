@@ -1,6 +1,6 @@
-#include "../../../renderer/world/object.hpp"
-#include "../../../utils/result.hpp"
-#include "../../../maths/matrix.hpp"
+#include "kamanri/renderer/world/object.hpp"
+#include "kamanri/utils/result.hpp"
+#include "kamanri/maths/matrix.hpp"
 
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Utils;

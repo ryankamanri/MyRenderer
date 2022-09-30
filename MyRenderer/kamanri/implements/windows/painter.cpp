@@ -1,4 +1,4 @@
-#include "../../windows/painter.hpp"
+#include "kamanri/windows/painter.hpp"
 
 using namespace Kamanri::Windows;
 

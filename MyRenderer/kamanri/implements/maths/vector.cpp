@@ -1,8 +1,8 @@
 #include <cmath>
-#include "../../maths/vector.hpp"
-#include "../../utils/logs.hpp"
-#include "../../utils/memory.hpp"
-#include "../../utils/string.hpp"
+#include "kamanri/maths/vector.hpp"
+#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/memory.hpp"
+#include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;

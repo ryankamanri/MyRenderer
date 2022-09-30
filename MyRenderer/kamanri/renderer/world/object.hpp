@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "../../maths/vector.hpp"
-#include "../../maths/matrix.hpp"
+#include "kamanri/maths/vector.hpp"
+#include "kamanri/maths/matrix.hpp"
 namespace Kamanri
 {
     namespace Renderer

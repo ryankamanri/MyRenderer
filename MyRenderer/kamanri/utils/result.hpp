@@ -27,11 +27,21 @@ namespace Kamanri
             {
                 StackTrace(std::string const &file, int line, int lineCount = 1);
                 /* data */
-                std::string _File;
-                int _Line;
-                int _LineCount;
-                std::string _Statement;
+                std::string _file;
+                int _line;
+                int _line_count;
+                std::string _statement;
                 void Print() const;
+            };
+
+            /**
+             * @brief Result status
+             *
+             */
+            enum class Status
+            {
+                NORM,
+                EXCEPTION
             };
         }
 
@@ -41,7 +51,7 @@ namespace Kamanri
         // - the parameter `data` only receive lvalue.
         // - need the default Constructor.
         // - need the Copy Constructor of type T.
-        // - need the `operator=` of type T to initialze the result.
+        // - need the `operator=` of type T to initialize the result.
         // For the instance:
         // ```
         // Object() = default;
@@ -52,19 +62,14 @@ namespace Kamanri
         class Result
         {
         public:
-            enum class Status
-            {
-                NORM,
-                EXCEPTION
-            };
             // constructors
             Result();
             Result(Result<T> &&result) noexcept;
             explicit Result(T data);
-            Result(Result<T>::Status status, int code, std::string const &message);
-            Result(Status status, int code, std::string const &message, T data, P<Result<T>> innerResult);
-            Result(Status status, int code, std::string const &message, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
-            Result(Status status, int code, std::string const &message, T data, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
+            Result(Result$::Status status, int code, std::string const &message);
+            Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult);
+            Result(Result$::Status status, int code, std::string const &message, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
+            Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
 
             bool IsException();
             // Result<T> *InnerResult();
@@ -82,17 +87,17 @@ namespace Kamanri
 
         private:
             // 返回状态: NORM为正常返回, EXCEPTION为异常返回
-            Status _Status;
+            Result$::Status _status;
             // 状态码, 可自定义
-            int _Code;
+            int _code;
             // 消息, 可自定义
-            std::string _Message;
+            std::string _message;
             // 返回值
-            T _Data;
+            T _data;
             // 内部返回或内部异常
-            P<Result<T>> _InnerResult;
+            P<Result<T>> _inner_result;
             // 调用堆栈
-            std::vector<Result$::StackTrace> _StackTrace;
+            std::vector<Result$::StackTrace> _stacktrace;
 
             void PrintOnce();
 
@@ -107,103 +112,103 @@ namespace Kamanri
         template <class T>
         Result<T>::Result()
         {
-            this->_Status = Result<T>::Status::NORM;
-            this->_Code = Result$::DEFAULT_CODE;
-            this->_Message = Result$::DEFAULT_MESSAGE;
-            this->_InnerResult = nullptr;
+            this->_status = Result$::Status::NORM;
+            this->_code = Result$::DEFAULT_CODE;
+            this->_message = Result$::DEFAULT_MESSAGE;
+            this->_inner_result = nullptr;
         }
 
         template <class T>
-        Result<T>::Result(Result<T> &&result) noexcept : _Status(result._Status),
-                                                         _Code(result._Code),
-                                                         _Message(result._Message),
-                                                         _Data(result._Data)
+        Result<T>::Result(Result<T> &&result) noexcept : _status(result._status),
+                                                         _code(result._code),
+                                                         _message(result._message),
+                                                         _data(result._data)
         {
-            this->_InnerResult.reset(result._InnerResult.release());
-            this->_StackTrace.assign(result._StackTrace.begin(), _StackTrace.end());
+            this->_inner_result.reset(result._inner_result.release());
+            this->_stacktrace.assign(result._stacktrace.begin(), _stacktrace.end());
         }
 
         template <class T>
         Result<T>::Result(T data)
         {
-            this->_Status = Result<T>::Status::NORM;
-            this->_Code = Result$::NORM_CODE;
-            this->_Message = Result$::DEFAULT_MESSAGE;
-            this->_Data = data;
-            this->_InnerResult = nullptr;
+            this->_status = Result$::Status::NORM;
+            this->_code = Result$::NORM_CODE;
+            this->_message = Result$::DEFAULT_MESSAGE;
+            this->_data = data;
+            this->_inner_result = nullptr;
         }
 
         template <class T>
         Result<T>::Result(
-            Result<T>::Status status,
+            Result$::Status status,
             int code,
             std::string const &message)
         {
 
-            this->_Status = status;
-            this->_Code = code;
-            this->_Message = message;
-            this->_InnerResult = nullptr;
+            this->_status = status;
+            this->_code = code;
+            this->_message = message;
+            this->_inner_result = nullptr;
         }
 
         template <class T>
         Result<T>::Result(
-            Result<T>::Status status,
+            Result$::Status status,
             int code,
             std::string const &message,
             T data,
             P<Result<T>> innerResult)
         {
 
-            this->_Status = status;
-            this->_Code = code;
-            this->_Message = message;
-            this->_Data = data;
-            this->_InnerResult.reset(innerResult.release());
+            this->_status = status;
+            this->_code = code;
+            this->_message = message;
+            this->_data = data;
+            this->_inner_result.reset(innerResult.release());
         }
 
         template <class T>
         Result<T>::Result(
-            Status status,
+            Result$::Status status,
             int code,
             std::string const &message,
             P<Result<T>> innerResult,
             std::vector<Result$::StackTrace> &stackTrace)
         {
-            this->_Status = status;
-            this->_Code = code;
-            this->_Message = message;
-            this->_InnerResult.reset(innerResult.release());
-            this->_StackTrace.assign(stackTrace.begin(), stackTrace.end());
+            this->_status = status;
+            this->_code = code;
+            this->_message = message;
+            this->_inner_result.reset(innerResult.release());
+            this->_stacktrace.assign(stackTrace.begin(), stackTrace.end());
         }
 
         template <class T>
         Result<T>::Result(
-            Status status,
+            Result$::Status status,
             int code,
             std::string const &message,
             T data,
             P<Result<T>> innerResult,
             std::vector<Result$::StackTrace> &stackTrace)
         {
-            this->_Status = status;
-            this->_Code = code;
-            this->_Message = message;
-            this->_Data = data;
-            this->_InnerResult.reset(innerResult.release());
-            this->_StackTrace.assign(stackTrace.begin(), stackTrace.end());
+            this->_status = status;
+            this->_code = code;
+            this->_message = message;
+            this->_data = data;
+            this->_inner_result.reset(innerResult.release());
+            this->_stacktrace.assign(stackTrace.begin(), stackTrace.end());
         }
 
         template <class T>
         bool Result<T>::IsException()
         {
-            return this->_Status == Status::EXCEPTION;
+            return this->_status == Result$::Status::EXCEPTION;
         }
 
         // template <class T>
         // Result<T> Result<T>::InnerResult()
         // {
-        //     if (this->_InnerResult == nullptr)
+        //     if (this->_inner_result == nullptr)
         //     {
         //         return Result<T>(
         //             Status::EXCEPTION,
@@ -212,14 +217,14 @@ namespace Kamanri
         //             nullptr,
         //             nullptr);
         //     }
-        //     return this->_InnerResult;
+        //     return this->_inner_result;
         // }
 
         template <class T>
         void Result<T>::PrintOnce()
         {
-            PrintLn("Result %d: %s", this->_Code, this->_Message.c_str());
-            std::vector<Result$::StackTrace> copiedStackTrace(this->_StackTrace);
+            PrintLn("Result %d: %s", this->_code, this->_message.c_str());
+            std::vector<Result$::StackTrace> copiedStackTrace(this->_stacktrace);
             while (!copiedStackTrace.empty())
             {
                 auto popStackIterator = copiedStackTrace.begin();
@@ -231,19 +236,19 @@ namespace Kamanri
         template <class T>
         void Result<T>::PrintRecursive()
         {
-            if (this->_InnerResult == nullptr)
+            if (this->_inner_result == nullptr)
             {
                 if (this->IsException())
                 {
                     Log::Error("ResultError", "An Exception In Result Occurred Caused By: ");
                     Log::Error(
-                        std::to_string(this->_Code).c_str(),
-                        this->_Message);
+                        std::to_string(this->_code).c_str(),
+                        this->_message);
                 }
                 this->PrintOnce();
                 return;
             }
-            this->_InnerResult->PrintRecursive();
+            this->_inner_result->PrintRecursive();
             this->PrintOnce();
         }
 
@@ -271,7 +276,7 @@ namespace Kamanri
         template <class T>
         Result<T> *Result<T>::PushToStack(Result$::StackTrace stackTrace)
         {
-            this->_StackTrace.push_back(stackTrace);
+            this->_stacktrace.push_back(stackTrace);
             return this;
         }
 
@@ -288,7 +293,7 @@ namespace Kamanri
             {
                 this->Print();
             }
-            return this->_Data;
+            return this->_data;
         }
 
         /**
@@ -304,7 +309,7 @@ namespace Kamanri
             {
                 this->Print();
             }
-            return this->_Data;
+            return this->_data;
         }
 
         /**
@@ -316,28 +321,28 @@ namespace Kamanri
         template <class T>
         int Result<T>::Code() const
         {
-            return _Code;
+            return _code;
         }
 
         template <class T>
         template <class T2>
         Result<T2> Result<T>::As()
         {
-            if (this->_InnerResult == nullptr)
+            if (this->_inner_result == nullptr)
             {
                 return Result<T2>(
-                    this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
-                    this->_Code,
-                    this->_Message,
+                    this->_status,
+                    this->_code,
+                    this->_message,
                     P<Result<T2>>(nullptr),
-                    this->_StackTrace);
+                    this->_stacktrace);
             }
             return Result<T2>(
-                this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
-                this->_Code,
-                this->_Message,
-                New<Result<T2>>(this->_InnerResult->As<T2>()),
-                this->_StackTrace);
+                this->_status,
+                this->_code,
+                this->_message,
+                New<Result<T2>>(this->_inner_result->As<T2>()),
+                this->_stacktrace);
         }
 
         /**
@@ -352,23 +357,23 @@ namespace Kamanri
         template <class T2>
         Result<T2> Result<T>::As(T2 data)
         {
-            if (this->_InnerResult == nullptr)
+            if (this->_inner_result == nullptr)
             {
                 return Result<T2>(
-                    this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
-                    this->_Code,
-                    this->_Message,
+                    this->_status,
+                    this->_code,
+                    this->_message,
                     data,
                     P<Result<T2>>(nullptr),
-                    this->_StackTrace);
+                    this->_stacktrace);
             }
             return Result<T2>(
-                this->_Status == Result<T>::Status::EXCEPTION ? Result<T2>::Status::EXCEPTION : Result<T2>::Status::NORM,
-                this->_Code,
-                this->_Message,
+                this->_status,
+                this->_code,
+                this->_message,
                 data,
-                New<Result<T2>>(this->_InnerResult->As(data)),
-                this->_StackTrace);
+                New<Result<T2>>(this->_inner_result->As(data)),
+                this->_stacktrace);
         }
 
     }
@@ -377,7 +382,7 @@ namespace Kamanri
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // Unique Name Generator
-#define ___CAT___(a, b) a ## b
+#define ___CAT___(a, b) a##b
 #define __CAT__(a, b) ___CAT___(a, b)
 #define _UNIQUE_NAME_(prefix) __CAT__(prefix, __LINE__)
 #define _UNIQUE_RES_ _UNIQUE_NAME_(_res_)
@@ -390,7 +395,7 @@ namespace Kamanri
         return _UNIQUE_RES_;                                                               \
     }
 
-#define TRY(result, data) ASSERT(result) auto data = *_UNIQUE_RES_
+#define TRY(result) ({ASSERT(result); std::move(_UNIQUE_RES_); }).Data()
 
 #define ASSERT_FOR_TYPE(T, result)                                                         \
     auto _UNIQUE_RES_ = result;                                                            \
@@ -400,28 +405,28 @@ namespace Kamanri
         return _UNIQUE_RES_.As<T>();                                                       \
     }
 
-#define TRY_FOR_TYPE(T, result, out) ASSERT_FOR_TYPE(T, result) auto out = *_UNIQUE_RES_
+#define TRY_FOR_TYPE(T, result) ({ ASSERT_FOR_TYPE(T, result); std::move(_UNIQUE_RES_); }).Data()
 
 #define ASSERT_FOR_DEFAULT(result) ASSERT_FOR_TYPE(void *, result)
 
-#define TRY_FOR_DEFAULT(result, out) TRY_FOR_TYPE(void *, result, out)
+#define TRY_FOR_DEFAULT(result) TRY_FOR_TYPE(void *, result)
 
 #define DEFAULT_RESULT Kamanri::Utils::Result<void *>()
 
-#define DEFAULT_RESULT_EXCEPTION(code, message) Kamanri::Utils::Result<void *>(Kamanri::Utils::Result<void *>::Status::EXCEPTION, code, message)
+#define DEFAULT_RESULT_EXCEPTION(code, message) Kamanri::Utils::Result<void *>(Kamanri::Utils::Result$::Status::EXCEPTION, code, message)
 
-#define RESULT_EXCEPTION(T, code, message) Kamanri::Utils::Result<T>(Kamanri::Utils::Result<T>::Status::EXCEPTION, code, message)
+#define RESULT_EXCEPTION(T, code, message) Kamanri::Utils::Result<T>(Kamanri::Utils::Result$::Status::EXCEPTION, code, message)
 
-#define CHECK_MEMORY_FOR_DEFAULT_RESULT(p, log_name, code)                           \
-    CHECK_MEMORY_IS_ALLOCATED(p, log_name,                                           \
-                              Kamanri::Utils::Result<void *>(                        \
-                                  Kamanri::Utils::Result<void *>::Status::EXCEPTION, \
-                                  code,                                              \
+#define CHECK_MEMORY_FOR_DEFAULT_RESULT(p, log_name, code)                    \
+    CHECK_MEMORY_IS_ALLOCATED(p, log_name,                                    \
+                              Kamanri::Utils::Result<void *>(                 \
+                                  Kamanri::Utils::Result$::Status::EXCEPTION, \
+                                  code,                                       \
                                   "The memory is not initialized"))
 
-#define CHECK_MEMORY_FOR_RESULT(T, p, log_name, code)                           \
-    CHECK_MEMORY_IS_ALLOCATED(p, log_name,                                      \
-                              Kamanri::Utils::Result<T>(                        \
-                                  Kamanri::Utils::Result<T>::Status::EXCEPTION, \
-                                  code,                                         \
+#define CHECK_MEMORY_FOR_RESULT(T, p, log_name, code)                         \
+    CHECK_MEMORY_IS_ALLOCATED(p, log_name,                                    \
+                              Kamanri::Utils::Result<T>(                      \
+                                  Kamanri::Utils::Result$::Status::EXCEPTION, \
+                                  code,                                       \
                                   "The memory is not initialized"))

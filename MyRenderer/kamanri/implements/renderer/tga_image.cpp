@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstring>
-#include "../../renderer/tga_image.hpp"
+#include "kamanri/renderer/tga_image.hpp"
 
 using namespace Kamanri::Renderer;
 

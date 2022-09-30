@@ -1,4 +1,4 @@
-#include "../../utils/thread.hpp"
+#include "kamanri/utils/thread.hpp"
 #include <thread>
 #include <chrono>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "../../../maths/vector.hpp"
+#include "kamanri/maths/vector.hpp"
 namespace Kamanri
 {
     namespace Renderer
