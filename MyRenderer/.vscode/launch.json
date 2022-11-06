@@ -5,8 +5,8 @@
             "name": "Build And Run",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.exe",
+            "cwd": "${workspaceFolder}/build/vscode-cmake-task",
+            "program": "${workspaceFolder}/build/vscode-cmake-task/${workspaceFolderBasename}.exe",
             "preLaunchTask": "Make Build",
             "externalConsole": true
         },
@@ -14,8 +14,8 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/build/${workspaceFolderBasename}.exe",
+            "cwd": "${workspaceFolder}/build/vscode-cmake-task",
+            "program": "${workspaceFolder}/build/vscode-cmake-task/${workspaceFolderBasename}.exe",
             "externalConsole": true
         },
         {

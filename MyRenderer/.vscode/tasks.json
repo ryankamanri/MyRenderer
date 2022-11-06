@@ -21,7 +21,7 @@
                 "-G",
                 "Unix Makefiles",
                 "-B",
-                "./build"
+                "./build/vscode-cmake-task"
             ],
             "detail": "Cmake Build"
         }, 
@@ -31,7 +31,7 @@
             "command": "make",
             "args": [
                 "-C",
-                "./build"
+                "./build/vscode-cmake-task"
             ],
             "dependsOn":[
                 "CMake Build"

@@ -30,6 +30,8 @@ namespace Kamanri
         public:
             Vector();
             explicit Vector(size_t n);
+            // TODO:
+            // add move constructor and copy constructor
             Vector(Vector &v);
             Vector(Vector const &v);
             Vector(std::initializer_list<VectorElemType> list);

@@ -1,11 +1,11 @@
 #include <thread>
 #include <map>
 #include "kamanri/utils/logs.hpp"
-#include "kamanri/windows/window.hpp"
+#include "kamanri/windows/wingdi_window.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Windows;
-
+using namespace Kamanri::Windows::WinGDI_Window$;
 
 namespace Kamanri
 {   
@@ -18,6 +18,20 @@ namespace Kamanri
 
             const bool IS_PRINT = false;
         } // namespace __Window
+
+        namespace __Painter
+        {
+            int WINDOW_WIDTH;
+            int WINDOW_HEIGHT;
+
+        } // namespace __Painter
+
+        namespace __PainterFactor
+        {
+            int WINDOW_WIDTH;
+            int WINDOW_HEIGHT;
+
+        } // namespace __PainterFactor
         
     } // namespace Windows
     
@@ -33,11 +47,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
  * @brief the map used to find the window by the certain handle
  *
  */
-std::map<HWND, Window *> window_map;
+std::map<HWND, WinGDI_Window *> window_map;
 
 MSG msg;
 
-Window::Window(HINSTANCE h_instance, int window_width, int window_height)
+WinGDI_Window::WinGDI_Window(HINSTANCE h_instance, int window_width, int window_height)
 {
     __Window::WINDOW_WIDTH = window_width;
     __Window::WINDOW_HEIGHT = window_height;
@@ -69,11 +83,11 @@ Window::Window(HINSTANCE h_instance, int window_width, int window_height)
         NULL                                                  //附加参数
     );
 
-    window_map.insert(std::pair<HWND, Window *>(_h_wnd, this));
+    window_map.insert(std::pair<HWND, WinGDI_Window *>(_h_wnd, this));
     
 }
 
-Window::~Window()
+WinGDI_Window::~WinGDI_Window()
 {
     auto begin = window_map.begin();
     for (auto i = begin; i != window_map.end(); i++)
@@ -86,17 +100,17 @@ Window::~Window()
     }
 }
 
-bool Window::Show()
+bool WinGDI_Window::Show()
 {
     return ShowWindow(_h_wnd, SW_SHOW);
 }
 
-bool Window::Update()
+bool WinGDI_Window::Update()
 {
     return UpdateWindow(_h_wnd);
 }
 
-void Window::MessageLoop()
+void WinGDI_Window::MessageLoop()
 {
 
     while (GetMessage(&msg, NULL, 0, 0)) // GetMessage从调用线程的消息队列中取得一个消息并放于msg
@@ -119,6 +133,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         auto p_window = window_map.find(hWnd)->second;
 
+        // TODO: Build a message call system refer to 'RequestDelegate', pluginize like middleware.
         switch (uMsg)
         {
         case WM_PAINT: //窗口绘图消息
@@ -136,7 +151,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hWnd, uMsg, wParam, lParam); //默认的窗口处理函数
 }
 
-void Window::_Paint()
+void WinGDI_Window::_Paint()
 {
     _paint_thread = std::thread([this]
     {
@@ -144,4 +159,59 @@ void Window::_Paint()
     });
 }
 
+
+
+
+Painter::Painter(HDC h_dc, HDC h_mem_dc, int window_width, int window_height) : _h_dc(h_dc), _h_draw_dc(h_mem_dc) 
+{
+    __Painter::WINDOW_WIDTH = window_width;
+    __Painter::WINDOW_HEIGHT = window_height;
+}
+
+Painter::~Painter()
+{
+    DeleteObject(_h_draw_dc);
+}
+
+BOOL Painter::Flush() const { return BitBlt(_h_dc, 0, 0, __Painter::WINDOW_WIDTH, __Painter::WINDOW_HEIGHT, _h_draw_dc, 0, 0, SRCCOPY); }
+
+
+PainterFactor::PainterFactor(HWND h_wnd, int window_width, int window_height): _h_wnd(h_wnd)
+{
+    __PainterFactor::WINDOW_WIDTH = window_width;
+    __PainterFactor::WINDOW_HEIGHT = window_height;
+
+    _h_dc = GetDC(_h_wnd);
+
+    _h_black_dc = CreateCompatibleDC(_h_dc);
+    HBITMAP hBackBmp = CreateCompatibleBitmap(_h_dc, __PainterFactor::WINDOW_WIDTH, __PainterFactor::WINDOW_HEIGHT);
+    SelectObject(_h_black_dc, hBackBmp);
+}
+
+PainterFactor::~PainterFactor()
+{
+    ReleaseDC(_h_wnd, _h_dc);
+}
+
+void PainterFactor::Clean(Painter& painter)
+{
+    BitBlt(painter._h_draw_dc, 0, 0, __PainterFactor::WINDOW_WIDTH, __PainterFactor::WINDOW_HEIGHT, _h_black_dc, 0, 0, SRCCOPY);
+}
+
+Painter PainterFactor::CreatePainter()
+{
+    // on paint
+    //创建内存DC（先放到内存中）
+    HDC h_draw_dc = CreateCompatibleDC(_h_dc);
+
+    //创建一张兼容位图
+    // note:
+    //这要注意,如果创建和内存DC兼容的位图就只有黑白色,不会有彩色
+    //所以要创建实际对象DC.窗口DC或静态控件DC兼容的内存位图
+    HBITMAP hBackBmp = CreateCompatibleBitmap(_h_dc, __PainterFactor::WINDOW_WIDTH, __PainterFactor::WINDOW_HEIGHT);
+
+    SelectObject(h_draw_dc, hBackBmp);
+
+    return Painter(_h_dc, h_draw_dc, __PainterFactor::WINDOW_WIDTH, __PainterFactor::WINDOW_HEIGHT);
+}
 

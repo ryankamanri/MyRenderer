@@ -14,6 +14,11 @@ namespace Kamanri
         {
             return P<T>(new T(std::forward<Ts>(args)...));
         }
+
+        // TODO: 
+        // 1. a method NewArray to allocate an object type array
+        // 2. a index method to find array location by index
+        // 3. update CHECK_MEMORY_IS_ALLOCATED, receive wrapped P instead of bare pointer.
     }
 }
 

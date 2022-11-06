@@ -83,12 +83,12 @@ DefaultResult World3D::Build(bool is_print)
         i->PrintTriangle(is_print);
         _buffers.WriteToZBufferFrom(*i);
         // areal coordinate test
-        i->PrintTriangle(true);
+        i->PrintTriangle(is_print);
         if(i->IsIn(300, 500))
         {
             auto ac_v = TRY_FOR_DEFAULT(i->ArealCoordinates(300, 500, true));
             PrintLn("The areal coordinate vector:");
-            ac_v.PrintVector(true);
+            ac_v.PrintVector(is_print);
         }
 
     }

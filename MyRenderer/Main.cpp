@@ -4,20 +4,12 @@
 #include <thread>
 #include <cfloat>
 #include <cmath>
-#include "kamanri/maths/math.hpp"
-#include "kamanri/utils/logs.hpp"
-#include "kamanri/windows/window.hpp"
-#include "kamanri/utils/result.hpp"
-#include "kamanri/maths/matrix.hpp"
-#include "kamanri/maths/vector.hpp"
-#include "kamanri/utils/string.hpp"
-#include "kamanri/renderer/world/world3d.hpp"
-#include "kamanri/renderer/obj_model.hpp"
-#include "kamanri/renderer/tga_image.hpp"
+#include "kamanri/all.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
 using namespace Kamanri::Windows;
+using namespace Kamanri::Windows::WinGDI_Window$;
 using namespace Kamanri::Renderer;
 using namespace Kamanri::Renderer::World;
 
@@ -25,13 +17,15 @@ using namespace Kamanri::Renderer::World;
 constexpr const char *LOG_NAME = "Main";
 const int WINDOW_LENGTH = 600;
 
+constexpr const char *OBJ_PATH = "../../out/jet.obj";
+
 void DrawFunc(PainterFactor painter_factor)
 {
 	auto painter = painter_factor.CreatePainter();
 
 	// in vscode
 	// auto j20 = ObjModel("./out/j20.obj");
-	auto floor = ObjModel("./out/floor.obj");
+	auto floor = ObjModel(OBJ_PATH);
 
 	// in vs
 	// auto j20 = ObjModel("../../j20.obj");
@@ -71,17 +65,18 @@ void DrawFunc(PainterFactor painter_factor)
 
 	while (true)
 	{
+		// this part rightly belongs to DrawFunc
 		auto direction = *camera.Direction().Copy();
 
 		revolve_matrix * camera.Direction();
 		revolve_matrix * camera.Location();
 
 		camera.InverseUpperWithDirection(direction);
-		//
+		
 		camera.Transform();
 
 		world.Build();
-
+		//
 		Log::Info(LOG_NAME, "Start to render...");
 
 		for (int i = 0; i <= WINDOW_LENGTH; i++)
@@ -110,20 +105,54 @@ void DrawFunc(PainterFactor painter_factor)
 void OpenWindow(HINSTANCE hInstance)
 {
 
-	Window window(hInstance, WINDOW_LENGTH, WINDOW_LENGTH);
+	WinGDI_Window window(hInstance, WINDOW_LENGTH, WINDOW_LENGTH);
 
 	window.DrawFunc = DrawFunc;
 	window.Show();
-	Window::MessageLoop();
+	WinGDI_Window::MessageLoop();
+
+	// TODO:
+	// window.SetWorld(world)
+	// 	.AddEventHandler(RecursiveDrawDelegate(DrawFunc))
+	// 	.AddEventHandler(MoveCameraDelegate)
+	// 	.MessageLoop();
 }
 
+////////////////////////////////////////////////////
+// delegate test
 
+
+
+
+
+void DelegateTest()
+{
+	Delegate d;
+	Delegate$::Node dn;
+	Delegate$::Node dn2;
+	dn.this_delegate = [](int res, Delegate$::Node& this_d_node)
+	{
+		PrintLn("%d", res);
+		this_d_node.Next(res);
+	};
+	dn2.this_delegate = [](int res, Delegate$::Node &this_d_node)
+	{
+		PrintLn("Hello");
+		this_d_node.Next(res);
+		PrintLn("res: %d", res);
+	};
+	d.AddHead(dn);
+	d.AddHead(dn2);
+	d.Execute(1);
+}
+//////////////////////////////////////////////////////
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	Log::Level(Log$::INFO_LEVEL);
+	Log::Level(Log$::WARN_LEVEL);
 	OpenWindow(hInstance);
-	
+	// DelegateTest();
+
 	system("pause");
 	return 0;
 

@@ -4,9 +4,9 @@
     {
       "name": "windows-default",
       "displayName": "Windows x64 Debug",
-      "description": "面向具有 Visual Studio 开发环境的 Windows。",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "description": "Cmake面向具有 Visual Studio 开发环境的 Windows。",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"

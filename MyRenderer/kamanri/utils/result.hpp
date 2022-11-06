@@ -73,8 +73,8 @@ namespace Kamanri
 
             bool IsException();
             // Result<T> *InnerResult();
-            Result<T> *Print(bool is_print = true);
-            Result<T> *PushToStack(Result$::StackTrace stackTrace);
+            Result<T>& Print(bool is_print = true);
+            Result<T>& PushToStack(Result$::StackTrace stackTrace);
 
             int Code() const;
             T &Data();
@@ -259,11 +259,11 @@ namespace Kamanri
          * @return MyResult<T>
          */
         template <class T>
-        Result<T> *Result<T>::Print(bool is_print)
+        Result<T>& Result<T>::Print(bool is_print)
         {
             if (is_print)
                 this->PrintRecursive();
-            return this;
+            return *this;
         }
 
         /**
@@ -274,10 +274,10 @@ namespace Kamanri
          * @return MyResult<T>*
          */
         template <class T>
-        Result<T> *Result<T>::PushToStack(Result$::StackTrace stackTrace)
+        Result<T>& Result<T>::PushToStack(Result$::StackTrace stackTrace)
         {
             this->_stacktrace.push_back(stackTrace);
-            return this;
+            return *this;
         }
 
         /**

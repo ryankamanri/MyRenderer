@@ -6,10 +6,15 @@ cmake_minimum_required (VERSION 3.8)
 project(MyRenderer)
 set(CMAKE_CXX_STANDARD 11)
 
+# generate solarlint compilation database
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
 include_directories(.)
 
+
 # Debug Build
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE "Debug")
 
 # Release Build, Ofast
 # set(CMAKE_BUILD_TYPE Release)

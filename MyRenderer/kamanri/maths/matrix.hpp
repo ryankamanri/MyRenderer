@@ -35,6 +35,8 @@ namespace Kamanri
         public:
             SMatrix();
             explicit SMatrix(size_t n);
+            // TODO:
+            // add move constructor and copy constructor
             SMatrix(SMatrix &sm);
             SMatrix(std::initializer_list<SMatrixElemType> list);
             SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
