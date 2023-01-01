@@ -33,12 +33,21 @@ namespace Kamanri
                 }
 
                 // Camera::Transform
-                SMatrix a21(4);
-                SMatrix a543(4);
+                namespace Transform
+                {
+                    SMatrix a21(4);
+                    SMatrix a543(4);
+                } // namespace Transform
+                
 
                 // Camera::InverseUpperWithDirection
-                Vector upward_before = {0, 1, 0, 0};
-                Vector upward_after = {0, 1, 0, 0};
+                namespace InverseUpperWithDirection
+                {
+                    Vector upward_before = {0, 1, 0, 0};
+                    Vector upward_after = {0, 1, 0, 0};
+                } // namespace InverseUpperWithDirection
+                
+
             } // namespace __Camera
             
         } // namespace World
@@ -123,8 +132,8 @@ void Camera::SetAngles(bool is_print)
 
 Camera::Camera(Camera const &camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
 {
-    _location = *camera._location.Copy();
-    _direction = *camera._direction.Copy();
+    _location = camera._location;
+    _direction = camera._direction;
 }
 
 void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transform)
@@ -176,13 +185,15 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    a21.Reset
-    ({
+    using namespace __Camera::Transform;
+
+    a21 = 
+    {
         cos_a, 0, sin_a, -lx * cos_a - lz * sin_a,
         -sin_a_sin_b, cos_b, cos_a_sin_b, lx * sin_a_sin_b - ly * cos_b - lz * cos_a_sin_b,
         -sin_a_cos_b, -sin_b, cos_a_cos_b, lx * sin_a_cos_b + ly * sin_b - lz * cos_a_cos_b,
         0, 0, 0, 1
-    });
+    };
 
     // SMatrix a3 = 
     // {
@@ -216,19 +227,19 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    a543.Reset
-    ({
+    a543 = 
+    {
         (double)_screen_width * _nearer_dest * cos_g / 2, -(double)_screen_width * _nearer_dest * sin_g / 2, (double)_screen_width / 2, 0,
         -(double)_screen_height * _nearer_dest * sin_g / 2, -(double)_screen_height * _nearer_dest * cos_g / 2, (double)_screen_height / 2, 0,
         0, 0, (_nearer_dest + _further_dest) * min(_screen_width, _screen_height) / 2, (-_nearer_dest * _further_dest) * min(_screen_width, _screen_height) / 2,
         0, 0, 1, 0
-    });
+    };
 
     // copy vertices_transform from vertices(origin) and transform it.
 
     for(auto i = 0; i != _pvertices_transform->size(); i++)
     {
-        _pvertices_transform->at(i).CopyFrom(_pvertices->at(i));
+        _pvertices_transform->at(i) = _pvertices->at(i);
 
         Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
         
@@ -253,8 +264,10 @@ DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direct
         return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
     }
 
-    upward_before.Reset({0, 1, 0, 0});
-    upward_after.Reset({0, 1, 0, 0});
+    using namespace __Camera::InverseUpperWithDirection;
+
+    upward_before = {0, 1, 0, 0};
+    upward_after = {0, 1, 0, 0};
 
     ASSERT_FOR_DEFAULT(upward_before *= last_direction);
     ASSERT_FOR_DEFAULT(upward_after *= _direction);

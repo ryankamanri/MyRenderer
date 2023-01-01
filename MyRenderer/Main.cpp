@@ -37,6 +37,14 @@ void DrawFunc(PainterFactor painter_factor)
 
 	auto floor_obj = *world.AddObjModel(floor);
 
+	floor_obj.Transform
+	({
+		2, 0, 0, 0,
+		0, 2, 0, 0,
+		0, 0, 2, 0,
+		0, 0, 0, 1
+	});
+
 	// auto j20_obj = *world.AddObjModel(j20);
 
 	// TGAImage img{};
@@ -66,7 +74,7 @@ void DrawFunc(PainterFactor painter_factor)
 	while (true)
 	{
 		// this part rightly belongs to DrawFunc
-		auto direction = *camera.Direction().Copy();
+		auto direction = camera.Direction();
 
 		revolve_matrix * camera.Direction();
 		revolve_matrix * camera.Location();
@@ -111,11 +119,27 @@ void OpenWindow(HINSTANCE hInstance)
 	window.Show();
 	WinGDI_Window::MessageLoop();
 
+
+
 	// TODO:
-	// window.SetWorld(world)
-	// 	.AddEventHandler(RecursiveDrawDelegate(DrawFunc))
-	// 	.AddEventHandler(MoveCameraDelegate)
-	// 	.MessageLoop();
+	// CameraAttributes c_attr = CameraAttributes(attrs...);
+	// AWindow window = WinGDI_Window(attrs); // extend the abstract class Kamanri::Renderer::World::Camera::AWindow 
+	// window.AddProcedure(RecursiveProcedure(RecursiveFunc))
+	// 			.AddProcedure(KeyboardControlProcedure);
+	// auto camera = Camera(std::move(c_attr), std::move(window)); // rvalue window
+	// wuto world = World3D(std::move(camera));
+	// world.AddObjModel(model).ShowWindow().Run(); // Run calls AWindow::MessageLoop();
+	//
+	// Or:
+	// World world(
+	// 		Camera(
+	// 			CameraAttributes(attrs...),
+	// 			Window(attrs...).AddProcedure(RecursiveProcedure(RecursiveFunc)).AddProcedure(KeyboardControlProcedure)
+	// 		)
+	// ).AddObjModel(model).ShowWindow().Run();
+	//
+	// NOTE:
+	// 1. Every class as a property of others should in form of rvalue reference. 
 }
 
 ////////////////////////////////////////////////////
@@ -145,6 +169,23 @@ void DelegateTest()
 	d.AddHead(dn2);
 	d.Execute(1);
 }
+
+void ResourcePoolTest()
+{
+	ResourcePool<SMatrix, 2> pool([](){
+		return Result<SMatrix>(SMatrix(3));
+	});
+
+	auto item = pool.Allocate();
+	item.item.PrintMatrix();
+
+	auto item2 = pool.Allocate();
+	item2.item.PrintMatrix();
+
+	pool.Free(item);
+
+
+}
 //////////////////////////////////////////////////////
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -152,7 +193,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nC
 	Log::Level(Log$::WARN_LEVEL);
 	OpenWindow(hInstance);
 	// DelegateTest();
-
+	// ResourcePoolTest();
 	system("pause");
 	return 0;
 

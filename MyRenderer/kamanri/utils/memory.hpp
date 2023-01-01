@@ -6,6 +6,8 @@ namespace Kamanri
     namespace Utils
     {
 
+        using byte = unsigned char;
+
         template <typename T>
         using P = std::unique_ptr<T>;
 
@@ -15,18 +17,19 @@ namespace Kamanri
             return P<T>(new T(std::forward<Ts>(args)...));
         }
 
-        // TODO: 
-        // 1. a method NewArray to allocate an object type array
-        // 2. a index method to find array location by index
-        // 3. update CHECK_MEMORY_IS_ALLOCATED, receive wrapped P instead of bare pointer.
+        template <typename T>
+        P<T[]> NewArray(size_t size)
+        {
+            return P<T[]>(new T[size]);
+        }
+
+
     }
 }
 
 #define CHECK_MEMORY_IS_ALLOCATED(p, log_name, return_value)                           \
-    if (p == nullptr)                                                                  \
+    if (!p)                                                                            \
     {                                                                                  \
         Kamanri::Utils::Log::Error(log_name, "Try to visit the not-allocated memory"); \
         return return_value;                                                           \
     }
-
-

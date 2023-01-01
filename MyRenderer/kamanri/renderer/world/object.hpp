@@ -23,6 +23,7 @@ namespace Kamanri
                     Object() = default;
                     Object(std::vector<Maths::Vector>& vertices, int offset, int length);
                     Object(Object& obj);
+                    Object(Object&& obj);
                     Object& operator=(Object& obj);
                     Utils::DefaultResult Transform(Maths::SMatrix const& transform_matrix) const;
             };

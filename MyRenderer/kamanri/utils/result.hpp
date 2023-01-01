@@ -122,7 +122,7 @@ namespace Kamanri
         Result<T>::Result(Result<T> &&result) noexcept : _status(result._status),
                                                          _code(result._code),
                                                          _message(result._message),
-                                                         _data(result._data)
+                                                         _data(std::move(result._data))
         {
             this->_inner_result.reset(result._inner_result.release());
             this->_stacktrace.assign(result._stacktrace.begin(), _stacktrace.end());
@@ -395,7 +395,8 @@ namespace Kamanri
         return _UNIQUE_RES_;                                                               \
     }
 
-#define TRY(result) ({ASSERT(result); std::move(_UNIQUE_RES_); }).Data()
+// Note: The type should have a move constructor.
+#define TRY(result) std::move(({ASSERT(result); std::move(_UNIQUE_RES_); }).Data())
 
 #define ASSERT_FOR_TYPE(T, result)                                                         \
     auto _UNIQUE_RES_ = result;                                                            \
@@ -405,7 +406,8 @@ namespace Kamanri
         return _UNIQUE_RES_.As<T>();                                                       \
     }
 
-#define TRY_FOR_TYPE(T, result) ({ ASSERT_FOR_TYPE(T, result); std::move(_UNIQUE_RES_); }).Data()
+// Note: The type should have a move constructor.
+#define TRY_FOR_TYPE(T, result) std::move(({ ASSERT_FOR_TYPE(T, result); std::move(_UNIQUE_RES_); }).Data())
 
 #define ASSERT_FOR_DEFAULT(result) ASSERT_FOR_TYPE(void *, result)
 

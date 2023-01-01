@@ -90,10 +90,23 @@ SMatrix::SMatrix(size_t n)
     }
 
     this->_N = n;
-    this->_SM = P<SMatrixElemType>(new SMatrixElemType[n * n]);
+    this->_SM = NewArray<SMatrixElemType>(n * n);
 }
 
-SMatrix::SMatrix(SMatrix &sm) : _SM(std::move(sm._SM)), _N(sm._N) {}
+SMatrix::SMatrix(SMatrix &&sm) : _SM(std::move(sm._SM)), _N(sm._N) {}
+
+SMatrix::SMatrix(SMatrix const& sm)
+{
+    CHECK_MEMORY_IS_ALLOCATED(sm._SM, __SMatrix::LOG_NAME, )
+
+    _N = sm._N;
+    _SM = NewArray<VectorElemType>(_N);
+
+    for(size_t i = 0; i < _N; i++)
+    {
+        _SM[i] = sm._SM[i];
+    }
+}
 
 SMatrix::SMatrix(std::initializer_list<SMatrixElemType> list)
 {
@@ -107,16 +120,17 @@ SMatrix::SMatrix(std::initializer_list<SMatrixElemType> list)
     }
 
     this->_N = (size_t)sqrt((double)size);
-    this->_SM = P<SMatrixElemType>(new SMatrixElemType[size]);
+    this->_SM = NewArray<SMatrixElemType>(size);
 
     auto begin = list.begin();
-    auto pSM = this->_SM.get();
 
-    CHECK_MEMORY_IS_ALLOCATED(pSM, __SMatrix::LOG_NAME, )
+    CHECK_MEMORY_IS_ALLOCATED(_SM, __SMatrix::LOG_NAME, )
 
-    for (size_t i = 0; begin + i != list.end(); i++)
+    auto i = 0;
+    for(auto list_elem: list)
     {
-        *(pSM + i) = *(begin + i);
+        _SM[i] = list_elem;
+        i++;
     }
 }
 
@@ -125,16 +139,15 @@ SMatrix::SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list)
     this->_N = SMatrix$::NOT_INITIALIZED_N;
     auto v_count = v_list.size();
 
-    this->_SM = P<SMatrixElemType>(new SMatrixElemType[v_count * v_count]);
+    this->_SM = NewArray<SMatrixElemType>(v_count * v_count);
 
     auto begin = v_list.begin();
-    auto pSM = this->_SM.get();
 
-    CHECK_MEMORY_IS_ALLOCATED(pSM, __SMatrix::LOG_NAME, )
+    CHECK_MEMORY_IS_ALLOCATED(_SM, __SMatrix::LOG_NAME, )
 
     for (size_t i = 0; begin + i != v_list.end(); i++)
     {
-        auto v = *(begin + i);
+        auto v = begin[i];
         auto v_size = v.size();
         if (v_size != v_count)
         {
@@ -143,13 +156,27 @@ SMatrix::SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list)
         }
         for (size_t j = 0; j < v_size; j++)
         {
-            *(pSM + j * v_count + i) = v[j];
+            _SM[j * v_count + i] = v[j];
         }
     }
     this->_N = v_count;
 }
 
-DefaultResult SMatrix::Reset(std::initializer_list<SMatrixElemType> list)
+
+SMatrix &SMatrix::operator=(SMatrix &sm)
+{
+
+    CHECK_MEMORY_IS_ALLOCATED(sm._SM, __SMatrix::LOG_NAME, *this)
+
+    _N = sm._N;
+    _SM = std::move(sm._SM);
+
+    sm._N = Vector$::NOT_INITIALIZED_N;
+
+    return *this;
+}
+
+DefaultResult SMatrix::operator=(std::initializer_list<SMatrixElemType> list)
 {
     auto size = list.size();
     if(size != _N * _N)
@@ -158,18 +185,20 @@ DefaultResult SMatrix::Reset(std::initializer_list<SMatrixElemType> list)
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_NOT_EQUEL_N, "The size of initializer list is not equal to SMatrix.");
     }
 
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(this->_SM.get(), __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX);
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX);
 
-    for (size_t i = 0; list.begin() + i != list.end(); i++)
+    auto i = 0;
+    for(auto list_elem: list)
     {
-        *(_SM.get() + i) = *(list.begin() + i);
+        _SM[i] = list_elem;
+        i++;
     }
 
     return DEFAULT_RESULT;
 
 }
 
-DefaultResult SMatrix::Reset(std::initializer_list<std::vector<SMatrixElemType>> v_list)
+DefaultResult SMatrix::operator=(std::initializer_list<std::vector<SMatrixElemType>> v_list)
 {
 
     auto v_count = v_list.size();
@@ -179,13 +208,13 @@ DefaultResult SMatrix::Reset(std::initializer_list<std::vector<SMatrixElemType>>
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_NOT_EQUEL_N, "The size of initializer vector list is not equal to SMatrix.");
     }
 
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(this->_SM.get(), __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX);
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX);
 
     auto begin = v_list.begin();
 
     for (size_t i = 0; begin + i != v_list.end(); i++)
     {
-        auto v = *(begin + i);
+        auto v = begin[i];
         auto v_size = v.size();
         if (v_size != v_count)
         {
@@ -194,7 +223,7 @@ DefaultResult SMatrix::Reset(std::initializer_list<std::vector<SMatrixElemType>>
         }
         for (size_t j = 0; j < v_size; j++)
         {
-            *(_SM.get() + j * v_count + i) = v[j];
+            _SM[j * v_count + i] = v[j];
         }
     }
 
@@ -202,35 +231,6 @@ DefaultResult SMatrix::Reset(std::initializer_list<std::vector<SMatrixElemType>>
 
 }
 
-P<SMatrix> SMatrix::Copy()
-{
-    auto new_sm = New<SMatrix>(_N);
-    auto psm = _SM.get();
-    auto psm_new = new_sm->_SM.get();
-
-    CHECK_MEMORY_IS_ALLOCATED(psm, __SMatrix::LOG_NAME, new_sm)
-
-    for (size_t i = 0; i < _N * _N; i++)
-    {
-        *(psm_new + i) = *(psm + i);
-    }
-
-    return new_sm;
-}
-
-SMatrix &SMatrix::operator=(SMatrix &sm)
-{
-    auto psm = sm._SM.get();
-
-    CHECK_MEMORY_IS_ALLOCATED(psm, __SMatrix::LOG_NAME, *this)
-
-    _N = sm._N;
-    _SM = std::move(sm._SM);
-
-    sm._N = Vector$::NOT_INITIALIZED_N;
-
-    return *this;
-}
 
 /**
  * @brief return the n
@@ -250,8 +250,7 @@ Result<std::size_t> SMatrix::N() const
 
 Result<SMatrixElemType> SMatrix::operator[](int index) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, psm, __SMatrix::LOG_NAME, -1)
+    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::NOT_INITIALIZED_VALUE)
 
     if (index < 0 || index > _N * _N)
     {
@@ -259,12 +258,11 @@ Result<SMatrixElemType> SMatrix::operator[](int index) const
         return RESULT_EXCEPTION(SMatrixElemType, SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    return Result<SMatrixElemType>(*(psm + index));
+    return Result<SMatrixElemType>(_SM[index]);
 }
 
 SMatrixElemType SMatrix::_Get(size_t row, size_t col) const
 {
-    auto psm = _SM.get();
 
     if (row > _N || col > _N)
     {
@@ -272,14 +270,13 @@ SMatrixElemType SMatrix::_Get(size_t row, size_t col) const
         return SMatrix$::NOT_INITIALIZED_VALUE;
     }
 
-    return *(psm + row * _N + col);
+    return _SM[row * _N + col];
 }
 
 
 Result<SMatrixElemType> SMatrix::Get(size_t row, size_t col) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, psm, __SMatrix::LOG_NAME, -1)
+    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::NOT_INITIALIZED_VALUE)
 
     if (row > _N || col > _N)
     {
@@ -287,12 +284,11 @@ Result<SMatrixElemType> SMatrix::Get(size_t row, size_t col) const
         return RESULT_EXCEPTION(SMatrixElemType, SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    return Result<SMatrixElemType>(*(psm + row * _N + col));
+    return Result<SMatrixElemType>(_SM[row * _N + col]);
 }
 
 Vector SMatrix::_Get(size_t col) const
 {
-    auto psm = _SM.get();
 
     if (col > _N)
     {
@@ -304,7 +300,7 @@ Vector SMatrix::_Get(size_t col) const
 
     for (size_t i = 0; i < _N; i++)
     {
-        v.Set(i, *(psm + i * _N + col));
+        v.Set(i, _SM[i * _N + col]);
     }
 
     return v;
@@ -312,8 +308,7 @@ Vector SMatrix::_Get(size_t col) const
 
 Result<Vector> SMatrix::Get(size_t col) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(Vector, psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(Vector, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     if (col > _N)
     {
@@ -325,7 +320,7 @@ Result<Vector> SMatrix::Get(size_t col) const
 
     for (size_t i = 0; i < _N; i++)
     {
-        v.Set(i, *(psm + i * _N + col));
+        v.Set(i, _SM[i * _N + col]);
     }
 
     return Result<Vector>(v);
@@ -333,8 +328,7 @@ Result<Vector> SMatrix::Get(size_t col) const
 
 DefaultResult SMatrix::Set(size_t row, size_t col, SMatrixElemType value) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     if (row > _N || col > _N)
     {
@@ -342,15 +336,14 @@ DefaultResult SMatrix::Set(size_t row, size_t col, SMatrixElemType value) const
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    *(psm + row * _N + col) = value;
+    _SM[row * _N + col] = value;
 
     return DEFAULT_RESULT;
 }
 
 DefaultResult SMatrix::Set(size_t col, Vector const& v) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     if (col > _N)
     {
@@ -368,7 +361,7 @@ DefaultResult SMatrix::Set(size_t col, Vector const& v) const
 
     for (size_t row = 0; row < _N; row++)
     {
-        *(psm + row * _N + col) = v.GetFast((int)row);
+        _SM[row * _N + col] = v.GetFast((int)row);
     }
 
     return DEFAULT_RESULT;
@@ -376,10 +369,8 @@ DefaultResult SMatrix::Set(size_t col, Vector const& v) const
 
 DefaultResult SMatrix::operator+=(SMatrix const &sm)
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
-    auto psm2 = sm._SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm2, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(sm._SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     size_t n1 = _N;
     size_t n2 = sm._N;
@@ -392,7 +383,7 @@ DefaultResult SMatrix::operator+=(SMatrix const &sm)
 
     for (size_t i = 0; i < n1 * n1; i++)
     {
-        *(psm + i) += *(psm2 + i);
+        _SM[i] += sm._SM[i];
     }
 
     return DEFAULT_RESULT;
@@ -412,10 +403,8 @@ DefaultResult SMatrix::operator+=(std::initializer_list<std::vector<SMatrixElemT
 
 DefaultResult SMatrix::operator-=(SMatrix const &sm)
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
-    auto psm2 = sm._SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm2, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(sm._SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     size_t n1 = _N;
     size_t n2 = sm._N;
@@ -428,7 +417,7 @@ DefaultResult SMatrix::operator-=(SMatrix const &sm)
 
     for (size_t i = 0; i < n1 * n1; i++)
     {
-        *(psm + i) -= *(psm2 + i);
+        _SM[i] -= sm._SM[i];
     }
 
     return DEFAULT_RESULT;
@@ -448,10 +437,8 @@ DefaultResult SMatrix::operator-=(std::initializer_list<std::vector<SMatrixElemT
 
 DefaultResult SMatrix::operator*=(SMatrix const& sm)
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
-    auto psm2 = sm._SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm2, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(sm._SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     size_t n1 = _N;
     size_t n2 = sm._N;
@@ -462,7 +449,7 @@ DefaultResult SMatrix::operator*=(SMatrix const& sm)
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_NOT_EQUEL_N, "Two matrixes of unequal length");
     }
 
-    auto this_temp = this->Copy();
+    auto this_temp = *this;
 
     for(size_t col_sm = 0; col_sm < _N; col_sm++)
     {
@@ -474,7 +461,7 @@ DefaultResult SMatrix::operator*=(SMatrix const& sm)
         for(size_t col = 0; col < _N; col++)
         {
             auto hat = v.GetFast((int)col);
-            auto this_col = this_temp->_Get(col);
+            auto this_col = this_temp._Get(col);
 
             this_col *= hat;
             out_v += this_col;
@@ -500,12 +487,11 @@ DefaultResult SMatrix::operator*=(std::initializer_list<std::vector<SMatrixElemT
 
 DefaultResult SMatrix::operator*=(SMatrixElemType value)
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     for(size_t i = 0; i < _N * _N; i++)
     {
-        *(psm + i) *= value;
+        _SM[i] *= value;
     }
     
     return DEFAULT_RESULT;
@@ -513,8 +499,7 @@ DefaultResult SMatrix::operator*=(SMatrixElemType value)
 
 DefaultResult SMatrix::operator*(Vector& v) const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
     
     size_t n1 = _N;
     auto n2 = TRY_FOR_DEFAULT(v.N());
@@ -525,7 +510,7 @@ DefaultResult SMatrix::operator*(Vector& v) const
         return DEFAULT_RESULT_EXCEPTION(SMatrix$::CODE_NOT_EQUEL_N, "Matrix and vector of unequal length");
     }
     
-    auto v_temp = *v.Copy();
+    auto v_temp = v;
 
     v.SetAll(0);
 
@@ -548,21 +533,19 @@ DefaultResult SMatrix::operator*(Vector& v) const
  */
 Result<SMatrix> SMatrix::operator+() const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrix, psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrix, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     SMatrix ret_sm(_N);
-    auto psm_ret = ret_sm._SM.get();
 
     for(size_t i = 0; i < _N; i ++)
     {
         for(size_t j = 0; j < _N; j++)
         {
-            *(psm_ret + j * _N + i) = *(psm + i * _N + j);
+            ret_sm._SM[j * _N + i] = _SM[i * _N + j];
         }
     }
 
-    return Result<SMatrix>(ret_sm);
+    return Result<SMatrix>(std::move(ret_sm));
 
 }
 
@@ -573,8 +556,7 @@ Result<SMatrix> SMatrix::operator+() const
  */
 Result<SMatrix> SMatrix::operator-() const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrix, psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrix, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     // use AA* == |A|E
     // A^(-1) == A* / |A|
@@ -588,11 +570,9 @@ Result<SMatrix> SMatrix::operator-() const
 
 Result<SMatrix> SMatrix::operator*() const
 {
-    auto psm = _SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrix, psm, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrix, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     SMatrix ret_sm(_N);
-    auto psm_ret = ret_sm._SM.get();
 
     std::vector<std ::size_t> row_list;
     std::vector<std ::size_t> col_list;
@@ -606,11 +586,11 @@ Result<SMatrix> SMatrix::operator*() const
     {
         for(size_t j = 0; j < _N; j++)
         {
-            *(psm_ret + i * _N + j) = _AComplement(psm, row_list, col_list, j, i);
+            ret_sm._SM[i * _N + j] = _AComplement(_SM.get(), row_list, col_list, j, i);
         }
     }
 
-    return Result<SMatrix>(ret_sm);
+    return Result<SMatrix>(std::move(ret_sm));
 
 } 
 
@@ -620,9 +600,7 @@ DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) con
 {
     if(!is_print) return DEFAULT_RESULT;
 
-    auto pSM = this->_SM.get();
-
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pSM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     std::string formatStr = "%.";
     formatStr.append(decimal_count);
@@ -640,7 +618,7 @@ DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) con
     {
         for (size_t j = 0; j < this->_N; j++)
         {
-            auto value = *(pSM + _N * i + j);
+            auto value = _SM[_N * i + j];
             Print(formatStr.c_str(), value);
         }
         PrintLn();
@@ -661,18 +639,18 @@ DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) con
  * @param col_end 
  * @return PMyResult<SMatrixElemType>> 
  */
-SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::size_t>& row_list, std::vector<std::size_t>& col_list) const
+SMatrixElemType SMatrix::_Determinant(SMatrixElemType* psm, std::vector<std::size_t>& row_list, std::vector<std::size_t>& col_list) const
 {
     auto row_count = row_list.size();
     auto col_count = col_list.size();
     
     if(row_count == 1)
     {
-        return *(psm + _N * row_list[0] + col_list[0]);
+        return psm[_N * row_list[0] + col_list[0]];
     }
     if(row_count == 2)
     {
-        auto result = *(psm + _N * row_list[0] + col_list[0]) * *(psm + _N * row_list[1] + col_list[1]) - *(psm + _N * row_list[0] + col_list[1]) * *(psm + _N * row_list[1] + col_list[0]);
+        auto result = psm[_N * row_list[0] + col_list[0]] * psm[_N * row_list[1] + col_list[1]] - psm[_N * row_list[0] + col_list[1]] * psm[_N * row_list[1] + col_list[0]];
         if(row_list[0] > row_list[1])
         {
             // This is to avoid the bigger index is front of the smaller
@@ -698,7 +676,7 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
         auto row_first_sorted = __SMatrix::GetSortedIndex(row_list, row_first);
         row_list.erase(row_list.begin());
         //////////////////////// calculate sub result
-        auto value = *(psm + _N * row_first + col_first);
+        auto value = psm[_N * row_first + col_first];
 
         // use -1^(a+b) * n * |A*_ab| to calculate
         auto result_sub = (
@@ -717,10 +695,13 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType *psm, std::vector<std::siz
     return result;
 }
 
+// TODO: 
+// make calc determinant returns vector as
+// vector = |i, j, k...| avaliable.
+
 Result<SMatrixElemType> SMatrix::Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const
 {
-    auto pSM = this->_SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     auto row_count = row_list.size();
     auto col_count = col_list.size();
@@ -745,7 +726,7 @@ Result<SMatrixElemType> SMatrix::Determinant(std::vector<std::size_t> row_list, 
     }
     
 
-    SMatrixElemType res = _Determinant(pSM, row_list, col_list);
+    SMatrixElemType res = _Determinant(_SM.get(), row_list, col_list);
 
     return Result<SMatrixElemType>(res);
 
@@ -753,8 +734,7 @@ Result<SMatrixElemType> SMatrix::Determinant(std::vector<std::size_t> row_list, 
 
 Result<SMatrixElemType> SMatrix::Determinant() const
 {
-    auto pSM = this->_SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     std::vector<std ::size_t> row_list;
     std::vector<std ::size_t> col_list;
@@ -764,12 +744,12 @@ Result<SMatrixElemType> SMatrix::Determinant() const
         col_list.push_back(i);
     }
 
-    SMatrixElemType res = _Determinant(pSM, row_list, col_list);
+    SMatrixElemType res = _Determinant(_SM.get(), row_list, col_list);
 
     return Result<SMatrixElemType>(res);
 }
 
-SMatrixElemType SMatrix::_AComplement(SMatrixElemType *psm, std::vector<size_t> row_list, std::vector<size_t> col_list, size_t row, size_t col) const
+SMatrixElemType SMatrix::_AComplement(SMatrixElemType* psm, std::vector<size_t> row_list, std::vector<size_t> col_list, size_t row, size_t col) const
 {
     if(!__SMatrix::RemoveFromList(row_list, row) || !__SMatrix::RemoveFromList(col_list, col))
     {   
@@ -791,8 +771,7 @@ SMatrixElemType SMatrix::_AComplement(SMatrixElemType *psm, std::vector<size_t> 
  */
 Result<SMatrixElemType> SMatrix::AComplement(size_t row, size_t col) const
 {
-    auto pSM = this->_SM.get();
-    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, pSM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
+    CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
     if(row >= _N || col >= _N)
     {
@@ -808,6 +787,6 @@ Result<SMatrixElemType> SMatrix::AComplement(size_t row, size_t col) const
         col_list.push_back(i);
     }
 
-    SMatrixElemType res = _AComplement(pSM, row_list, col_list, row, col);
+    SMatrixElemType res = _AComplement(_SM.get(), row_list, col_list, row, col);
     return Result<SMatrixElemType>(res);
 }

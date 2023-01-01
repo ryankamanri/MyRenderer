@@ -69,8 +69,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
         _environment.triangles[i].PrintTriangle(is_print);
     }
 
-    Object result_object(_vertices, dot_offset, (int)model.GetVertexSize());
-    return Result<Object>(result_object);
+    return Result<Object>(Object(_vertices, dot_offset, (int)model.GetVertexSize()));
 }
 
 DefaultResult World3D::Build(bool is_print)
@@ -102,6 +101,5 @@ double World3D::Depth(int x, int y)
     x = x % _buffers.Height();
     y = y % _buffers.Width();
     
-    // return *(_buffers.z_buffer.get() + x * _buffers.Height() + y);
     return _buffers.Get(x, y).z;
 }

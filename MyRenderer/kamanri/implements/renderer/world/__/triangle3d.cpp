@@ -21,6 +21,13 @@ namespace Kamanri
                 namespace __Triangle3D
                 {
                     constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Triangle3D);
+
+                    namespace ArealCoordinates
+                    {
+                        Vector target(4);
+                        SMatrix a(4);
+                    } // namespace ArealCoordinates
+                    
                 } // namespace Triangle3D$
                 
             } // namespace __
@@ -142,12 +149,13 @@ Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) c
         Log::Error(__Triangle3D::LOG_NAME, "The target is not in Triangle");
         RESULT_EXCEPTION(Vector, Triangle3D$::CODE_NOT_IN_TRIANGLE, "The target is not in Triangle");
     }
-    Vector target = {x, y, Z(x, y), 1};
+    using namespace __Triangle3D::ArealCoordinates;
+    target = {x, y, Z(x, y), 1};
 
     Log::Trace(__Triangle3D::LOG_NAME,"The target is:");
     target.PrintVector(is_print);
     // (v1, v2, v3, 0) (alpha, beta, gamma, 1)^T = target
-    SMatrix a = 
+    a = 
     {
         { _o_v1_x, _o_v1_y, _po_v1->GetFast(2), 1},
         { _o_v2_x, _o_v2_y, _po_v2->GetFast(2), 1},

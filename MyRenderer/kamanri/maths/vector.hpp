@@ -30,15 +30,12 @@ namespace Kamanri
         public:
             Vector();
             explicit Vector(size_t n);
-            // TODO:
-            // add move constructor and copy constructor
-            Vector(Vector &v);
+
+            Vector(Vector &&v);
             Vector(Vector const &v);
             Vector(std::initializer_list<VectorElemType> list);
-            Utils::DefaultResult Reset(std::initializer_list<VectorElemType> list);
-            Utils::P<Vector> Copy() const;
-            Utils::DefaultResult CopyFrom(Vector const &v);
-            Vector &operator=(Vector &v);
+            Vector& operator=(Vector const& v);
+            Utils::DefaultResult operator=(std::initializer_list<VectorElemType> list);
             // Get the size of the Vector.
             Utils::Result<std::size_t> N() const;
 
@@ -73,7 +70,7 @@ namespace Kamanri
 
         private:
             // The pointer indicated to vector.
-            Utils::P<VectorElemType> _V;
+            Utils::P<VectorElemType[]> _V;
             // The length of the vector.
             std::size_t _N = Vector$::NOT_INITIALIZED_N;
         };

@@ -83,7 +83,9 @@
         "xlocmon": "cpp",
         "xloctime": "cpp",
         "*.rh": "cpp",
-        "cfloat": "cpp"
+        "cfloat": "cpp",
+        "coroutine": "cpp",
+        "resumable": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\windows-default\\compile_commands.json"

@@ -36,26 +36,24 @@ Vector::Vector(size_t n)
     }
 
     this->_N = n;
-    this->_V = P<VectorElemType>(new VectorElemType[n]);
+    this->_V = NewArray<VectorElemType>(n);
 }
 
-Vector::Vector(Vector &v) : _V(std::move(v._V)), _N(v._N)
+Vector::Vector(Vector &&v) : _V(std::move(v._V)), _N(v._N)
 {
     v._N = Vector$::NOT_INITIALIZED_N;
 }
 
 Vector::Vector(Vector const& v)
 {
-    auto pv_old = v._V.get();
-    CHECK_MEMORY_IS_ALLOCATED(pv_old, __Vector::LOG_NAME, )
+    CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, )
 
     _N = v._N;
-    _V = P<VectorElemType>(new VectorElemType[_N]);
-    auto pv_new = _V.get();
+    _V = NewArray<VectorElemType>(_N);
 
     for(size_t i = 0; i < _N; i++)
     {
-        *(pv_new + i) = *(pv_old + i);
+        _V[i] = v._V[i];
     }
 
 }
@@ -74,18 +72,32 @@ Vector::Vector(std::initializer_list<VectorElemType> list)
     }
 
     this->_N = n;
-    this->_V = P<VectorElemType>(new VectorElemType[n]);
+    this->_V = NewArray<VectorElemType>(n);
 
-    auto begin = list.begin();
-    auto pV = this->_V.get();
-
-    for (size_t i = 0; begin + i < list.end(); i++)
+    auto i = 0;
+    for(auto list_elem: list)
     {
-        *(pV + i) = *(begin + i);
+        _V[i] = list_elem;
+        i++;
     }
+
 }
 
-DefaultResult Vector::Reset(std::initializer_list<VectorElemType> list)
+Vector& Vector::operator=(Vector const& v)
+{
+    CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, *this)
+
+    _N = v._N;
+    _V = NewArray<VectorElemType>(_N);
+    for(size_t i = 0; i < _N; i++)
+    {
+        _V[i] = v._V[i];
+    }
+
+    return *this;
+}
+
+DefaultResult Vector::operator=(std::initializer_list<VectorElemType> list)
 {
     auto n = list.size();
     if (n != _N)
@@ -94,66 +106,16 @@ DefaultResult Vector::Reset(std::initializer_list<VectorElemType> list)
         return DEFAULT_RESULT_EXCEPTION(Vector$::CODE_NOT_EQUEL_N, "The size of initializer list is not equal to vector");
     }
 
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V.get(), __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR);
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR);
 
-    for (size_t i = 0; list.begin() + i < list.end(); i++)
+    auto i = 0;
+    for(auto list_elem: list)
     {
-        *(_V.get() + i) = *(list.begin() + i);
+        _V[i] = list_elem;
+        i++;
     }
 
     return DEFAULT_RESULT;
-}
-
-P<Vector> Vector::Copy() const
-{
-    auto new_v = New<Vector>(_N);
-    auto pv = _V.get();
-    auto pv_new = new_v->_V.get();
-
-    CHECK_MEMORY_IS_ALLOCATED(pv, __Vector::LOG_NAME, new_v)
-
-    for(size_t i = 0; i < _N; i++)
-    {
-        *(pv_new + i) = *(pv + i);
-    }
-
-    return new_v;
-}
-
-DefaultResult Vector::CopyFrom(Vector const& v)
-{
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-    auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv2, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
-    if(_N != v._N)
-    {
-        Log::Error(__Vector::LOG_NAME, "This vector n is %d but copy from the vector which n is %d", _N, v._N);
-        return DEFAULT_RESULT_EXCEPTION(Vector$::CODE_NOT_EQUEL_N, "Not equal n");
-    }
-
-    for(size_t i = 0; i < _N; i++)
-    {
-        *(pv + i) = *(pv2 + i);
-    }
-
-    return DEFAULT_RESULT;
-
-}
-
-Vector& Vector::operator=(Vector& v)
-{
-    auto pv = v._V.get();
-
-    CHECK_MEMORY_IS_ALLOCATED(pv, __Vector::LOG_NAME, *this)
-
-    _N = v._N;
-    _V = std::move(v._V);
-
-    v._N = Vector$::NOT_INITIALIZED_N;
-
-    return *this;
 }
 
 Result<std::size_t> Vector::N() const
@@ -169,8 +131,7 @@ Result<std::size_t> Vector::N() const
 
 Result<VectorElemType> Vector::operator[](int n) const
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, __Vector::LOG_NAME, -1)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, _V, __Vector::LOG_NAME, -1)
 
     if(n < 0 || n > this->_N)
     {
@@ -178,13 +139,12 @@ Result<VectorElemType> Vector::operator[](int n) const
         return RESULT_EXCEPTION(VectorElemType, Vector$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    return Result<VectorElemType>(*(pv + n));
+    return Result<VectorElemType>(_V[n]);
 }
 
 VectorElemType Vector::GetFast(int n) const
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_IS_ALLOCATED(pv, __Vector::LOG_NAME, -1)
+    CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::INVALID_VECTOR_ELEM_TYPE_VALUE)
 
     if(n < 0 || n > this->_N)
     {
@@ -192,26 +152,24 @@ VectorElemType Vector::GetFast(int n) const
         return Vector$::INVALID_VECTOR_ELEM_TYPE_VALUE;
     }
 
-    return *(pv + n);
+    return _V[n];
 }
 
 DefaultResult Vector::Set(size_t index, VectorElemType value) const
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
-    *(pv + index) = value;
+    _V[index] = value;
     return DEFAULT_RESULT;
 }
 
 DefaultResult Vector::SetAll(VectorElemType value) const
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     for(size_t i = 0; i < _N;i ++)
     {
-        *(pv + i) = value;
+        _V[i] = value;
     }
     return DEFAULT_RESULT;
 }
@@ -219,10 +177,8 @@ DefaultResult Vector::SetAll(VectorElemType value) const
 DefaultResult Vector::operator+=(Vector const &v)
 {
 
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-    auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv2, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
 
     size_t n1 = _N;
@@ -236,7 +192,7 @@ DefaultResult Vector::operator+=(Vector const &v)
 
     for (size_t i = 0; i < n1; i++)
     {
-        *(pv + i) += *(pv2 + i);
+        _V[i] += v._V[i];
     }
 
     return DEFAULT_RESULT;
@@ -251,10 +207,8 @@ DefaultResult Vector::operator+=(std::initializer_list<VectorElemType> list)
 DefaultResult Vector::operator-=(Vector const &v)
 {
 
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-    auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv2, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     size_t n1 = _N;
     size_t n2 = v._N;
@@ -268,7 +222,7 @@ DefaultResult Vector::operator-=(Vector const &v)
     
     for (size_t i = 0; i < n1; i++)
     {
-        *(pv + i) -= *(pv2 + i);
+        _V[i] += v._V[i];
     }
 
     return DEFAULT_RESULT;
@@ -283,10 +237,8 @@ DefaultResult Vector::operator-=(std::initializer_list<VectorElemType> list)
 DefaultResult Vector::operator*=(Vector const& v)
 {
 
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-    auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv2, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     size_t n1 = _N;
     size_t n2 = v._N;
@@ -304,17 +256,17 @@ DefaultResult Vector::operator*=(Vector const& v)
         return DEFAULT_RESULT_EXCEPTION(Vector$::CODE_INVALID_OPERATION, message);
     }
 
-    auto v0 = *(pv + 1) * *(pv2 + 2) - *(pv + 2) * *(pv2 + 1);
-    auto v1 = *(pv + 2) * *(pv2 + 0) - *(pv + 0) * *(pv2 + 2);
-    auto v2 = *(pv + 0) * *(pv2 + 1) - *(pv + 1) * *(pv2 + 0);
+    auto v0 = _V[1] * v._V[2] - _V[2] * v._V[1];
+    auto v1 = _V[2] * v._V[0] - _V[0] * v._V[2];
+    auto v2 = _V[0] * v._V[1] - _V[1] * v._V[0];
 
-    *pv = v0;
-    *(pv + 1) = v1;
-    *(pv + 2) = v2;
+    _V[0] = v0;
+    _V[1] = v1;
+    _V[2] = v2;
 
     if(n1 == 4)
     {
-        *(pv + 3) = *(pv + 3) * *(pv2 + 3);
+        _V[3] = _V[3] * v._V[3];
     }
 
     return DEFAULT_RESULT;
@@ -329,12 +281,11 @@ DefaultResult Vector::operator*=(std::initializer_list<VectorElemType> list)
 
 DefaultResult Vector::operator*=(VectorElemType value)
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
     
     for(size_t i = 0; i < _N; i++)
     {
-        *(pv + i) *= value;
+        _V[i] *= value;
     }
 
     return DEFAULT_RESULT;
@@ -342,10 +293,8 @@ DefaultResult Vector::operator*=(VectorElemType value)
 
 Result<VectorElemType> Vector::operator*(Vector const& v) const
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-    auto pv2 = v._V.get();
-    CHECK_MEMORY_FOR_RESULT(VectorElemType, pv2, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, _V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     size_t n1 = _N;
     size_t n2 = v._N;
@@ -356,11 +305,11 @@ Result<VectorElemType> Vector::operator*(Vector const& v) const
         return RESULT_EXCEPTION(VectorElemType, Vector$::CODE_NOT_EQUEL_N, "Two vectors of unequal length");
     }
 
-    VectorElemType result = 0;
+    VectorElemType result = Vector$::NOT_INITIALIZED_N;
 
     for(size_t i = 0; i < n1; i++)
     {
-        result += *(pv + i) * *(pv2 + i);
+        result += _V[i] * v._V[i];
     }
 
     return Result<VectorElemType>(result);
@@ -376,9 +325,7 @@ DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) cons
 {
     if(!is_print) return DEFAULT_RESULT;
 
-    auto pV = this->_V.get();
-
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pV, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     std::string formatStr = "%.";
     formatStr.append(decimal_count);
@@ -394,7 +341,7 @@ DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) cons
 
     for (size_t i = 0; i < this->_N; i++)
     {
-        auto value = *(pV + i);
+        auto value = _V[i];
         Print(formatStr.c_str(), value);
     }
     PrintLn();
@@ -404,13 +351,12 @@ DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) cons
 
 DefaultResult Vector::Unitization()
 {
-    auto pv = _V.get();
-    CHECK_MEMORY_FOR_DEFAULT_RESULT(pv, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
+    CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     double length_square = 0;
     for(auto i = 0; i < _N; i++)
     {
-        length_square += pow(*(pv + i), 2);
+        length_square += pow(_V[i], 2);
     }
 
     if(length_square == 0)
@@ -423,7 +369,7 @@ DefaultResult Vector::Unitization()
 
     for(auto i = 0; i <_N; i++)
     {
-        *(pv + i) /= length;
+        _V[i] /= length;
     }
 
     return DEFAULT_RESULT;

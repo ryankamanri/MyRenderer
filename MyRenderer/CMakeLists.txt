@@ -43,6 +43,6 @@ target_link_libraries(MyRenderer kamanri)
 
 # Add dependencies
 
-# TODO: 如有需要，请添加测试并安装目标。
+
 message(CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE})
 

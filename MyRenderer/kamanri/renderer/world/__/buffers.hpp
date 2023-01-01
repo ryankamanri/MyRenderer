@@ -16,7 +16,7 @@ namespace Kamanri
                 private:
                     unsigned int _width;
                     unsigned int _height;
-                    Utils::P<FrameBuffer> _buffers;
+                    Utils::P<FrameBuffer[]> _buffers;
 
                 public:
                     void Init(unsigned int width, unsigned int height);

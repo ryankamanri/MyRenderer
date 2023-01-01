@@ -13,6 +13,11 @@ Object::Object(Object& obj): _pvertices(obj._pvertices), _offset(obj._offset), _
 
 }
 
+Object::Object(Object&& obj): _pvertices(obj._pvertices), _offset(obj._offset), _length(obj._length)
+{
+
+}
+
 Object& Object::operator=(Object& obj)
 {
     _pvertices = obj._pvertices;

@@ -35,15 +35,15 @@ namespace Kamanri
         public:
             SMatrix();
             explicit SMatrix(size_t n);
-            // TODO:
-            // add move constructor and copy constructor
-            SMatrix(SMatrix &sm);
+
+            SMatrix(SMatrix &&sm);
+            SMatrix(SMatrix const& sm);
             SMatrix(std::initializer_list<SMatrixElemType> list);
             SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
-            Utils::DefaultResult Reset(std::initializer_list<SMatrixElemType> list);
-            Utils::DefaultResult Reset(std::initializer_list<std::vector<SMatrixElemType>> v_list);
-            Utils::P<SMatrix> Copy();
+
             SMatrix &operator=(SMatrix &sm);
+            Utils::DefaultResult operator=(std::initializer_list<SMatrixElemType> list);
+            Utils::DefaultResult operator=(std::initializer_list<std::vector<SMatrixElemType>> v_list);
             // Get the size of the Matrix.
             Utils::Result<std::size_t> N() const;
 
@@ -88,7 +88,7 @@ namespace Kamanri
 
         private:
             // The pointer indicated to square matrix.
-            Utils::P<SMatrixElemType> _SM;
+            Utils::P<SMatrixElemType[]> _SM;
             // The length of the square amtrix.
             std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
 
@@ -96,10 +96,10 @@ namespace Kamanri
 
             Vector _Get(size_t col) const;
             // Calculate the determinant of matrix recursively
-            SMatrixElemType _Determinant(SMatrixElemType *psm, std::vector<std::size_t> &row_list, std::vector<std::size_t> &col_list) const;
+            SMatrixElemType _Determinant(SMatrixElemType* psm, std::vector<std::size_t> &row_list, std::vector<std::size_t> &col_list) const;
 
             // algebraic complement
-            SMatrixElemType _AComplement(SMatrixElemType *psm, std::vector<size_t> row_list, std::vector<size_t> col_list, size_t row, size_t col) const;
+            SMatrixElemType _AComplement(SMatrixElemType* psm, std::vector<size_t> row_list, std::vector<size_t> col_list, size_t row, size_t col) const;
         };
 
     }

@@ -8,7 +8,7 @@ namespace Kamanri
     {
         namespace WinGDI_Window$
         {
-            // TODO: let Painter, PainterFactor and Window extend from object in 'window_procedures/window.hpp'
+            // TODO: let Painter, PainterFactor and Window extend from object in 'renderer/a_window.hpp'
             class Painter;
             class PainterFactor
             {

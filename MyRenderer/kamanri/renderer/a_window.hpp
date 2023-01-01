@@ -1,3 +1,4 @@
+// TODO: abstract window class
 #pragma once
 #include "kamanri/utils/delegate.hpp"
 #include "kamanri/renderer/world/world3d.hpp"
