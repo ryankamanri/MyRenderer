@@ -41,7 +41,7 @@ namespace Kamanri
 
 
 
-Triangle3D::Triangle3D(std::vector<Maths::Vector>& vertices_transform, int offset, int v1, int v2, int v3): _vertices_transform(vertices_transform), _offset(offset), _v1(v1), _v2(v2), _v3(v3)
+Triangle3D::Triangle3D(int offset, int v1, int v2, int v3): _offset(offset), _v1(v1), _v2(v2), _v3(v3)
 {
 
 }
@@ -59,15 +59,15 @@ void Triangle3D::PrintTriangle(bool is_print) const
 
 
 
-void Triangle3D::Build()
+void Triangle3D::Build(std::vector<Maths::Vector> &vertices_transform)
 {
     _o_i1 = _offset + _v1;
     _o_i2 = _offset + _v2;
     _o_i3 = _offset + _v3;
 
-    _po_v1 = &_vertices_transform[_o_i1];
-    _po_v2 = &_vertices_transform[_o_i2];
-    _po_v3 = &_vertices_transform[_o_i3];
+    _po_v1 = &vertices_transform[_o_i1];
+    _po_v2 = &vertices_transform[_o_i2];
+    _po_v3 = &vertices_transform[_o_i3];
 
     _o_v1_x = _po_v1->GetFast(0);
     _o_v1_y = _po_v1->GetFast(1);

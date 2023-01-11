@@ -100,9 +100,10 @@ SMatrix::SMatrix(SMatrix const& sm)
     CHECK_MEMORY_IS_ALLOCATED(sm._SM, __SMatrix::LOG_NAME, )
 
     _N = sm._N;
-    _SM = NewArray<VectorElemType>(_N);
+    auto size = _N * _N;
+    _SM = NewArray<VectorElemType>(size);
 
-    for(size_t i = 0; i < _N; i++)
+    for(size_t i = 0; i < size; i++)
     {
         _SM[i] = sm._SM[i];
     }
@@ -163,15 +164,22 @@ SMatrix::SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list)
 }
 
 
-SMatrix &SMatrix::operator=(SMatrix &sm)
+SMatrix &SMatrix::operator=(SMatrix const& sm)
 {
 
     CHECK_MEMORY_IS_ALLOCATED(sm._SM, __SMatrix::LOG_NAME, *this)
 
-    _N = sm._N;
-    _SM = std::move(sm._SM);
+    auto size = sm._N * sm._N;
+    if(_N != sm._N)
+    {
+        _N = sm._N;
+        _SM = NewArray<SMatrixElemType>(size);
+    }
 
-    sm._N = Vector$::NOT_INITIALIZED_N;
+    for(size_t i = 0; i < size; i++)
+    {
+        _SM[i] = sm._SM[i];
+    }
 
     return *this;
 }

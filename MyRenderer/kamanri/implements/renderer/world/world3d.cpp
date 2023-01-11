@@ -1,6 +1,7 @@
 #include "kamanri/renderer/world/world3d.hpp"
 #include "kamanri/utils/string.hpp"
 
+
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Maths;
 using namespace Kamanri::Utils;
@@ -22,13 +23,25 @@ namespace Kamanri
     
 } // namespace Kamanri
 
+World3D::World3D(): _camera(Camera()) {}
 
-
-World3D::World3D(Camera& camera): _camera(camera)
+World3D::World3D(Camera&& camera): _camera(std::move(camera))
 {
     _camera.SetVertices(_vertices, _vertices_transform);
     
     _buffers.Init(_camera.ScreenWidth(), _camera.ScreenHeight());
+}
+
+World3D& World3D::operator=(World3D && other)
+{
+    _vertices = std::move(other._vertices);
+    _vertices_transform = std::move(other._vertices_transform);
+    _camera = std::move(other._camera);
+    _environment = std::move(other._environment);
+    _buffers = std::move(other._buffers);
+    // Move the reference of vertices of camera
+    _camera.SetVertices(_vertices, _vertices_transform);
+    return *this;
 }
 
 Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
@@ -55,10 +68,10 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
         }
         if(face.vertex_indexes.size() == 4)
         {
-            auto triangle = __::Triangle3D(_vertices_transform, dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[3] - 1, face.vertex_indexes[2] - 1);
+            auto triangle = __::Triangle3D(dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[3] - 1, face.vertex_indexes[2] - 1);
             this->_environment.triangles.push_back(triangle);
         }
-        auto triangle2 = __::Triangle3D(_vertices_transform, dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[1] - 1, face.vertex_indexes[2] - 1);
+        auto triangle2 = __::Triangle3D(dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[1] - 1, face.vertex_indexes[2] - 1);
         
         _environment.triangles.push_back(triangle2);
     }
@@ -72,13 +85,25 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
     return Result<Object>(Object(_vertices, dot_offset, (int)model.GetVertexSize()));
 }
 
+
+World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& transform_matrix, bool is_print)
+{
+    auto res = AddObjModel(model, is_print);
+    if(res.IsException())
+    {
+        res.Print();
+    }
+    res.Data().Transform(transform_matrix);
+    return std::move(*this);
+}
+
 DefaultResult World3D::Build(bool is_print)
 {
     Log::Info(__World3D::LOG_NAME, "Start to build the world...");
     _buffers.CleanZBuffer();
     for(auto i = _environment.triangles.begin(); i != _environment.triangles.end(); i++)
     {
-        i->Build();
+        i->Build(_vertices_transform);
         i->PrintTriangle(is_print);
         _buffers.WriteToZBufferFrom(*i);
         // areal coordinate test

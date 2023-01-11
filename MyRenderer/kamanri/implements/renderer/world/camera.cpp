@@ -58,6 +58,12 @@ namespace Kamanri
 
 using namespace Kamanri::Renderer::World::__Camera;
 
+Camera::Camera()
+{
+    _location = Vector(4);
+    _direction = Vector(4);
+    _upward = Vector(4);
+}
 
 Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height) : _nearer_dest(nearer_dest), _further_dest(further_dest), _screen_width(screen_width), _screen_height(screen_height)
 {
@@ -130,10 +136,27 @@ void Camera::SetAngles(bool is_print)
         _alpha, _beta, _gamma);
 }
 
-Camera::Camera(Camera const &camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
+Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
 {
-    _location = camera._location;
-    _direction = camera._direction;
+    _location = std::move(camera._location);
+    _direction = std::move(camera._direction);
+    _upward = std::move(camera._upward);
+}
+
+Camera& Camera::operator=(Camera&& other)
+{
+    _pvertices = other._pvertices;
+    _pvertices_transform = other._pvertices_transform;
+    _alpha = other._alpha;
+    _beta = other._beta;
+    _gamma = other._gamma;
+    _nearer_dest = other._nearer_dest;
+    _further_dest = other._further_dest;
+    _screen_width = other._screen_width;
+    _screen_height = other._screen_height;
+    _location = std::move(other._location);
+    _direction = std::move(other._direction);
+    _upward = std::move(other._upward);
 }
 
 void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transform)

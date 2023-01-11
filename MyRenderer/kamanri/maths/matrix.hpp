@@ -41,7 +41,7 @@ namespace Kamanri
             SMatrix(std::initializer_list<SMatrixElemType> list);
             SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
 
-            SMatrix &operator=(SMatrix &sm);
+            SMatrix &operator=(SMatrix const& sm);
             Utils::DefaultResult operator=(std::initializer_list<SMatrixElemType> list);
             Utils::DefaultResult operator=(std::initializer_list<std::vector<SMatrixElemType>> v_list);
             // Get the size of the Matrix.

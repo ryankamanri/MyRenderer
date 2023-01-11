@@ -26,7 +26,7 @@ namespace Kamanri
             {
             private:
                 /* data */
-                Camera& _camera;
+                Camera _camera;
                 /**
                  * @brief Used to store every vertex, note that the cluster of vertices of a object is stored in order.
                  * 
@@ -43,8 +43,12 @@ namespace Kamanri
                 __::Buffers _buffers;
 
             public:
-                World3D(Camera& camera);
+                World3D();
+                World3D(Camera&& camera);
+                World3D& operator=(World3D&& other);
+                Camera& GetCamera() { return _camera; }
                 Utils::Result<Object> AddObjModel(ObjModel const &model, bool is_print = false);
+                World3D&& AddObjModel(ObjModel const &model, Maths::SMatrix const& transform_matrix, bool is_print = false);
                 Utils::DefaultResult Build(bool is_print = false);
                 double Depth(int x, int y);
             };

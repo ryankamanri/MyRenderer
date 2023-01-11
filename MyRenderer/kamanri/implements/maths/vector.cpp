@@ -87,8 +87,12 @@ Vector& Vector::operator=(Vector const& v)
 {
     CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, *this)
 
-    _N = v._N;
-    _V = NewArray<VectorElemType>(_N);
+    if(_N != v._N)
+    {
+        _N = v._N;
+        _V = NewArray<VectorElemType>(_N);
+    }
+
     for(size_t i = 0; i < _N; i++)
     {
         _V[i] = v._V[i];

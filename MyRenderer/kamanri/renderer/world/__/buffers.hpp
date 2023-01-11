@@ -20,6 +20,7 @@ namespace Kamanri
 
                 public:
                     void Init(unsigned int width, unsigned int height);
+                    Buffers& operator=(Buffers&& other);
                     void CleanZBuffer() const;
                     void WriteToZBufferFrom(Triangle3D const &t);
                     inline int Width() const { return _width; }

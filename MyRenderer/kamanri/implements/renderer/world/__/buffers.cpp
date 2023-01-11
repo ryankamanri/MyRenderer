@@ -36,6 +36,14 @@ void Buffers::Init(unsigned int width, unsigned int height)
     
 }
 
+Buffers& Buffers::operator=(Buffers&& other)
+{
+    _width = other._width;
+    _height = other._height;
+    _buffers = std::move(other._buffers);
+    return *this;
+}
+
 void Buffers::CleanZBuffer() const
 {
     for(auto i = 0; i < _width; i++)

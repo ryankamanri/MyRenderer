@@ -53,6 +53,7 @@ MSG msg;
 
 WinGDI_Window::WinGDI_Window(HINSTANCE h_instance, int window_width, int window_height)
 {
+    _world = Renderer::World::World3D();
     __Window::WINDOW_WIDTH = window_width;
     __Window::WINDOW_HEIGHT = window_height;
     _WindowProc = WindowProc;
@@ -100,18 +101,37 @@ WinGDI_Window::~WinGDI_Window()
     }
 }
 
-bool WinGDI_Window::Show()
+WinGDI_Window& WinGDI_Window::SetWorld(Renderer::World::World3D && world)
 {
-    return ShowWindow(_h_wnd, SW_SHOW);
+    _world = std::move(world);
 }
 
-bool WinGDI_Window::Update()
+WinGDI_Window& WinGDI_Window::AddProcedure(Delegate<WinGDI_Message>::ANode&& proc)
 {
-    return UpdateWindow(_h_wnd);
+    this->_procedure_chain.AddRear(proc);
+    return *this;
+}
+
+WinGDI_Window& WinGDI_Window::Show()
+{
+    ShowWindow(_h_wnd, SW_SHOW);
+    return *this;
+}
+
+WinGDI_Window& WinGDI_Window::Update()
+{
+    UpdateWindow(_h_wnd);
+    return *this;
 }
 
 void WinGDI_Window::MessageLoop()
 {
+    // 应用程序在运行时将收到数千条消息。（请考虑每次击键和鼠标按钮单击都会生成一条消息。
+    // 此外，应用程序可以有多个窗口，每个窗口都有自己的窗口过程。
+    // 程序如何接收所有这些消息并将它们传递到正确的窗口过程？应用程序需要一个循环来检索消息并将其调度到正确的窗口。
+
+    // 对于创建窗口的每个线程，操作系统都会为窗口消息创建一个队列。此队列保存在该线程上创建的所有窗口的消息。
+    // 队列本身对程序是隐藏的。不能直接操作队列。但是，您可以通过调用 GetMessage 函数从队列中提取消息。
 
     while (GetMessage(&msg, NULL, 0, 0)) // GetMessage从调用线程的消息队列中取得一个消息并放于msg
     {
@@ -123,22 +143,24 @@ void WinGDI_Window::MessageLoop()
 }
 
 // //窗口处理函数
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    auto tid = GetCurrentThreadId();
-    if(__Window::IS_PRINT) PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
+LRESULT CALLBACK Kamanri::Windows::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{ 
+    if(__Window::IS_PRINT)
+    {
+        auto tid = GetCurrentThreadId();
+        PrintLn("Thread Id: %d | hWnd: %d | uMsg: %3d | wParam: %6X | lParam: %8X", tid, hWnd, uMsg, wParam, lParam);
+    } 
 
     // the size of window_map equals 0 means no window is initialized.
     if (window_map.size() != 0)
     {
-        auto p_window = window_map.find(hWnd)->second;
+        WinGDI_Window& window = *window_map[hWnd];
 
-        // TODO: Build a message call system refer to 'RequestDelegate', pluginize like middleware.
+        // Build a message call system refer to 'RequestDelegate', pluginize like middleware.
+        window._procedure_chain.Execute(WinGDI_Window$::WinGDI_Message(window._world, hWnd, uMsg, wParam, lParam));
+
         switch (uMsg)
         {
-        case WM_PAINT: //窗口绘图消息
-            p_window->_Paint();
-            break;
         case WM_CLOSE: //窗口关闭消息
             DestroyWindow(hWnd);
             break;
@@ -151,13 +173,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hWnd, uMsg, wParam, lParam); //默认的窗口处理函数
 }
 
-void WinGDI_Window::_Paint()
-{
-    _paint_thread = std::thread([this]
-    {
-        DrawFunc(PainterFactor(_h_wnd, __Window::WINDOW_WIDTH, __Window::WINDOW_HEIGHT));
-    });
-}
 
 
 

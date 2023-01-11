@@ -12,6 +12,20 @@ namespace Kamanri
             {
                 constexpr const int CODE_NULL_POINTER_PVERTICES = 100;
                 constexpr const int CODE_INVALID_VECTOR_LENGTH = 200;
+
+                class CameraAttributes
+                {
+                public:
+                    Maths::Vector location;
+                    Maths::Vector direction;
+                    Maths::Vector upper;
+                    double nearer_dest;
+                    double further_dest;
+                    unsigned int screen_width;
+                    unsigned int screen_height;
+                    CameraAttributes(Maths::Vector $location, Maths::Vector $direction, Maths::Vector $upper, double $nearer_dest, double $further_dest, unsigned int $screen_width, unsigned int $screen_height):
+                    location($location), direction($direction), upper($upper), nearer_dest($nearer_dest), further_dest($further_dest), screen_width($screen_width), screen_height($screen_height) {}
+                };
             }
 
             class Camera
@@ -61,9 +75,10 @@ namespace Kamanri
                 void SetAngles(bool is_print = false);
 
             public:
-                Camera() = default;
+                Camera();
                 Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height);
-                Camera(Camera const& camera);
+                Camera(Camera&& camera);
+                Camera& operator=(Camera&& other);
                 void SetVertices(std::vector<Maths::Vector>& vertices, std::vector<Maths::Vector> &vertices_transform);
                 Utils::DefaultResult Transform(bool is_print = false);
                 /**

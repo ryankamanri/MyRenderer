@@ -76,8 +76,8 @@ namespace Kamanri
                 private:
                     byte _index;
                 public:
-                    T& item;
-                    AllocateItem(byte index, T& i): _index(index), item(i) {}
+                    T& data;
+                    AllocateItem(byte index, T& i): _index(index), data(i) {}
                     friend void ResourcePool::Free(AllocateItem item);
             };
 

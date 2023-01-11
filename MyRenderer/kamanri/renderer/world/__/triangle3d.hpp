@@ -24,7 +24,6 @@ namespace Kamanri
                 {
                 private:
                     // origin data
-                    std::vector<Maths::Vector> &_vertices_transform;
                     int _offset;
                     int _v1;
                     int _v2;
@@ -42,8 +41,8 @@ namespace Kamanri
                     double _c;
 
                 public:
-                    Triangle3D(std::vector<Maths::Vector> &vertices_transform, int offset, int v1, int v2, int v3);
-                    void Build();
+                    Triangle3D(int offset, int v1, int v2, int v3);
+                    void Build(std::vector<Maths::Vector> &vertices_transform);
                     bool IsIn(double x, double y) const;
                     inline double Z(double x, double y) const { return (1 - _a * x - _b * y) / _c; }
                     void PrintTriangle(bool is_print = true) const;

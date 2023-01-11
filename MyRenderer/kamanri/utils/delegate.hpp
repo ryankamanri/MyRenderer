@@ -1,53 +1,70 @@
 #pragma once
+#include <typeinfo>
+
 namespace Kamanri
 {
     namespace Utils
     {
-        namespace Delegate$
-        {
-            typedef struct Node
-            {
-
-                void (*this_delegate)(int, struct Node &);
-                struct Node *next_delegate_node;
-                void Next(int res)
-                {
-                    if (next_delegate_node != nullptr)
-                        next_delegate_node->this_delegate(res, *next_delegate_node);
-                }
-
-            } Node;
-        } // namespace Delegate$
-
+        template <class T>
         class Delegate
         {
-        private:
-            Delegate$::Node *_head = nullptr;
-            Delegate$::Node *_rear = nullptr;
 
         public:
-            void Execute(int value)
+            // The Node is a item of Delegate chain.
+            class ANode
+            {
+            private:
+                friend void Delegate::Execute(T element);
+                friend void Delegate::AddHead(ANode &new_delegate);
+                friend void Delegate::AddRear(ANode &new_delegate);
+
+            protected:
+                ANode *_next_delegate_node = nullptr;
+                virtual void Func(T& element) = 0; // 纯虚函数
+
+            public:
+                void InvokeNext(T element)
+                {
+                    if (_next_delegate_node == nullptr)
+                        return;
+                    _next_delegate_node->Func(element);
+                }
+            };
+
+            Delegate()
+            {
+                _head = _rear = nullptr;
+            }
+
+            void Execute(T element)
             {
                 if (_head == nullptr)
                     return;
-                _head->this_delegate(value, *_head);
+                _head->Func(element);
             }
-            void AddHead(Delegate$::Node &new_delegate)
+            void AddHead(ANode &new_delegate)
             {
-                new_delegate.next_delegate_node = _head;
+                if (new_delegate != nullptr)
+                    new_delegate._next_delegate_node = _head;
                 _head = &new_delegate;
                 if (_rear == nullptr)
                     _rear = _head;
             }
 
-            void AddRear(Delegate$::Node &new_delegate)
+            void AddRear(ANode &new_delegate)
             {
-                _rear->next_delegate_node = &new_delegate;
+                if (_rear != nullptr)
+                    _rear->_next_delegate_node = &new_delegate;
                 _rear = &new_delegate;
                 if (_head == nullptr)
                     _head = _rear;
             }
+
+        private:
+            ANode *_head;
+            ANode *_rear;
         };
+
 
     } // namespace Utils
 

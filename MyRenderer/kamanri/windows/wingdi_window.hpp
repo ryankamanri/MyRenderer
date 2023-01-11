@@ -2,6 +2,9 @@
 #include <windows.h>
 #include <thread>
 
+#include "kamanri/utils/delegate.hpp"
+#include "kamanri/renderer/world/world3d.hpp"
+
 namespace Kamanri
 {
     namespace Windows
@@ -37,29 +40,53 @@ namespace Kamanri
                 HDC _h_dc;
                 HDC _h_draw_dc;
             };
+
+            class WinGDI_Message
+            {
+                public:
+                    /// @brief The reference of stored world.
+                    Renderer::World::World3D& world;
+
+                    // hWnd is a handle to the window.
+                    HWND h_wnd;
+                    // uMsg is the message code; for example, the WM_SIZE message indicates the window was resized.
+                    UINT u_msg;
+                    // wParam and lParam contain additional data that pertains to the message. The exact meaning depends on the message code.
+                    WPARAM w_param;
+                    LPARAM l_param;
+
+                    WinGDI_Message(Renderer::World::World3D& $world, HWND $h_wnd, UINT $u_msg, WPARAM $w_param, LPARAM $l_param): world($world), h_wnd($h_wnd), u_msg($u_msg), w_param($w_param), l_param($l_param) {}
+            };
         } // namespace WinGDI_Window$
 
+        LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+        /// @brief This WinGDI_Window class is a adapter of WinGDI interfaces.
         class WinGDI_Window
         {
         public:
             WinGDI_Window(HINSTANCE h_instance, int window_width = 600, int window_height = 600);
             ~WinGDI_Window();
-            bool Show();
-            bool Update();
-            void (*DrawFunc)(WinGDI_Window$::PainterFactor painter_factor);
+            WinGDI_Window& SetWorld(Renderer::World::World3D && world);
+            WinGDI_Window& AddProcedure(Utils::Delegate<WinGDI_Window$::WinGDI_Message>::ANode&& proc);
+            WinGDI_Window& Show();
+            WinGDI_Window& Update();
 
             static void MessageLoop();
-            // callback paint function called by WindowProc, do not call it outside
-            void _Paint();
 
         private:
+            // The world
+            Renderer::World::World3D _world;
+
+            friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
             // handle of window
             HWND _h_wnd;
             // window message process callback
             LRESULT(*_WindowProc)
             (HWND, UINT, WPARAM, LPARAM);
+            // delegate chain
+            Utils::Delegate<WinGDI_Window$::WinGDI_Message> _procedure_chain;
 
-            std::thread _paint_thread;
         };
 
     }
