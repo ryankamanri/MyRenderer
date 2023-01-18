@@ -79,6 +79,7 @@ namespace Kamanri
 
         /**
          * @brief Log Class
+         * , Note that the `std::string` property should be converted to `char*`(use c_str() method) 
          *
          */
         class Log

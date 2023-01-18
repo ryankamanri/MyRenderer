@@ -2,6 +2,7 @@
 #include <vector>
 #include "kamanri/maths/vector.hpp"
 #include "kamanri/maths/matrix.hpp"
+#include "kamanri/renderer/tga_image.hpp"
 namespace Kamanri
 {
     namespace Renderer
@@ -19,12 +20,16 @@ namespace Kamanri
                     std::vector<Maths::Vector>* _pvertices = nullptr;
                     int _offset;
                     int _length;
+
+                    TGAImage _img;
                 public:
-                    Object() = default;
-                    Object(std::vector<Maths::Vector>& vertices, int offset, int length);
-                    Object(Object& obj);
-                    Object(Object&& obj);
-                    Object& operator=(Object& obj);
+                    // Object() = default;
+                    Object(std::vector<Maths::Vector>& vertices, int offset, int length, std::string tga_image_name);
+                    // Object(Object const& obj);
+                    // Object(Object& obj);
+                    // Object(Object&& obj);
+                    // Object& operator=(Object& obj);
+                    inline TGAImage& GetImage() { return _img; }
                     Utils::DefaultResult Transform(Maths::SMatrix const& transform_matrix) const;
             };
             

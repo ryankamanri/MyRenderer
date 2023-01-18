@@ -1,5 +1,6 @@
 #pragma once
 #include <thread>
+#include "kamanri/renderer/world/frame_buffer.hpp"
 #include "kamanri/utils/logs.hpp"
 #include "kamanri/utils/delegate.hpp"
 #include "kamanri/windows/wingdi_window.hpp"
@@ -48,13 +49,13 @@ namespace Kamanri
 						PainterFactor painter_factor(message.h_wnd, _screen_width, _screen_height);
 						auto painter = painter_factor.CreatePainter();
 
-						double depth;
 						int color;
+						DefaultResult update_res;
 						//
 						while (true)
 						{
 							// this part rightly belongs to DrawFunc
-							auto update_res = _update_func(message.world);
+							update_res = _update_func(message.world);
 							if (update_res.IsException())
 							{
 								Log::Error(__UpdateProcedure::LOG_NAME, "Failed to execute the update_func caused by:");
@@ -68,13 +69,18 @@ namespace Kamanri
 
 								for (unsigned int j = 0; j <= _screen_height; j++)
 								{
-									depth = message.world.Depth(i, j);
-									if (depth == -DBL_MAX)
+									auto& buffer = message.world.Buffer(i, j);
+									if (buffer.z == -DBL_MAX)
 										continue;
 
-									color = -(int) (255 / (depth / 1500)); // depth range [1500, inf)
+									/// @brief This part is used to render every pixel
 
-									painter.Dot(i, j, RGB(color, color, color));
+									// color = -(int) (255 / (buffer.z / 1500)); // depth range [1500, inf)
+									// painter.Dot(i, j, RGB(color, color, color));
+									painter.Dot(i, j, buffer.color);
+
+
+									///
 
 								}
 							}

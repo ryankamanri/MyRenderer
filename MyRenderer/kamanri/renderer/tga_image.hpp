@@ -64,7 +64,10 @@ namespace Kamanri
             void FlipHorizontally();
             void FlipVertically();
             TGAColor Get(const int x, const int y) const;
+            /// @brief Get with UV coordinates.
+            TGAColor Get(double u, double v) const;
             void Set(const int x, const int y, const TGAColor &c);
+
             int Width() const;
             int Height() const;
 

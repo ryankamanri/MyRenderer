@@ -217,10 +217,19 @@ TGAColor TGAImage::Get(const int x, const int y) const {
     return TGAColor(_data.data()+(x+y*_width)*_bytes_per_pixel, _bytes_per_pixel);
 }
 
+TGAColor TGAImage::Get(double u, double v) const
+{
+    int x = u * _width;
+    int y = v * _height;
+    return Get(x, _height - y); // y axis towards up, so use height - y
+}
+
 void TGAImage::Set(int x, int y, const TGAColor &c) {
     if (!_data.size() || x<0 || y<0 || x>=_width || y>=_height) return;
     memcpy(_data.data()+(x+y*_width)*_bytes_per_pixel, c.bgra, _bytes_per_pixel);
 }
+
+
 
 void TGAImage::FlipHorizontally() {
     int half = _width>>1;

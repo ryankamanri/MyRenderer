@@ -35,17 +35,17 @@ namespace Kamanri
                 // Camera::Transform
                 namespace Transform
                 {
-                    SMatrix a21(4);
-                    SMatrix a543(4);
+                    SMatrix model_view_transform(4);
+                    SMatrix projection_screen_transform(4);
                 } // namespace Transform
                 
 
-                // Camera::InverseUpperWithDirection
-                namespace InverseUpperWithDirection
+                // Camera::InverseUpperByDirection
+                namespace InverseUpperByDirection
                 {
                     Vector upward_before = {0, 1, 0, 0};
                     Vector upward_after = {0, 1, 0, 0};
-                } // namespace InverseUpperWithDirection
+                } // namespace InverseUpperByDirection
                 
 
             } // namespace __Camera
@@ -146,7 +146,7 @@ Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera.
 Camera& Camera::operator=(Camera&& other)
 {
     _pvertices = other._pvertices;
-    _pvertices_transform = other._pvertices_transform;
+    _pvertices_transformed = other._pvertices_transformed;
     _alpha = other._alpha;
     _beta = other._beta;
     _gamma = other._gamma;
@@ -159,10 +159,11 @@ Camera& Camera::operator=(Camera&& other)
     _upward = std::move(other._upward);
 }
 
-void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transform)
+void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed)
 {
     _pvertices = &vertices;
-    _pvertices_transform = &vertices_transform;
+    _pvertices_transformed = &vertices_transformed;
+    _pvertices_model_view_transformed = &vertices_model_view_transformed;
 }
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
@@ -192,7 +193,7 @@ DefaultResult Camera::Transform(bool is_print)
 
     Log::Trace(__Camera::LOG_NAME, "a5*4*3 * a2*1 * v:");
 
-    // SMatrix a1 = 
+    // SMatrix model_location_transform = 
     // {
     //     1, 0, 0, -lx,
     //     0, 1, 0, -ly,
@@ -200,7 +201,7 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1  
     // };
 
-    // SMatrix a2 = 
+    // SMatrix view_direction_transform = 
     // {
     //     cos_a, 0, sin_a, 0,
     //     -sin_a_sin_b, cos_b, cos_a_sin_b, 0,
@@ -208,17 +209,8 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    using namespace __Camera::Transform;
 
-    a21 = 
-    {
-        cos_a, 0, sin_a, -lx * cos_a - lz * sin_a,
-        -sin_a_sin_b, cos_b, cos_a_sin_b, lx * sin_a_sin_b - ly * cos_b - lz * cos_a_sin_b,
-        -sin_a_cos_b, -sin_b, cos_a_cos_b, lx * sin_a_cos_b + ly * sin_b - lz * cos_a_cos_b,
-        0, 0, 0, 1
-    };
-
-    // SMatrix a3 = 
+    // SMatrix view_upper_transform = 
     // {
     //     cos_g, -sin_g, 0, 0,
     //     sin_g, cos_g, 0, 0,
@@ -226,7 +218,18 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    // SMatrix a4 = 
+
+    using namespace __Camera::Transform;
+
+    model_view_transform = 
+    {
+        cos_a*cos_g + sin_a_sin_b*sin_g, -cos_b*sin_g, sin_a*cos_g - cos_a_sin_b*sin_g, lx*(-cos_a*cos_g-sin_a_sin_b*sin_g) + ly*cos_b*sin_g + lz*(-sin_a*cos_g+cos_a_sin_b*sin_g),
+        cos_a*sin_g - sin_a_sin_b*cos_g, cos_b*cos_g, sin_a*sin_g + cos_a_sin_b*cos_g, lx*(-cos_a*sin_g+sin_a_sin_b*cos_g) - ly*cos_b*cos_g + lz*(-sin_a*sin_g-cos_a_sin_b*cos_g),
+        -sin_a_cos_b, -sin_b, cos_a_cos_b, lx*sin_a_cos_b + ly*sin_b - lz*cos_a_cos_b,
+        0, 0, 0, 1
+    };
+
+    // SMatrix projection_transform = 
     // {
     //     _nearer_dest, 0, 0, 0,
     //     0, _nearer_dest, 0, 0,
@@ -234,15 +237,15 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 1, 0 
     // };
 
-    // SMatrix a5 = 
+    // SMatrix screen_fit_transform = 
     // {
     //     _screen_width / 2, 0, 0, _screen_width / 2,
     //     0, -_screen_height / 2, 0, _screen_height / 2,
-    //     0, 0, 1, 0,
+    //     0, 0, 1, 0, // not change z
     //     0, 0, 0, 1
     // };
 
-    // SMatrix a5 = 
+    // SMatrix screen_fit_transform = 
     // {
     //     _screen_width / 2, 0, 0, _screen_width / 2,
     //     0, -_screen_height / 2, 0, _screen_height / 2,
@@ -250,35 +253,39 @@ DefaultResult Camera::Transform(bool is_print)
     //     0, 0, 0, 1
     // };
 
-    a543 = 
+    projection_screen_transform = 
     {
-        (double)_screen_width * _nearer_dest * cos_g / 2, -(double)_screen_width * _nearer_dest * sin_g / 2, (double)_screen_width / 2, 0,
-        -(double)_screen_height * _nearer_dest * sin_g / 2, -(double)_screen_height * _nearer_dest * cos_g / 2, (double)_screen_height / 2, 0,
+        (double)_screen_width * _nearer_dest / 2, 0, (double)_screen_width / 2, 0,
+        0, -(double)_screen_height * _nearer_dest * cos_g / 2, (double)_screen_height / 2, 0,
         0, 0, (_nearer_dest + _further_dest) * min(_screen_width, _screen_height) / 2, (-_nearer_dest * _further_dest) * min(_screen_width, _screen_height) / 2,
         0, 0, 1, 0
     };
 
-    // copy vertices_transform from vertices(origin) and transform it.
+    // copy vertices_transformed from vertices(origin) and transform it.
 
-    for(auto i = 0; i != _pvertices_transform->size(); i++)
+    for(auto i = 0; i != _pvertices_transformed->size(); i++)
     {
-        _pvertices_transform->at(i) = _pvertices->at(i);
+        // IMPORTANT!!
+        _pvertices_transformed->at(i) = _pvertices->at(i); 
+        _pvertices_model_view_transformed->at(i) = _pvertices->at(i);
+        //
 
         Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
         
-        _pvertices_transform->at(i).PrintVector(is_print);
-        ASSERT_FOR_DEFAULT( a21 * _pvertices_transform->at(i));
-        _pvertices_transform->at(i).PrintVector(is_print);
-        ASSERT_FOR_DEFAULT(a543 * _pvertices_transform->at(i));
-        _pvertices_transform->at(i).PrintVector(is_print);
-        _pvertices_transform->at(i) *= (1 / (_pvertices_transform->at(i).GetFast(3)));
-        _pvertices_transform->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i).PrintVector(is_print);
+        ASSERT_FOR_DEFAULT( model_view_transform * _pvertices_transformed->at(i));
+        ASSERT_FOR_DEFAULT(model_view_transform * _pvertices_model_view_transformed->at(i));
+        _pvertices_transformed->at(i).PrintVector(is_print);
+        ASSERT_FOR_DEFAULT(projection_screen_transform * _pvertices_transformed->at(i));
+        _pvertices_transformed->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i) *= (1 / (_pvertices_transformed->at(i).GetFast(3))); // homogeneous coordinates unitization
+        _pvertices_transformed->at(i).PrintVector(is_print);
     }
     //
     return DEFAULT_RESULT;
 }
 
-DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direction)
+DefaultResult Camera::InverseUpperByDirection(Maths::Vector const &last_direction)
 {
     auto last_direction_n = TRY_FOR_DEFAULT(last_direction.N());
     if (last_direction_n != 4)
@@ -287,7 +294,7 @@ DefaultResult Camera::InverseUpperWithDirection(Maths::Vector const &last_direct
         return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
     }
 
-    using namespace __Camera::InverseUpperWithDirection;
+    using namespace __Camera::InverseUpperByDirection;
 
     upward_before = {0, 1, 0, 0};
     upward_after = {0, 1, 0, 0};

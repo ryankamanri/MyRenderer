@@ -2,7 +2,7 @@
 #include "kamanri/utils/string.hpp"
 #include "kamanri/renderer/world/__/buffers.hpp"
 
-
+using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Renderer::World::__;
 using namespace Kamanri::Utils;
 
@@ -56,7 +56,7 @@ void Buffers::CleanZBuffer() const
 }
 
 
-void Buffers::WriteToZBufferFrom(Triangle3D const &t)
+void Buffers::WriteToZBufferFrom(Triangle3D const &t, bool is_print)
 {
     int min_width;
     int min_height;
@@ -77,13 +77,20 @@ void Buffers::WriteToZBufferFrom(Triangle3D const &t)
             if (j >= _height || j < 0)
                 continue;
 
-            if(!t.IsIn(i, j)) 
+            if(!t.Cover(i, j)) 
                 continue;
-
+            
+            // Now the point is on the triangle
             // start to compare the depth
             t_z = t.Z(i, j);
             if(t_z > _buffers[i * _height + j].z)
-                _buffers[i * _height + j].z = t_z;
+            {
+                auto& buffer = _buffers[i * _height + j];
+                buffer.z = t_z;
+                //TODO: buffer.color = t.ArialCoordinates(x, y);
+                buffer.color = t.Color(i, j, is_print);
+            }
+                
                 
         }
     }

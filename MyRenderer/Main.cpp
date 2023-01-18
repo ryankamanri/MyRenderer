@@ -12,16 +12,20 @@ using namespace Kamanri::WindowProcedures::WinGDI_Window;
 using namespace Kamanri::Renderer;
 using namespace Kamanri::Renderer::World;
 
+
 constexpr const char* LOG_NAME = "Main";
 const int WINDOW_LENGTH = 600;
 
-constexpr const char* OBJ_PATH = "../../out/jet.obj";
+constexpr const char* OBJ_PATH = "../../out/african_head.obj";
+constexpr const char* TGA_PATH = "../../out/african_head_diffuse.tga";
+
+bool is_print = false;
 
 
 namespace __UpdateFunc
 {
 	Vector direction(4);
-	double theta = PI / 64;
+	double theta = PI / 16;
 	SMatrix revolve_matrix =
 	{
 		cos(theta), 0, -sin(theta), 0,
@@ -29,6 +33,13 @@ namespace __UpdateFunc
 		sin(theta), 0, cos(theta), 0,
 		0, 0, 0, 1
 	};
+	// SMatrix revolve_matrix =
+	// {
+	// 	1, 0, 0, 0,
+	// 	0, cos(theta), -sin(theta), 0,
+	// 	0, sin(theta), cos(theta), 0,
+	// 	0, 0, 0, 1
+	// };
 } // namespace __UpdateFunc
 
 DefaultResult UpdateFunc(World3D& world)
@@ -40,11 +51,11 @@ DefaultResult UpdateFunc(World3D& world)
 	revolve_matrix* camera.Direction();
 	revolve_matrix* camera.Location();
 
-	camera.InverseUpperWithDirection(direction);
+	camera.InverseUpperByDirection(direction);
 
-	camera.Transform();
+	camera.Transform(is_print);
 
-	world.Build();
+	world.Build(is_print);
 
 	return DEFAULT_RESULT;
 }
@@ -55,49 +66,35 @@ void StartRender(HINSTANCE hInstance)
 		.SetWorld(
 			World3D(
 				Camera(
-					{ 0, 0.5, -3, 1 },
-					{ 0, 0, 1, 0 },
+					{ 0, 0, 3, 1 },
+					{ 0, 0, -1, 0 },
 					{ 0, 1, 0, 0 },
-					-1,
+					-1, 
 					-10,
 					WINDOW_LENGTH,
 					WINDOW_LENGTH
 				)
 			).AddObjModel(
-				ObjModel(OBJ_PATH),
-				{ 3, 0, 0, 0,
-				 0, 3, 0, 0,
-				 0, 0, 3, 0,
+				ObjModel(OBJ_PATH, TGA_PATH),
+				{ 2, 0, 0, 0,
+				 0, 2, 0, 0,
+				 0, 0, 2, 0,
 				 0, 0, 0, 1 }
 			)).AddProcedure(
 				UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
 			).Show().MessageLoop();
 }
 
-
-
-void ResourcePoolTest()
-{
-	ResourcePool<SMatrix, 2> pool([]()
-	{
-		return Result<SMatrix>(SMatrix(3));
-	});
-
-	auto item = pool.Allocate();
-	item.data.PrintMatrix();
-
-	auto item2 = pool.Allocate();
-	item2.data.PrintMatrix();
-
-	pool.Free(item);
-}
 //////////////////////////////////////////////////////
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	Log::Level(Log$::WARN_LEVEL);
+	// set the log level and is_print
+	Log::Level(Log$::DEBUG_LEVEL);
+	is_print = false;
+
 	StartRender(hInstance);
-	// ResourcePoolTest();
+
 	system("pause");
 	return 0;
 }

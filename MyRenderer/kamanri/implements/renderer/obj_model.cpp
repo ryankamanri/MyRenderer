@@ -23,17 +23,89 @@ namespace Kamanri
 } // namespace Kamanri
 
 
-ObjModel::ObjModel(std::string const& file_name)
+ObjModel::ObjModel(std::string const& file_name, std::string const& tga_file_name)
 {
-    auto result = Read(file_name);
+    auto result = ReadObjFileAndInit(file_name);
     if(result.IsException())
     {
         Log::Error(__ObjModel::LOG_NAME, "An Exception occured while initing the ObjModel:");
         result.Print();
     }
+    if(tga_file_name.empty()) return;
+    _tga_image_name = tga_file_name;
+    // if(!_img.ReadTGAFile(tga_file_name))
+    // {
+    //     Log::Error(__ObjModel::LOG_NAME, "Cannot read the TGA file '%s'.", tga_file_name.c_str());
+    // }
 }
 
-DefaultResult ObjModel::Read(std::string const &file_name)
+
+
+size_t ObjModel::GetVertexSize() const
+{
+    return _vertices.size();
+}
+size_t ObjModel::GetVertexNormalSize() const
+{
+    return _vertex_normals.size();
+}
+size_t ObjModel::GetVertexTextureSize() const
+{
+    return _vertex_textures.size();
+}
+size_t ObjModel::GetFaceSize() const
+{
+    return _faces.size();
+}
+
+Result<std::vector<double>> ObjModel::GetVertex(int index) const
+{
+    auto size = _vertices.size();
+    if (size <= index)
+    {
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+    }
+    return Result<std::vector<double>>(_vertices[index]);
+}
+
+Result<std::vector<double>> ObjModel::GetVertexNormal(int index) const
+{
+    auto size = _vertex_normals.size();
+    if (size <= index)
+    {
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+    }
+    return Result<std::vector<double>>(_vertex_normals[index]);
+}
+
+Result<std::vector<double>> ObjModel::GetVertexTexture(int index) const
+{
+    auto size = _vertex_textures.size();
+    if (size <= index)
+    {
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+    }
+    return Result<std::vector<double>>(_vertex_textures[index]);
+}
+
+Result<ObjModel$::Face> ObjModel::GetFace(int index) const
+{
+    auto size = _faces.size();
+    if (size <= index)
+    {
+        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
+        return RESULT_EXCEPTION(ObjModel$::Face, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
+    }
+    return Result<ObjModel$::Face>(_faces[index]);
+}
+
+
+
+
+DefaultResult ObjModel::ReadObjFileAndInit(std::string const &file_name)
 {
     std::ifstream fs(file_name);
     std::string str;
@@ -150,65 +222,4 @@ DefaultResult ObjModel::Read(std::string const &file_name)
     fs.close();
 
     return DEFAULT_RESULT;
-}
-
-size_t ObjModel::GetVertexSize() const
-{
-    return _vertices.size();
-}
-size_t ObjModel::GetVertexNormalSize() const
-{
-    return _vertex_normals.size();
-}
-size_t ObjModel::GetVertexTextureSize() const
-{
-    return _vertex_textures.size();
-}
-size_t ObjModel::GetFaceSize() const
-{
-    return _faces.size();
-}
-
-Result<std::vector<double>> ObjModel::GetVertex(int index) const
-{
-    auto size = _vertices.size();
-    if (size <= index)
-    {
-        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
-    }
-    return Result<std::vector<double>>(_vertices[index]);
-}
-
-Result<std::vector<double>> ObjModel::GetVertexNormal(int index) const
-{
-    auto size = _vertex_normals.size();
-    if (size <= index)
-    {
-        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
-    }
-    return Result<std::vector<double>>(_vertex_normals[index]);
-}
-
-Result<std::vector<double>> ObjModel::GetVertexTexture(int index) const
-{
-    auto size = _vertex_textures.size();
-    if (size <= index)
-    {
-        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(std::vector<double>, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
-    }
-    return Result<std::vector<double>>(_vertex_textures[index]);
-}
-
-Result<ObjModel$::Face> ObjModel::GetFace(int index) const
-{
-    auto size = _faces.size();
-    if (size <= index)
-    {
-        Log::Error(__ObjModel::LOG_NAME, "Index %d out of bound %d", index, size - 1);
-        return RESULT_EXCEPTION(ObjModel$::Face, ObjModel$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
-    }
-    return Result<ObjModel$::Face>(_faces[index]);
 }

@@ -33,7 +33,11 @@ namespace Kamanri
             private:
                 /* data */
                 std::vector<Maths::Vector>* _pvertices = nullptr;
-                std::vector<Maths::Vector>* _pvertices_transform = nullptr;
+                /// @brief the vertice which will have transformation of all types.
+                std::vector<Maths::Vector>* _pvertices_transformed = nullptr;
+                /// @brief the vertice which will have transformation of model and view.
+                std::vector<Maths::Vector>* _pvertices_model_view_transformed = nullptr;
+
                 // need 4d vector
                 Maths::Vector _location;
                 Maths::Vector _direction;
@@ -79,7 +83,7 @@ namespace Kamanri
                 Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height);
                 Camera(Camera&& camera);
                 Camera& operator=(Camera&& other);
-                void SetVertices(std::vector<Maths::Vector>& vertices, std::vector<Maths::Vector> &vertices_transform);
+                void SetVertices(std::vector<Maths::Vector>& vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed);
                 Utils::DefaultResult Transform(bool is_print = false);
                 /**
                  * @brief Inverse the upper vector when the upper of direction changed.
@@ -87,7 +91,7 @@ namespace Kamanri
                  * @param last_direction 
                  * @return Utils::DefaultResult 
                  */
-                Utils::DefaultResult InverseUpperWithDirection(Maths::Vector const& last_direction);
+                Utils::DefaultResult InverseUpperByDirection(Maths::Vector const& last_direction);
 
                 inline Maths::Vector &Location() { return _location; }
                 inline Maths::Vector &Direction() { return _direction; }

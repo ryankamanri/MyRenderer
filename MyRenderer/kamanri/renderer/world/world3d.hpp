@@ -6,6 +6,7 @@
 #include "__/triangle3d.hpp"
 #include "__/environment.hpp"
 #include "__/buffers.hpp"
+#include "__/resources.hpp"
 #include "kamanri/maths/vector.hpp"
 #include "kamanri/maths/matrix.hpp"
 
@@ -27,19 +28,12 @@ namespace Kamanri
             private:
                 /* data */
                 Camera _camera;
-                /**
-                 * @brief Used to store every vertex, note that the cluster of vertices of a object is stored in order.
-                 * 
-                 */
-                std::vector<Maths::Vector> _vertices;
-                /**
-                 * @brief Used to store every PROJECTION transformed vertex, note that the cluster of vertices of a object is stored in order.
-                 * 
-                 */
-                std::vector<Maths::Vector> _vertices_transform;
-
+                
+                /// @brief Store all resources
+                __::Resources _resources;
+                /// @brief Store all envirment objects
                 __::Environment _environment;
-
+                /// @brief Store all buffers
                 __::Buffers _buffers;
 
             public:
@@ -47,10 +41,10 @@ namespace Kamanri
                 World3D(Camera&& camera);
                 World3D& operator=(World3D&& other);
                 Camera& GetCamera() { return _camera; }
-                Utils::Result<Object> AddObjModel(ObjModel const &model, bool is_print = false);
+                Utils::Result<Object *> AddObjModel(ObjModel const &model, bool is_print = false);
                 World3D&& AddObjModel(ObjModel const &model, Maths::SMatrix const& transform_matrix, bool is_print = false);
                 Utils::DefaultResult Build(bool is_print = false);
-                double Depth(int x, int y);
+                FrameBuffer const& Buffer(int x, int y);
             };
             
             

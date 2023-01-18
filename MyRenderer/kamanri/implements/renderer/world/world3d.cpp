@@ -27,53 +27,103 @@ World3D::World3D(): _camera(Camera()) {}
 
 World3D::World3D(Camera&& camera): _camera(std::move(camera))
 {
-    _camera.SetVertices(_vertices, _vertices_transform);
+    _camera.SetVertices(_resources.vertices, _resources.vertices_transformed, _resources.vertices_model_view_transformed);
     
     _buffers.Init(_camera.ScreenWidth(), _camera.ScreenHeight());
 }
 
 World3D& World3D::operator=(World3D && other)
 {
-    _vertices = std::move(other._vertices);
-    _vertices_transform = std::move(other._vertices_transform);
+    _resources.vertices = std::move(other._resources.vertices);
+    _resources.vertices_transformed = std::move(other._resources.vertices_transformed);
+    _resources.vertices_model_view_transformed = std::move(other._resources.vertices_model_view_transformed);
+    _resources.vertex_textures = std::move(other._resources.vertex_textures);
+    _resources.vertex_normals = std::move(other._resources.vertex_normals);
     _camera = std::move(other._camera);
     _environment = std::move(other._environment);
     _buffers = std::move(other._buffers);
     // Move the reference of vertices of camera
-    _camera.SetVertices(_vertices, _vertices_transform);
+    _camera.SetVertices(_resources.vertices, _resources.vertices_transformed, _resources.vertices_model_view_transformed);
     return *this;
 }
 
-Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
+Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
 {
-    auto dot_offset = (int)_vertices.size();
+    auto v_offset = (int)_resources.vertices.size();
+    auto vt_offset = (int)_resources.vertex_textures.size();
+    auto vn_offset = (int)_resources.vertex_normals.size();
+
+    /// transform to Vector from std::vector
 
     for(auto i = 0; i < model.GetVertexSize(); i++)
     {
-        auto vertex = TRY_FOR_TYPE(Object, model.GetVertex(i));
+        auto vertex = TRY_FOR_TYPE(Object *, model.GetVertex(i));
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
-        _vertices.push_back(vector);
-        _vertices_transform.push_back(vector);
+        _resources.vertices.push_back(vector);
+        _resources.vertices_transformed.push_back(vector);
+        _resources.vertices_model_view_transformed.push_back(vector);
+        
     }
+
+    for(auto i = 0; i < model.GetVertexNormalSize(); i++)
+    {
+        auto vertex = TRY_FOR_TYPE(Object *, model.GetVertexNormal(i));
+        Vector vector = {vertex[0], vertex[1], 1};
+        _resources.vertex_normals.push_back(vector);
+    }
+
+    for(auto i = 0; i < model.GetVertexTextureSize(); i++)
+    {
+        auto vertex = TRY_FOR_TYPE(Object *, model.GetVertexTexture(i));
+        Vector vector = {vertex[0], vertex[1], vertex[2], 1};
+        _resources.vertex_textures.push_back(vector);
+    }
+
+    // Add an object
+    _environment.objects.push_back(Object(_resources.vertices, v_offset, (int)model.GetVertexSize(), model.GetTGAImageName()));
+    // Now you can get the object& by _environment.objects.back()
+    auto& object = _environment.objects.back();
 
 
     for(auto i = 0; i < model.GetFaceSize(); i++)
     {
-        auto face = TRY_FOR_TYPE(Object, model.GetFace(i));
+        auto face = TRY_FOR_TYPE(Object *, model.GetFace(i));
         if(face.vertex_indexes.size() > 4)
         {
             auto message = "Can not handle `face.vertex_indexes() > 4`";
             Log::Error(__World3D::LOG_NAME, message);
-            return RESULT_EXCEPTION(Object, World3D$::CODE_UNHANDLED_EXCEPTION, message);
+            return RESULT_EXCEPTION(Object *, World3D$::CODE_UNHANDLED_EXCEPTION, message);
         }
-        if(face.vertex_indexes.size() == 4)
+        // Some object may not have vns
+        auto has_vn = face.vertex_normal_indexes.size() != 0;
+        if (face.vertex_indexes.size() == 4)
         {
-            auto triangle = __::Triangle3D(dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[3] - 1, face.vertex_indexes[2] - 1);
-            this->_environment.triangles.push_back(triangle);
+            auto splited_triangle = __::Triangle3D(
+                object,
+                v_offset + face.vertex_indexes[0] - 1,
+                v_offset + face.vertex_indexes[3] - 1,
+                v_offset + face.vertex_indexes[2] - 1,
+                vt_offset + face.vertex_texture_indexes[0] - 1,
+                vt_offset + face.vertex_texture_indexes[3] - 1,
+                vt_offset + face.vertex_texture_indexes[2] - 1,
+                has_vn ? vn_offset + face.vertex_normal_indexes[0] - 1 : __::Triangle3D$::INEXIST_INDEX,
+                has_vn ? vn_offset + face.vertex_normal_indexes[3] - 1 : __::Triangle3D$::INEXIST_INDEX,
+                has_vn ? vn_offset + face.vertex_normal_indexes[2] - 1 : __::Triangle3D$::INEXIST_INDEX);
+            this->_environment.triangles.push_back(splited_triangle);
         }
-        auto triangle2 = __::Triangle3D(dot_offset, face.vertex_indexes[0] - 1, face.vertex_indexes[1] - 1, face.vertex_indexes[2] - 1);
-        
-        _environment.triangles.push_back(triangle2);
+        auto triangle = __::Triangle3D(
+            object,
+            v_offset + face.vertex_indexes[0] - 1,
+            v_offset + face.vertex_indexes[1] - 1,
+            v_offset + face.vertex_indexes[2] - 1,
+            vt_offset + face.vertex_texture_indexes[0] - 1,
+            vt_offset + face.vertex_texture_indexes[1] - 1,
+            vt_offset + face.vertex_texture_indexes[2] - 1,
+            has_vn ? vn_offset + face.vertex_normal_indexes[0] - 1 : __::Triangle3D$::INEXIST_INDEX,
+            has_vn ? vn_offset + face.vertex_normal_indexes[1] - 1 : __::Triangle3D$::INEXIST_INDEX,
+            has_vn ? vn_offset + face.vertex_normal_indexes[2] - 1 : __::Triangle3D$::INEXIST_INDEX);
+
+        _environment.triangles.push_back(triangle);
     }
 
     // do check
@@ -82,7 +132,7 @@ Result<Object> World3D::AddObjModel(ObjModel const &model, bool is_print)
         _environment.triangles[i].PrintTriangle(is_print);
     }
 
-    return Result<Object>(Object(_vertices, dot_offset, (int)model.GetVertexSize()));
+    return Result<Object *>(&object);
 }
 
 
@@ -93,7 +143,7 @@ World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& tran
     {
         res.Print();
     }
-    res.Data().Transform(transform_matrix);
+    res.Data()->Transform(transform_matrix);
     return std::move(*this);
 }
 
@@ -101,30 +151,22 @@ DefaultResult World3D::Build(bool is_print)
 {
     Log::Info(__World3D::LOG_NAME, "Start to build the world...");
     _buffers.CleanZBuffer();
-    for(auto i = _environment.triangles.begin(); i != _environment.triangles.end(); i++)
+    for(auto& i: _environment.triangles)
     {
-        i->Build(_vertices_transform);
-        i->PrintTriangle(is_print);
-        _buffers.WriteToZBufferFrom(*i);
-        // areal coordinate test
-        i->PrintTriangle(is_print);
-        if(i->IsIn(300, 500))
-        {
-            auto ac_v = TRY_FOR_DEFAULT(i->ArealCoordinates(300, 500, true));
-            PrintLn("The areal coordinate vector:");
-            ac_v.PrintVector(is_print);
-        }
+        i.Build(_resources, is_print);
+        i.PrintTriangle(is_print);
+        _buffers.WriteToZBufferFrom(i);
 
     }
 
     return DEFAULT_RESULT;
 }
 
-double World3D::Depth(int x, int y)
+FrameBuffer const& World3D::Buffer(int x, int y)
 {
     
     x = x % _buffers.Height();
     y = y % _buffers.Width();
     
-    return _buffers.Get(x, y).z;
+    return _buffers.Get(x, y);
 }

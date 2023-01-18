@@ -16,8 +16,14 @@ namespace Kamanri
                     /* data */
                 public:
                     Environment() = default;
-                    Environment& operator=(Environment&& other) { triangles = std::move(other.triangles); };
+                    Environment& operator=(Environment&& other) 
+                    { 
+                        triangles = std::move(other.triangles); 
+                        objects = std::move(other.objects);
+                    };
                     std::vector<Triangle3D> triangles;
+                    /// @brief Store all objects.
+                    std::vector<Object> objects;
                 };
             } // namespace __
 

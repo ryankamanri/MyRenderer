@@ -71,6 +71,8 @@ namespace Kamanri
             Result(Result$::Status status, int code, std::string const &message, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
             Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
 
+            Result<T>& operator=(Result<T> &&result);
+
             bool IsException();
             // Result<T> *InnerResult();
             Result<T>& Print(bool is_print = true);
@@ -197,6 +199,17 @@ namespace Kamanri
             this->_data = data;
             this->_inner_result.reset(innerResult.release());
             this->_stacktrace.assign(stackTrace.begin(), stackTrace.end());
+        }
+
+        template <class T>
+        Result<T>& Result<T>::operator=(Result<T> &&result)
+        {
+            _status = result._status;
+            _code = result._code;
+            _message = std::move(result._message);
+            _data = std::move(result._data);
+            this->_inner_result.reset(result._inner_result.release());
+            this->_stacktrace.assign(result._stacktrace.begin(), _stacktrace.end());
         }
 
         template <class T>
