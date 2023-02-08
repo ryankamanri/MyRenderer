@@ -65,7 +65,7 @@ Camera::Camera()
     _upward = Vector(4);
 }
 
-Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height) : _nearer_dest(nearer_dest), _further_dest(further_dest), _screen_width(screen_width), _screen_height(screen_height)
+Camera::Camera(Vector location, Vector direction, Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height) : _nearest_dist(nearest_dist), _furthest_dist(furthest_dist), _screen_width(screen_width), _screen_height(screen_height)
 {
     if (*location.N() != 4 || *direction.N() != 4 || *upper.N() != 4)
     {
@@ -104,7 +104,7 @@ Camera::Camera(Vector location, Vector direction, Vector upper, double nearer_de
 
 
 
-void Camera::SetAngles(bool is_print)
+void Camera::SetAngles()
 {
     _beta = Arcsin(_direction.GetFast(1)); // beta (-PI/2, PI/2)
 
@@ -130,13 +130,13 @@ void Camera::SetAngles(bool is_print)
 
     Log::Trace(__Camera::LOG_NAME, "The direction vector:");
 
-    _direction.PrintVector(is_print);
+    _direction.PrintVector(Log$::TRACE_LEVEL);
 
     Log::Trace(__Camera::LOG_NAME, "alpha = %.2f, beta = %.2f, gamma = %.2f",
         _alpha, _beta, _gamma);
 }
 
-Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearer_dest(camera._nearer_dest), _further_dest(camera._further_dest), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
+Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearest_dist(camera._nearest_dist), _furthest_dist(camera._furthest_dist), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
 {
     _location = std::move(camera._location);
     _direction = std::move(camera._direction);
@@ -150,13 +150,14 @@ Camera& Camera::operator=(Camera&& other)
     _alpha = other._alpha;
     _beta = other._beta;
     _gamma = other._gamma;
-    _nearer_dest = other._nearer_dest;
-    _further_dest = other._further_dest;
+    _nearest_dist = other._nearest_dist;
+    _furthest_dist = other._furthest_dist;
     _screen_width = other._screen_width;
     _screen_height = other._screen_height;
     _location = std::move(other._location);
     _direction = std::move(other._direction);
     _upward = std::move(other._upward);
+    return *this;
 }
 
 void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed)
@@ -168,11 +169,11 @@ void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
-DefaultResult Camera::Transform(bool is_print)
+DefaultResult Camera::Transform()
 {
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES)
 
-    SetAngles(is_print);
+    SetAngles();
 
     Log::Trace(__Camera::LOG_NAME, "vertices count: %d", _pvertices->size());
     //
@@ -231,9 +232,9 @@ DefaultResult Camera::Transform(bool is_print)
 
     // SMatrix projection_transform = 
     // {
-    //     _nearer_dest, 0, 0, 0,
-    //     0, _nearer_dest, 0, 0,
-    //     0, 0, _nearer_dest + _further_dest, -_nearer_dest * _further_dest,
+    //     _nearest_dist, 0, 0, 0,
+    //     0, _nearest_dist, 0, 0,
+    //     0, 0, _nearest_dist + _furthest_dist, -_nearest_dist * _furthest_dist,
     //     0, 0, 1, 0 
     // };
 
@@ -255,15 +256,23 @@ DefaultResult Camera::Transform(bool is_print)
 
     projection_screen_transform = 
     {
-        (double)_screen_width * _nearer_dest / 2, 0, (double)_screen_width / 2, 0,
-        0, -(double)_screen_height * _nearer_dest * cos_g / 2, (double)_screen_height / 2, 0,
-        0, 0, (_nearer_dest + _further_dest) * min(_screen_width, _screen_height) / 2, (-_nearer_dest * _further_dest) * min(_screen_width, _screen_height) / 2,
+        (double)_screen_width * _nearest_dist / 2, 0, (double)_screen_width / 2, 0,
+        0, -(double)_screen_height * _nearest_dist * cos_g / 2, (double)_screen_height / 2, 0,
+        0, 0, (_nearest_dist + _furthest_dist), (-_nearest_dist * _furthest_dist),
         0, 0, 1, 0
     };
 
+    // projection_screen_transform = 
+    // {
+    //     (double)_screen_width * _nearest_dist / 2, 0, (double)_screen_width / 2, 0,
+    //     0, -(double)_screen_height * _nearest_dist * cos_g / 2, (double)_screen_height / 2, 0,
+    //     0, 0, (_nearest_dist + _furthest_dist) * min(_screen_width, _screen_height) / 2, (-_nearest_dist * _furthest_dist) * min(_screen_width, _screen_height) / 2,
+    //     0, 0, 1, 0
+    // };
+
     // copy vertices_transformed from vertices(origin) and transform it.
 
-    for(auto i = 0; i != _pvertices_transformed->size(); i++)
+    for(std::size_t i = 0; i != _pvertices_transformed->size(); i++)
     {
         // IMPORTANT!!
         _pvertices_transformed->at(i) = _pvertices->at(i); 
@@ -272,14 +281,14 @@ DefaultResult Camera::Transform(bool is_print)
 
         Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
         
-        _pvertices_transformed->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
         ASSERT_FOR_DEFAULT( model_view_transform * _pvertices_transformed->at(i));
         ASSERT_FOR_DEFAULT(model_view_transform * _pvertices_model_view_transformed->at(i));
-        _pvertices_transformed->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
         ASSERT_FOR_DEFAULT(projection_screen_transform * _pvertices_transformed->at(i));
-        _pvertices_transformed->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
         _pvertices_transformed->at(i) *= (1 / (_pvertices_transformed->at(i).GetFast(3))); // homogeneous coordinates unitization
-        _pvertices_transformed->at(i).PrintVector(is_print);
+        _pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
     }
     //
     return DEFAULT_RESULT;

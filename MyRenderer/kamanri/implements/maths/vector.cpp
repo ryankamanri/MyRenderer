@@ -23,7 +23,11 @@ namespace Kamanri
 
 
 
-Vector::Vector() = default;
+Vector::Vector()
+{
+    this->_N = Vector$::MAX_SUPPORTED_DIMENSION;
+    this->_V = NewArray<VectorElemType>(Vector$::MAX_SUPPORTED_DIMENSION);
+}
 
 Vector::Vector(size_t n)
 {
@@ -133,9 +137,9 @@ Result<std::size_t> Vector::N() const
     return Result<std::size_t>(_N);
 }
 
-Result<VectorElemType> Vector::operator[](int n) const
+Result<VectorElemType> Vector::operator[](size_t n) const
 {
-    CHECK_MEMORY_FOR_RESULT(VectorElemType, _V, __Vector::LOG_NAME, -1)
+    CHECK_MEMORY_FOR_RESULT(VectorElemType, _V, __Vector::LOG_NAME, Vector$::NOT_INITIALIZED_VALUE)
 
     if(n < 0 || n > this->_N)
     {
@@ -146,14 +150,14 @@ Result<VectorElemType> Vector::operator[](int n) const
     return Result<VectorElemType>(_V[n]);
 }
 
-VectorElemType Vector::GetFast(int n) const
+VectorElemType Vector::GetFast(size_t n) const
 {
-    CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::INVALID_VECTOR_ELEM_TYPE_VALUE)
+    CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::NOT_INITIALIZED_VALUE)
 
     if(n < 0 || n > this->_N)
     {
         Log::Error(__Vector::LOG_NAME, "Index %d out of bound %d", n, this->_N);
-        return Vector$::INVALID_VECTOR_ELEM_TYPE_VALUE;
+        return Vector$::NOT_INITIALIZED_VALUE;
     }
 
     return _V[n];
@@ -325,9 +329,9 @@ Result<VectorElemType> Vector::operator*(std::initializer_list<VectorElemType> l
     return this->operator*(v);
 }
 
-DefaultResult Vector::PrintVector(bool is_print, const char *decimal_count) const
+DefaultResult Vector::PrintVector(LogLevel level, const char *decimal_count) const
 {
-    if(!is_print) return DEFAULT_RESULT;
+    if(Log::Level() > level) return DEFAULT_RESULT;
 
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
@@ -358,7 +362,7 @@ DefaultResult Vector::Unitization()
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
 
     double length_square = 0;
-    for(auto i = 0; i < _N; i++)
+    for(size_t i = 0; i < _N; i++)
     {
         length_square += pow(_V[i], 2);
     }
@@ -371,7 +375,7 @@ DefaultResult Vector::Unitization()
 
     auto length = sqrt(length_square);
 
-    for(auto i = 0; i <_N; i++)
+    for(size_t i = 0; i <_N; i++)
     {
         _V[i] /= length;
     }

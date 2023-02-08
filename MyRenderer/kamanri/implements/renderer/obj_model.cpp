@@ -58,7 +58,7 @@ size_t ObjModel::GetFaceSize() const
     return _faces.size();
 }
 
-Result<std::vector<double>> ObjModel::GetVertex(int index) const
+Result<std::vector<double>> ObjModel::GetVertex(size_t index) const
 {
     auto size = _vertices.size();
     if (size <= index)
@@ -69,7 +69,7 @@ Result<std::vector<double>> ObjModel::GetVertex(int index) const
     return Result<std::vector<double>>(_vertices[index]);
 }
 
-Result<std::vector<double>> ObjModel::GetVertexNormal(int index) const
+Result<std::vector<double>> ObjModel::GetVertexNormal(size_t index) const
 {
     auto size = _vertex_normals.size();
     if (size <= index)
@@ -80,7 +80,7 @@ Result<std::vector<double>> ObjModel::GetVertexNormal(int index) const
     return Result<std::vector<double>>(_vertex_normals[index]);
 }
 
-Result<std::vector<double>> ObjModel::GetVertexTexture(int index) const
+Result<std::vector<double>> ObjModel::GetVertexTexture(size_t index) const
 {
     auto size = _vertex_textures.size();
     if (size <= index)
@@ -91,7 +91,7 @@ Result<std::vector<double>> ObjModel::GetVertexTexture(int index) const
     return Result<std::vector<double>>(_vertex_textures[index]);
 }
 
-Result<ObjModel$::Face> ObjModel::GetFace(int index) const
+Result<ObjModel$::Face> ObjModel::GetFace(size_t index) const
 {
     auto size = _faces.size();
     if (size <= index)
@@ -133,7 +133,7 @@ DefaultResult ObjModel::ReadObjFileAndInit(std::string const &file_name)
             try
             {
                 auto vertex_texture = std::vector<double>();
-                for (int i = 1; i < vec_size; i++)
+                for (size_t i = 1; i < vec_size; i++)
                 {
                     vertex_texture.push_back(std::stod(splited_str_vec[i]));
                 }
@@ -168,7 +168,7 @@ DefaultResult ObjModel::ReadObjFileAndInit(std::string const &file_name)
             try
             {
                 auto vertex = std::vector<double>();
-                for (int i = 1; i < vec_size; i++)
+                for (size_t i = 1; i < vec_size; i++)
                 {
                     vertex.push_back(std::stod(splited_str_vec[i]));
                 }
@@ -188,7 +188,7 @@ DefaultResult ObjModel::ReadObjFileAndInit(std::string const &file_name)
             auto face = ObjModel$::Face();
             try
             {
-                for (int i = 1; i < vec_size; i++)
+                for (size_t i = 1; i < vec_size; i++)
                 {
                     auto about_vertex_indexes = Split(splited_str_vec[i], "/");
                     auto indexes_size = about_vertex_indexes.size();

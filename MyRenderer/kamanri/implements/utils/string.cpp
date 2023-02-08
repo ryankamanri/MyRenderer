@@ -14,7 +14,7 @@ std::vector<std::string> Kamanri::Utils::String::Split(const std::string &str, c
     size_t pos;
     size_t size = strs.size();
 
-    for (int i = 0; i < size; ++i)
+    for (size_t i = 0; i < size; ++i)
     {
         pos = strs.find(delim, i); // pos为分隔符第一次出现的位置，从i到pos之前的字符串是分隔出来的字符串
         if (pos < size)

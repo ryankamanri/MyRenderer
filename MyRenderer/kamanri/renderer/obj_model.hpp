@@ -31,10 +31,10 @@ namespace Kamanri
             size_t GetVertexNormalSize() const;
             size_t GetVertexTextureSize() const;
             size_t GetFaceSize() const;
-            Utils::Result<std::vector<double>> GetVertex(int index) const;
-            Utils::Result<std::vector<double>> GetVertexNormal(int index) const;
-            Utils::Result<std::vector<double>> GetVertexTexture(int index) const;
-            Utils::Result<ObjModel$::Face> GetFace(int index) const;
+            Utils::Result<std::vector<double>> GetVertex(size_t index) const;
+            Utils::Result<std::vector<double>> GetVertexNormal(size_t index) const;
+            Utils::Result<std::vector<double>> GetVertexTexture(size_t index) const;
+            Utils::Result<ObjModel$::Face> GetFace(size_t index) const;
 
             inline std::string GetTGAImageName() const { return _tga_image_name; }
             

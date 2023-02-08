@@ -1,7 +1,7 @@
 #pragma once
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/renderer/world/frame_buffer.hpp"
-#include "triangle3d.hpp"
+// #include "triangle3d.hpp"
 
 
 namespace Kamanri
@@ -23,10 +23,10 @@ namespace Kamanri
                     void Init(unsigned int width, unsigned int height);
                     Buffers& operator=(Buffers&& other);
                     void CleanZBuffer() const;
-                    void WriteToZBufferFrom(Triangle3D const &t, bool is_print = false);
+                    // void WriteFrom(Triangle3D const &t, double nearest_dist);
                     inline int Width() const { return _width; }
                     inline int Height() const { return _height; }
-                    FrameBuffer& Get(int width, int height);
+                    FrameBuffer& Get(unsigned int width, unsigned int height);
                 };
 
             } // namespace __

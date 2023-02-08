@@ -1,5 +1,6 @@
 #include <cfloat>
 #include "kamanri/utils/string.hpp"
+#include "kamanri/utils/logs.hpp"
 #include "kamanri/renderer/world/__/buffers.hpp"
 
 using namespace Kamanri::Renderer::World;
@@ -46,9 +47,9 @@ Buffers& Buffers::operator=(Buffers&& other)
 
 void Buffers::CleanZBuffer() const
 {
-    for(auto i = 0; i < _width; i++)
+    for(unsigned int i = 0; i < _width; i++)
     {
-        for(auto j = 0; j < _height; j++)
+        for(unsigned int j = 0; j < _height; j++)
         {
             _buffers[i * _height + j].z = -DBL_MAX;
         }
@@ -56,48 +57,47 @@ void Buffers::CleanZBuffer() const
 }
 
 
-void Buffers::WriteToZBufferFrom(Triangle3D const &t, bool is_print)
-{
-    int min_width;
-    int min_height;
-    int max_width;
-    int max_height;
+// void Buffers::WriteFrom(Triangle3D const &t, double nearest_dist)
+// {
+//     int min_width;
+//     int min_height;
+//     int max_width;
+//     int max_height;
 
-    t.GetMinMaxWidthHeight(min_width, min_height, max_width, max_height);
+//     t.GetMinMaxWidthHeight(min_width, min_height, max_width, max_height);
 
-    double t_z;
+//     double t_z;
 
-    for (int i = min_width; i <= max_width; i++)
-    {
+//     for (int i = min_width; i <= max_width; i++)
+//     {
 
-        if (i >= _width || i < 0)
-            continue;
-        for (int j = min_height; j <= max_height; j++)
-        {
-            if (j >= _height || j < 0)
-                continue;
+//         if (i >= _width || i < 0)
+//             continue;
+//         for (int j = min_height; j <= max_height; j++)
+//         {
+//             if (j >= _height || j < 0)
+//                 continue;
 
-            if(!t.Cover(i, j)) 
-                continue;
+//             if(!t.IsCover(i, j)) 
+//                 continue;
             
-            // Now the point is on the triangle
-            // start to compare the depth
-            t_z = t.Z(i, j);
-            if(t_z > _buffers[i * _height + j].z)
-            {
-                auto& buffer = _buffers[i * _height + j];
-                buffer.z = t_z;
-                //TODO: buffer.color = t.ArialCoordinates(x, y);
-                buffer.color = t.Color(i, j, is_print);
-            }
+//             // Now the point is on the triangle
+//             // start to compare the depth
+//             t_z = t.Z(i, j);
+//             if(t_z > _buffers[i * _height + j].z && t_z < nearest_dist)
+//             {
+//                 auto& buffer = _buffers[i * _height + j];
+//                 buffer.z = t_z;
+//                 buffer.color = t.WritePixelTo(i, j);
+//             }
                 
                 
-        }
-    }
-}
+//         }
+//     }
+// }
 
 
-FrameBuffer& Buffers::Get(int width, int height)
+FrameBuffer& Buffers::Get(unsigned int width, unsigned int height)
 {
     if(width < 0 || height < 0 || width >= _width || height >= _height)
     {

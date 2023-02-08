@@ -104,6 +104,7 @@ WinGDI_Window::~WinGDI_Window()
 WinGDI_Window& WinGDI_Window::SetWorld(Renderer::World::World3D && world)
 {
     _world = std::move(world);
+    return *this;
 }
 
 WinGDI_Window& WinGDI_Window::AddProcedure(Delegate<WinGDI_Message>::ANode&& proc)
@@ -139,6 +140,7 @@ void WinGDI_Window::MessageLoop()
         TranslateMessage(&msg);
         //将消息分发给窗口处理函数
         DispatchMessage(&msg);
+        
     }
 }
 

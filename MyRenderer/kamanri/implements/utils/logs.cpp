@@ -4,7 +4,12 @@ using namespace Kamanri::Utils;
 
 LogLevel Log::_level;
 
-void Log::Level(LogLevel level) {
+LogLevel Log::Level()
+{
+    return _level;
+}
+
+void Log::SetLevel(LogLevel level) {
     _level = level;
 }
 

@@ -4,6 +4,7 @@
 #include "kamanri/renderer/tga_image.hpp"
 #include "kamanri/renderer/world/object.hpp"
 #include "resources.hpp"
+#include "buffers.hpp"
 namespace Kamanri
 {
     namespace Renderer
@@ -28,7 +29,7 @@ namespace Kamanri
                 {
                 private:
                     /// @brief The object triangle belongs to.
-                    Object& _object;
+                    Object* _p_object;
 
                     // offset + index
                     int _v1, _v2, _v3;
@@ -46,16 +47,17 @@ namespace Kamanri
                     // factors of square, ax + by + cz - 1 = 0
                     // DEPRECATED
                     double _a, _b, _c;
+                    inline double ScreenZ(double x, double y) const { return (1 - _a * x - _b * y) / _c; }
+                    bool IsCover(double x, double y) const;
+                    void WritePixelTo(double x, double y, FrameBuffer& frame_buffer) const;
+                    friend void Object::__UpdateTriangleRef(std::vector<Triangle3D>& triangles);
 
                 public:
                     Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3);
-                    void Build(Resources const& res, bool is_print = false);
-                    bool Cover(double x, double y) const;
-                    inline double Z(double x, double y) const { return (1 - _a * x - _b * y) / _c; }
-                    unsigned int Color(double x, double y, bool is_print = false) const;
-                    void PrintTriangle(bool is_print = true) const;
-                    bool GetMinMaxWidthHeight(int &min_width, int &min_height, int &max_width, int &max_height) const;
-                    Utils::Result<Maths::Vector> ArealCoordinates(double x, double y, bool is_print = false) const;
+                    void Build(Resources const& res);
+                    void PrintTriangle(Utils::LogLevel level = Utils::Log$::INFO_LEVEL) const;
+                    void WriteTo(Buffers& buffers, double nearest_dist);
+                    Utils::Result<Maths::Vector> ArealCoordinates(double x, double y) const;
                 };
             } // namespace __
 

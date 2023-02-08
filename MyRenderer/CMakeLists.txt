@@ -14,7 +14,7 @@ include_directories(.)
 
 
 # Debug Build
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE Debug)
 
 # Release Build, Ofast
 # set(CMAKE_BUILD_TYPE Release)
@@ -22,8 +22,8 @@ set(CMAKE_BUILD_TYPE "Debug")
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 message(Open_the_Ofast_compile_option)
-set(CMAKE_CXX_FLAGS_RELEASE -Ofast)
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
 endif()
 

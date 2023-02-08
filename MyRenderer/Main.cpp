@@ -16,10 +16,10 @@ using namespace Kamanri::Renderer::World;
 constexpr const char* LOG_NAME = "Main";
 const int WINDOW_LENGTH = 600;
 
-constexpr const char* OBJ_PATH = "../../out/african_head.obj";
-constexpr const char* TGA_PATH = "../../out/african_head_diffuse.tga";
+constexpr const char* OBJ_PATH = "../../out/floor.obj";
+constexpr const char* TGA_PATH = "../../out/floor_diffuse.tga";
 
-bool is_print = false;
+
 
 
 namespace __UpdateFunc
@@ -53,9 +53,9 @@ DefaultResult UpdateFunc(World3D& world)
 
 	camera.InverseUpperByDirection(direction);
 
-	camera.Transform(is_print);
+	camera.Transform();
 
-	world.Build(is_print);
+	world.Build();
 
 	return DEFAULT_RESULT;
 }
@@ -66,7 +66,7 @@ void StartRender(HINSTANCE hInstance)
 		.SetWorld(
 			World3D(
 				Camera(
-					{ 0, 0, 3, 1 },
+					{ 0, 0, 4, 1 },
 					{ 0, 0, -1, 0 },
 					{ 0, 1, 0, 0 },
 					-1, 
@@ -75,12 +75,24 @@ void StartRender(HINSTANCE hInstance)
 					WINDOW_LENGTH
 				)
 			).AddObjModel(
-				ObjModel(OBJ_PATH, TGA_PATH),
-				{ 2, 0, 0, 0,
-				 0, 2, 0, 0,
-				 0, 0, 2, 0,
-				 0, 0, 0, 1 }
-			)).AddProcedure(
+				ObjModel("../../out/diablo3_pose.obj", "../../out/diablo3_pose_diffuse.tga"),
+				{
+					2, 0, 0, 0,
+				 	0, 2, 0, 0,
+				 	0, 0, 2, 0,
+				 	0, 0, 0, 1 
+				}
+			)
+			// .AddObjModel(
+			// 	ObjModel("../../out/skybox.obj", "../../out/skybox.tga"),
+			// 	{
+			// 		10, 0, 0, 0,
+			// 	 	0, 10, 0, 0,
+			// 	 	0, 0, 10, 0,
+			// 	 	0, 0, 0, 1 
+			// 	}
+			// )
+			).AddProcedure(
 				UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
 			).Show().MessageLoop();
 }
@@ -90,8 +102,7 @@ void StartRender(HINSTANCE hInstance)
 int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	// set the log level and is_print
-	Log::Level(Log$::DEBUG_LEVEL);
-	is_print = false;
+	Log::SetLevel(Log$::DEBUG_LEVEL);
 
 	StartRender(hInstance);
 

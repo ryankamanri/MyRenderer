@@ -47,7 +47,7 @@ World3D& World3D::operator=(World3D && other)
     return *this;
 }
 
-Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
+Result<Object *> World3D::AddObjModel(ObjModel const &model)
 {
     auto v_offset = (int)_resources.vertices.size();
     auto vt_offset = (int)_resources.vertex_textures.size();
@@ -55,7 +55,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
 
     /// transform to Vector from std::vector
 
-    for(auto i = 0; i < model.GetVertexSize(); i++)
+    for(size_t i = 0; i < model.GetVertexSize(); i++)
     {
         auto vertex = TRY_FOR_TYPE(Object *, model.GetVertex(i));
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
@@ -65,14 +65,14 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
         
     }
 
-    for(auto i = 0; i < model.GetVertexNormalSize(); i++)
+    for(size_t i = 0; i < model.GetVertexNormalSize(); i++)
     {
         auto vertex = TRY_FOR_TYPE(Object *, model.GetVertexNormal(i));
         Vector vector = {vertex[0], vertex[1], 1};
         _resources.vertex_normals.push_back(vector);
     }
 
-    for(auto i = 0; i < model.GetVertexTextureSize(); i++)
+    for(size_t i = 0; i < model.GetVertexTextureSize(); i++)
     {
         auto vertex = TRY_FOR_TYPE(Object *, model.GetVertexTexture(i));
         Vector vector = {vertex[0], vertex[1], vertex[2], 1};
@@ -85,7 +85,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
     auto& object = _environment.objects.back();
 
 
-    for(auto i = 0; i < model.GetFaceSize(); i++)
+    for(size_t i = 0; i < model.GetFaceSize(); i++)
     {
         auto face = TRY_FOR_TYPE(Object *, model.GetFace(i));
         if(face.vertex_indexes.size() > 4)
@@ -127,18 +127,18 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model, bool is_print)
     }
 
     // do check
-    for(auto i = 0; i < _environment.triangles.size(); i++)
+    for(size_t i = 0; i < _environment.triangles.size(); i++)
     {
-        _environment.triangles[i].PrintTriangle(is_print);
+        _environment.triangles[i].PrintTriangle(Log$::TRACE_LEVEL);
     }
 
     return Result<Object *>(&object);
 }
 
 
-World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& transform_matrix, bool is_print)
+World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& transform_matrix)
 {
-    auto res = AddObjModel(model, is_print);
+    auto res = AddObjModel(model);
     if(res.IsException())
     {
         res.Print();
@@ -147,15 +147,15 @@ World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& tran
     return std::move(*this);
 }
 
-DefaultResult World3D::Build(bool is_print)
+DefaultResult World3D::Build()
 {
     Log::Info(__World3D::LOG_NAME, "Start to build the world...");
     _buffers.CleanZBuffer();
-    for(auto& i: _environment.triangles)
+    for(auto& t: _environment.triangles)
     {
-        i.Build(_resources, is_print);
-        i.PrintTriangle(is_print);
-        _buffers.WriteToZBufferFrom(i);
+        t.Build(_resources);
+        t.PrintTriangle(Log$::TRACE_LEVEL);
+        t.WriteTo(_buffers, _camera.NearestDist());
 
     }
 

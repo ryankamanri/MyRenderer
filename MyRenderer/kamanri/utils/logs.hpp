@@ -31,11 +31,11 @@ namespace Kamanri
 
         namespace Log$
         {
-            constexpr int TRACE_LEVEL = 0;
-            constexpr int DEBUG_LEVEL = 1;
-            constexpr int INFO_LEVEL = 2;
-            constexpr int WARN_LEVEL = 3;
-            constexpr int ERROR_LEVEL = 4;
+            constexpr LogLevel TRACE_LEVEL = 0;
+            constexpr LogLevel DEBUG_LEVEL = 1;
+            constexpr LogLevel INFO_LEVEL = 2;
+            constexpr LogLevel WARN_LEVEL = 3;
+            constexpr LogLevel ERROR_LEVEL = 4;
 
         }
 
@@ -88,7 +88,8 @@ namespace Kamanri
             static LogLevel _level;
 
         public:
-            static void Level(LogLevel level);
+            static LogLevel Level();
+            static void SetLevel(LogLevel level);
             template <typename... Ts>
             static void Trace(std::string name, std::string message, Ts... argv);
             template <typename... Ts>
@@ -99,6 +100,21 @@ namespace Kamanri
             static void Warn(std::string name, std::string message, Ts... argv);
             template <typename... Ts>
             static void Error(std::string name, std::string message, Ts... argv);
+
+            template <LogLevel LOG_LEVEL, typename... Ts>
+            static void Print(const char* formatStr, Ts... argv)
+            {
+                if(_level > LOG_LEVEL) return;
+                printf(formatStr, argv...);
+            }
+
+            template <LogLevel LOG_LEVEL, typename... Ts>
+            static void PrintLn(const char* formatStr, Ts... argv)
+            {
+                if(_level > LOG_LEVEL) return;
+                printf(formatStr, argv...);
+                printf("\n");
+            }
         };
 
         template <typename... Ts>

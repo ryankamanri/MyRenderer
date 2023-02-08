@@ -19,12 +19,12 @@ namespace Kamanri
                     Maths::Vector location;
                     Maths::Vector direction;
                     Maths::Vector upper;
-                    double nearer_dest;
-                    double further_dest;
+                    double nearest_dist;
+                    double furthest_dist;
                     unsigned int screen_width;
                     unsigned int screen_height;
                     CameraAttributes(Maths::Vector $location, Maths::Vector $direction, Maths::Vector $upper, double $nearer_dest, double $further_dest, unsigned int $screen_width, unsigned int $screen_height):
-                    location($location), direction($direction), upper($upper), nearer_dest($nearer_dest), further_dest($further_dest), screen_width($screen_width), screen_height($screen_height) {}
+                    location($location), direction($direction), upper($upper), nearest_dist($nearer_dest), furthest_dist($further_dest), screen_width($screen_width), screen_height($screen_height) {}
                 };
             }
 
@@ -65,26 +65,26 @@ namespace Kamanri
                  * @brief the nearer dest in perspective transfomation
                  * 
                  */
-                double _nearer_dest;
+                double _nearest_dist;
                 /**
                  * @brief the further dest in perspective transfomation 
                  * 
                  */
-                double _further_dest;
+                double _furthest_dist;
 
                 unsigned int _screen_width;
 
                 unsigned int _screen_height;
 
-                void SetAngles(bool is_print = false);
+                void SetAngles();
 
             public:
                 Camera();
-                Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearer_dest, double further_dest, unsigned int screen_width, unsigned int screen_height);
+                Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height);
                 Camera(Camera&& camera);
                 Camera& operator=(Camera&& other);
                 void SetVertices(std::vector<Maths::Vector>& vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed);
-                Utils::DefaultResult Transform(bool is_print = false);
+                Utils::DefaultResult Transform();
                 /**
                  * @brief Inverse the upper vector when the upper of direction changed.
                  * 
@@ -97,6 +97,7 @@ namespace Kamanri
                 inline Maths::Vector &Direction() { return _direction; }
                 inline Maths::Vector &Upper() { return _upward; }
 
+                inline double NearestDist() const { return _nearest_dist; }
                 inline unsigned int ScreenWidth() const { return _screen_width; }
                 inline unsigned int ScreenHeight() const { return _screen_height; }
                 

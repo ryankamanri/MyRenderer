@@ -1,5 +1,6 @@
 #include "kamanri/utils/string.hpp"
 #include "kamanri/renderer/world/object.hpp"
+#include "kamanri/renderer/world/__/triangle3d.hpp"
 #include "kamanri/utils/result.hpp"
 #include "kamanri/maths/matrix.hpp"
 
@@ -46,6 +47,15 @@ Object::Object(std::vector<Maths::Vector>& vertices, int offset, int length, std
 //     _img = obj._img;
 //     return *this;
 // }
+
+void Object::__UpdateTriangleRef(std::vector<__::Triangle3D>& triangles)
+{
+    for(int i = _offset; i < _offset + _length; i++)
+    {
+        auto& t = triangles[i];
+        t._p_object = this;
+    }
+}
 
 DefaultResult Object::Transform(SMatrix const& transform_matrix) const
 {

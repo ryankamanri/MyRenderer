@@ -2,6 +2,7 @@
 #include <initializer_list>
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/utils/result.hpp"
+#include "kamanri/utils/logs.hpp"
 
 namespace Kamanri
 {
@@ -12,9 +13,9 @@ namespace Kamanri
 
         namespace Vector$
         {
-            constexpr VectorElemType INVALID_VECTOR_ELEM_TYPE_VALUE = -1;
-
+            constexpr VectorElemType NOT_INITIALIZED_VALUE = -1;
             constexpr int NOT_INITIALIZED_N = 0;
+            constexpr int MAX_SUPPORTED_DIMENSION = 4;
 
             // Codes
             constexpr int CODE_NOT_INITIALIZED_N = 100;
@@ -40,10 +41,10 @@ namespace Kamanri
             Utils::Result<std::size_t> N() const;
 
             // Get the value of the Vector by index
-            Utils::Result<VectorElemType> operator[](int n) const;
+            Utils::Result<VectorElemType> operator[](size_t n) const;
 
             // Get without result
-            VectorElemType GetFast(int n) const;
+            VectorElemType GetFast(size_t n) const;
 
             // setter
             Utils::DefaultResult Set(size_t index, VectorElemType value) const;
@@ -64,7 +65,7 @@ namespace Kamanri
             Utils::Result<VectorElemType> operator*(Vector const &v) const;
             Utils::Result<VectorElemType> operator*(std::initializer_list<VectorElemType> list) const;
 
-            Utils::DefaultResult PrintVector(bool is_print = true, const char *decimal_count = "2") const;
+            Utils::DefaultResult PrintVector(Utils::LogLevel level = Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
 
             Utils::DefaultResult Unitization();
 

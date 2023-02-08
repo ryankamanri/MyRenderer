@@ -9,13 +9,14 @@ namespace Kamanri
     namespace Maths
     {
 
-        using SMatrixElemType = double;
+        using SMatrixElemType = VectorElemType;
 
         namespace SMatrix$
         {
             // values
-            constexpr int NOT_INITIALIZED_N = 0;
-            constexpr SMatrixElemType NOT_INITIALIZED_VALUE = -1;
+            constexpr int NOT_INITIALIZED_N = Vector$::NOT_INITIALIZED_N;
+            constexpr SMatrixElemType NOT_INITIALIZED_VALUE = Vector$::NOT_INITIALIZED_VALUE;
+            constexpr int MAX_SUPPORTED_DIMENSION = Vector$::MAX_SUPPORTED_DIMENSION;
 
             // Codes
             constexpr int CODE_NOT_INITIALIZED_N = 101;
@@ -48,7 +49,7 @@ namespace Kamanri
             Utils::Result<std::size_t> N() const;
 
             // Get the value of the Vector by index
-            Utils::Result<SMatrixElemType> operator[](int n) const;
+            Utils::Result<SMatrixElemType> operator[](size_t n) const;
             Utils::Result<SMatrixElemType> Get(size_t row, size_t col) const;
             Utils::Result<Vector> Get(size_t col) const;
             // Setter
@@ -77,7 +78,7 @@ namespace Kamanri
             // Adjoint matrix
             Utils::Result<SMatrix> operator*() const;
 
-            Utils::DefaultResult PrintMatrix(bool is_print = true, const char *decimal_count = "2") const;
+            Utils::DefaultResult PrintMatrix(Utils::LogLevel level = Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
 
             // The determinant
             Utils::Result<SMatrixElemType> Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;

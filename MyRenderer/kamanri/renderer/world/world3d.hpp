@@ -41,9 +41,9 @@ namespace Kamanri
                 World3D(Camera&& camera);
                 World3D& operator=(World3D&& other);
                 Camera& GetCamera() { return _camera; }
-                Utils::Result<Object *> AddObjModel(ObjModel const &model, bool is_print = false);
-                World3D&& AddObjModel(ObjModel const &model, Maths::SMatrix const& transform_matrix, bool is_print = false);
-                Utils::DefaultResult Build(bool is_print = false);
+                Utils::Result<Object *> AddObjModel(ObjModel const &model);
+                World3D&& AddObjModel(ObjModel const &model, Maths::SMatrix const& transform_matrix);
+                Utils::DefaultResult Build();
                 FrameBuffer const& Buffer(int x, int y);
             };
             

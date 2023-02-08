@@ -30,6 +30,6 @@ namespace Kamanri
 #define CHECK_MEMORY_IS_ALLOCATED(p, log_name, return_value)                           \
     if (!p)                                                                            \
     {                                                                                  \
-        Kamanri::Utils::Log::Error(log_name, "Try to visit the not-allocated memory"); \
+        Kamanri::Utils::Log::Error(log_name, "Try to visit the not-allocated memory \n      at File %s, line %d", __FILE__, __LINE__); \
         return return_value;                                                           \
     }

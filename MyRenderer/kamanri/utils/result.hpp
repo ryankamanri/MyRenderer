@@ -210,6 +210,7 @@ namespace Kamanri
             _data = std::move(result._data);
             this->_inner_result.reset(result._inner_result.release());
             this->_stacktrace.assign(result._stacktrace.begin(), _stacktrace.end());
+            return *this;
         }
 
         template <class T>

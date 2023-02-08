@@ -22,12 +22,12 @@ namespace Kamanri
                 {
                     constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Triangle3D);
 
-                    namespace Cover
+                    namespace IsCover
                     {
                         double v1_v2_xy_determinant;
                         double v2_v3_xy_determinant;
                         double v3_v1_xy_determinant;
-                    } // namespace Cover
+                    } // namespace IsCover
                     
                     namespace Build
                     {
@@ -35,16 +35,24 @@ namespace Kamanri
                         Vector abc_vec(3);
                     } // namespace Build
                     
-                    namespace Color
+                    namespace WritePixelTo
                     {
                         Result<Maths::Vector> res;
                         double areal_coordinates_1;
                         double areal_coordinates_2;
                         double areal_coordinates_3;
 
+                        double world_z;
+
                         double img_u;
                         double img_v;
-                    } // namespace Color
+                    } // namespace WritePixelTo
+
+                    namespace WriteTo
+                    {
+                        double nearest_dist;
+                    } // namespace WriteTo
+                    
                     
 
                     namespace ArealCoordinates
@@ -67,8 +75,9 @@ namespace Kamanri
 
 
 
-Triangle3D::Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3): _object(object)
+Triangle3D::Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3)
 {
+    _p_object = &object;
     _v1 = v1;
     _v2 = v2;
     _v3 = v3;
@@ -81,14 +90,14 @@ Triangle3D::Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2,
 
 }
 
-void Triangle3D::PrintTriangle(bool is_print) const
+void Triangle3D::PrintTriangle(LogLevel level) const
 {
-    if(!is_print) return;
-    PrintLn("a: %f, b: %f, c: %f", _a, _b, _c);
+    if(Log::Level() > level) return;
+    PrintLn("v1 | v2 | v3 : %d | %d | %d", _v1, _v2, _v3);
 }
 
 
-void Triangle3D::Build(Resources const& res, bool is_print)
+void Triangle3D::Build(Resources const& res)
 {
     using namespace __Triangle3D::Build;
 
@@ -121,7 +130,7 @@ void Triangle3D::Build(Resources const& res, bool is_print)
     (*-vertices_matrix) * abc_vec;
 
     Log::Trace(__Triangle3D::LOG_NAME, "The abc_vec is:");
-    abc_vec.PrintVector(is_print);
+    abc_vec.PrintVector(Log$::TRACE_LEVEL);
 
     _a = abc_vec.GetFast(0);
     _b = abc_vec.GetFast(1);
@@ -139,9 +148,9 @@ void Triangle3D::Build(Resources const& res, bool is_print)
 
 #define Determinant(a00, a01, a10, a11) ((a00) * (a11) - (a10) * (a01))
 
-bool Triangle3D::Cover(double x, double y) const
+bool Triangle3D::IsCover(double x, double y) const
 {
-    using namespace __Triangle3D::Cover;
+    using namespace __Triangle3D::IsCover;
     v1_v2_xy_determinant = Determinant
     (
         _v2_x - _v1_x, x - _v1_x,
@@ -166,15 +175,14 @@ bool Triangle3D::Cover(double x, double y) const
     return false;
 }
 
-unsigned int Triangle3D::Color(double x, double y, bool is_print) const
+void Triangle3D::WritePixelTo(double x, double y, FrameBuffer& frame_buffer) const
 {
-    using namespace __Triangle3D::Color;
-    res = std::move(ArealCoordinates(x, y, is_print));
+    using namespace __Triangle3D::WritePixelTo;
+    res = std::move(ArealCoordinates(x, y));
     if(res.IsException())
     {
         Log::Error(__Triangle3D::LOG_NAME, "Cannot get the ArealCoordinates.");
         res.Print();
-        return 0;
     }
 
     areal_coordinates_1 = res.Data().GetFast(0);
@@ -187,11 +195,15 @@ unsigned int Triangle3D::Color(double x, double y, bool is_print) const
     // img_u = areal_coordinates_1 * _vt1_x + areal_coordinates_2 * _vt2_x + areal_coordinates_3 * _vt3_x;
     // img_v = areal_coordinates_1 * _vt1_y + areal_coordinates_2 * _vt2_y + areal_coordinates_3 * _vt3_y;
 
-    double world_z = 1.0 / (areal_coordinates_1 / _w_v1_z + areal_coordinates_2 / _w_v2_z + areal_coordinates_3 / _w_v3_z);
+    world_z = 1.0 / (areal_coordinates_1 / _w_v1_z + areal_coordinates_2 / _w_v2_z + areal_coordinates_3 / _w_v3_z);
+
+    if(world_z < frame_buffer.z || world_z > __Triangle3D::WriteTo::nearest_dist) return;
+
     img_u = (areal_coordinates_1 * _vt1_x / _w_v1_z + areal_coordinates_2 * _vt2_x / _w_v2_z + areal_coordinates_3 * _vt3_x / _w_v3_z) * world_z; 
     img_v = (areal_coordinates_1 * _vt1_y / _w_v1_z + areal_coordinates_2 * _vt2_y / _w_v2_z + areal_coordinates_3 * _vt3_y / _w_v3_z) * world_z;
-
-    return _object.GetImage().Get(img_u, img_v).bgr;
+    
+    frame_buffer.z = world_z;
+    frame_buffer.color = _p_object->GetImage().Get(img_u, img_v).bgr;
 }
 
 inline double Max(double x1, double x2, double x3)
@@ -204,29 +216,49 @@ inline double Min(double x1, double x2, double x3)
     return x1 < x2 ? (x1 < x3 ? x1 : x3) : (x2 < x3 ? x2 : x3);
 }
 
-bool Triangle3D::GetMinMaxWidthHeight(int &min_width, int &min_height, int &max_width, int &max_height) const
+void Triangle3D::WriteTo(Buffers& buffers, double nearest_dist)
 {
-    min_width = (int)Min(_v1_x, _v2_x, _v3_x);
-    min_height = (int)Min(_v1_y, _v2_y, _v3_y);
-    max_width = (int)Max(_v1_x, _v2_x, _v3_x);
-    max_height = (int)Max(_v1_y, _v2_y, _v3_y);
+    __Triangle3D::WriteTo::nearest_dist = nearest_dist;
 
-    
-    return true;
+    int min_width = (int)Min(_v1_x, _v2_x, _v3_x);
+    int min_height = (int)Min(_v1_y, _v2_y, _v3_y);
+    int max_width = (int)Max(_v1_x, _v2_x, _v3_x);
+    int max_height = (int)Max(_v1_y, _v2_y, _v3_y);
+
+    for (int i = min_width; i <= max_width; i++)
+    {
+
+        if (i >= buffers.Width() || i < 0)
+            continue;
+        for (int j = min_height; j <= max_height; j++)
+        {
+            if (j >= buffers.Height() || j < 0)
+                continue;
+
+            if(!IsCover(i, j)) 
+                continue;
+            
+            // Now the point is on the triangle
+            // start to compare the depth
+            WritePixelTo(i, j, buffers.Get(i, j));   
+                
+        }
+    }
 }
 
-Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) const
+
+Result<Vector> Triangle3D::ArealCoordinates(double x, double y) const
 {
-    if(!Cover(x, y))
+    if(!IsCover(x, y))
     {
         Log::Error(__Triangle3D::LOG_NAME, "The target is not in Triangle");
         RESULT_EXCEPTION(Vector, Triangle3D$::CODE_NOT_IN_TRIANGLE, "The target is not in Triangle");
     }
     using namespace __Triangle3D::ArealCoordinates;
-    target = {x, y, Z(x, y), 1};
+    target = {x, y, ScreenZ(x, y), 1};
 
     Log::Trace(__Triangle3D::LOG_NAME,"The target is:");
-    target.PrintVector(is_print);
+    target.PrintVector(Log$::TRACE_LEVEL);
     // (v1, v2, v3, 0) (alpha, beta, gamma, 1)^T = target
     a = 
     {
@@ -237,12 +269,12 @@ Result<Vector> Triangle3D::ArealCoordinates(double x, double y, bool is_print) c
     };
 
     Log::Trace(__Triangle3D::LOG_NAME, "The a is:");
-    a.PrintMatrix(is_print);
+    a.PrintMatrix(Log$::TRACE_LEVEL);
 
     n_a = TRY_FOR_TYPE(Vector, -a);
 
     Log::Trace(__Triangle3D::LOG_NAME, "The -a is:");
-    n_a.PrintMatrix(is_print);
+    n_a.PrintMatrix(Log$::TRACE_LEVEL);
     ASSERT_FOR_TYPE(Vector, n_a * target);
     return Result<Vector>(target);
 }

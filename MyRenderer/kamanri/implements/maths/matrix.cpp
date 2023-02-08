@@ -29,7 +29,7 @@ namespace Kamanri
             {
                 auto size = list.size();
                 auto result = 0;
-                for (auto i = 0; i < size; i++)
+                for (size_t i = 0; i < size; i++)
                 {
                     if (list[i] == value)
                         result++;
@@ -69,7 +69,46 @@ namespace Kamanri
                     }
                     result++;
                 }
+                return 0xFFFFFFFFFFFFFFFF;
             }
+
+            /// @brief (-1)^RON
+            /// @param v 
+            /// @return 
+            int Pow_NegativeOne_ReverseOrderNumber(std::vector<size_t>& v)
+            {
+                int res = 1;
+                for (size_t i = 1; i < v.size(); i++)
+                {
+                    for (size_t j = 0; j < i; j++)
+                    {
+                        if (v[j] > v[i]) res *= -1;
+                    }
+                }
+                return res;
+            }
+
+            namespace operator_star_void
+            {
+                
+                std::vector<std::size_t> row_list;
+                std::vector<std::size_t> col_list;
+            } // namespace operator*()
+            
+            
+            namespace Determinant
+            {
+                std::vector<std ::size_t> row_list;
+                std::vector<std ::size_t> col_list;
+            } // namespace Determinant
+
+            namespace AComplement
+            {
+                std::vector<std ::size_t> row_list;
+                std::vector<std ::size_t> col_list;
+            } // namespace AComplement
+            
+            
         }
     }
 }
@@ -77,7 +116,11 @@ namespace Kamanri
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Class member functions
 
-SMatrix::SMatrix() = default;
+SMatrix::SMatrix()
+{
+    this->_N = SMatrix$::MAX_SUPPORTED_DIMENSION;
+    this->_SM = NewArray<SMatrixElemType>(SMatrix$::MAX_SUPPORTED_DIMENSION * SMatrix$::MAX_SUPPORTED_DIMENSION);
+}
 
 SMatrix::SMatrix(size_t n)
 {
@@ -123,8 +166,6 @@ SMatrix::SMatrix(std::initializer_list<SMatrixElemType> list)
     this->_N = (size_t)sqrt((double)size);
     this->_SM = NewArray<SMatrixElemType>(size);
 
-    auto begin = list.begin();
-
     CHECK_MEMORY_IS_ALLOCATED(_SM, __SMatrix::LOG_NAME, )
 
     auto i = 0;
@@ -148,7 +189,7 @@ SMatrix::SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list)
 
     for (size_t i = 0; begin + i != v_list.end(); i++)
     {
-        auto v = begin[i];
+        auto& v = begin[i];
         auto v_size = v.size();
         if (v_size != v_count)
         {
@@ -222,7 +263,7 @@ DefaultResult SMatrix::operator=(std::initializer_list<std::vector<SMatrixElemTy
 
     for (size_t i = 0; begin + i != v_list.end(); i++)
     {
-        auto v = begin[i];
+        auto& v = begin[i];
         auto v_size = v.size();
         if (v_size != v_count)
         {
@@ -256,7 +297,7 @@ Result<std::size_t> SMatrix::N() const
     return Result<std::size_t>(_N);
 }
 
-Result<SMatrixElemType> SMatrix::operator[](int index) const
+Result<SMatrixElemType> SMatrix::operator[](size_t index) const
 {
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::NOT_INITIALIZED_VALUE)
 
@@ -580,11 +621,12 @@ Result<SMatrix> SMatrix::operator*() const
 {
     CHECK_MEMORY_FOR_RESULT(SMatrix, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
+    using namespace __SMatrix::operator_star_void;
     SMatrix ret_sm(_N);
 
-    std::vector<std ::size_t> row_list;
-    std::vector<std ::size_t> col_list;
-    for (size_t i= 0; i < _N; i++)
+    row_list.clear();
+    col_list.clear();
+    for (size_t i = 0; i < _N; i++)
     {
         row_list.push_back(i);
         col_list.push_back(i);
@@ -604,9 +646,9 @@ Result<SMatrix> SMatrix::operator*() const
 
 
 
-DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) const
+DefaultResult SMatrix::PrintMatrix(LogLevel level, const char *decimal_count) const
 {
-    if(!is_print) return DEFAULT_RESULT;
+    if(Log::Level() > level) return DEFAULT_RESULT;
 
     CHECK_MEMORY_FOR_DEFAULT_RESULT(_SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
@@ -650,38 +692,43 @@ DefaultResult SMatrix::PrintMatrix(bool is_print, const char *decimal_count) con
 SMatrixElemType SMatrix::_Determinant(SMatrixElemType* psm, std::vector<std::size_t>& row_list, std::vector<std::size_t>& col_list) const
 {
     auto row_count = row_list.size();
-    auto col_count = col_list.size();
-    
-    if(row_count == 1)
+    SMatrixElemType result = 0;
+
+    #define SM(row, col) psm[_N * row_list[row] + col_list[col]]
+    #define SM_DET_2(row_1, row_2, col_1, col_2) (SM(row_1, col_1) * SM(row_2, col_2) - SM(row_1, col_2) * SM(row_2, col_1))
+    #define SM_DET_3(row_1, row_2, row_3, col_1, col_2, col_3) \
+    (SM(row_1, col_1) * SM_DET_2(row_2, row_3, col_2, col_3) - SM(row_2, col_1) * SM_DET_2(row_1, row_3, col_2, col_3) + SM(row_3, col_1) * SM_DET_2(row_1, row_2, col_2, col_3))
+
+    if (row_count < 4)
     {
-        return psm[_N * row_list[0] + col_list[0]];
-    }
-    if(row_count == 2)
-    {
-        auto result = psm[_N * row_list[0] + col_list[0]] * psm[_N * row_list[1] + col_list[1]] - psm[_N * row_list[0] + col_list[1]] * psm[_N * row_list[1] + col_list[0]];
-        if(row_list[0] > row_list[1])
+        if (row_count == 1) result = SM(0, 0);
+        if (row_count == 2) result = SM_DET_2(0, 1, 0, 1);
+        if (row_count == 3) result = SM_DET_3(0, 1, 2, 0, 1, 2);
+        if (row_count == 4)
         {
-            // This is to avoid the bigger index is front of the smaller
-            result *= -1;
+            result = SM(0, 0) * SM_DET_3(1, 2, 3, 1, 2, 3) -
+            SM(1, 0) * SM_DET_3(0, 2, 3, 1, 2, 3) +
+            SM(2, 0) * SM_DET_3(0, 1, 3, 1, 2, 3) -
+            SM(3, 0) * SM_DET_3(0, 1, 2, 1, 2, 3);
         }
-        if(col_list[0] > col_list[1])
-        {
-            result *= -1;
-        }
+        // This is to avoid the bigger index is in front of the smaller
+        result *= __SMatrix::Pow_NegativeOne_ReverseOrderNumber(row_list);
+        result *= __SMatrix::Pow_NegativeOne_ReverseOrderNumber(col_list);
 
         return result;
     }
+    
 
-    SMatrixElemType result = 0;
 
-    auto col_first = col_list.front();
-    auto col_first_sorted = __SMatrix::GetSortedIndex(col_list, col_first);
+    /// row_count > 4
+    size_t col_first = col_list.front();
+    size_t col_first_sorted = __SMatrix::GetSortedIndex(col_list, col_first);
     col_list.erase(col_list.begin());
 
-    for(auto i = 0; i < row_count; i++)
+    for(size_t i = 0; i < row_count; i++)
     {
-        auto row_first = row_list[0];
-        auto row_first_sorted = __SMatrix::GetSortedIndex(row_list, row_first);
+        size_t row_first = row_list[0];
+        size_t row_first_sorted = __SMatrix::GetSortedIndex(row_list, row_first);
         row_list.erase(row_list.begin());
         //////////////////////// calculate sub result
         auto value = psm[_N * row_first + col_first];
@@ -744,17 +791,16 @@ Result<SMatrixElemType> SMatrix::Determinant() const
 {
     CHECK_MEMORY_FOR_RESULT(SMatrixElemType, _SM, __SMatrix::LOG_NAME, SMatrix$::CODE_NOT_INITIALIZED_MATRIX)
 
-    std::vector<std ::size_t> row_list;
-    std::vector<std ::size_t> col_list;
+    using namespace __SMatrix::Determinant;
+    row_list.clear();
+    col_list.clear();
     for (size_t i= 0; i < _N; i++)
     {
         row_list.push_back(i);
         col_list.push_back(i);
     }
 
-    SMatrixElemType res = _Determinant(_SM.get(), row_list, col_list);
-
-    return Result<SMatrixElemType>(res);
+    return Result<SMatrixElemType>(_Determinant(_SM.get(), row_list, col_list));
 }
 
 SMatrixElemType SMatrix::_AComplement(SMatrixElemType* psm, std::vector<size_t> row_list, std::vector<size_t> col_list, size_t row, size_t col) const
@@ -787,14 +833,14 @@ Result<SMatrixElemType> SMatrix::AComplement(size_t row, size_t col) const
         return RESULT_EXCEPTION(SMatrixElemType, SMatrix$::CODE_INDEX_OUT_OF_BOUND, "Index out of bound");
     }
 
-    std::vector<std ::size_t> row_list;
-    std::vector<std ::size_t> col_list;
+    using namespace __SMatrix::AComplement;
+    row_list.clear();
+    col_list.clear();
     for (size_t i= 0; i < _N; i++)
     {
         row_list.push_back(i);
         col_list.push_back(i);
     }
 
-    SMatrixElemType res = _AComplement(_SM.get(), row_list, col_list, row, col);
-    return Result<SMatrixElemType>(res);
+    return Result<SMatrixElemType>(_AComplement(_SM.get(), row_list, col_list, row, col));
 }

@@ -36,10 +36,15 @@ namespace Kamanri
 				std::thread _update_thread;
 				unsigned int _screen_width;
 				unsigned int _screen_height;
+				bool _is_window_alive = true;
 
 				void Func(Kamanri::Windows::WinGDI_Window$::WinGDI_Message& message)
 				{
 					InvokeNext(message);
+					if(message.u_msg == WM_CLOSE)
+					{
+						Log::Info(__UpdateProcedure::LOG_NAME, "Update thread exit with %d", pthread_cancel(_update_thread.native_handle()));
+					}
 
 					if (message.u_msg != WM_PAINT) return;
 
@@ -49,10 +54,10 @@ namespace Kamanri
 						PainterFactor painter_factor(message.h_wnd, _screen_width, _screen_height);
 						auto painter = painter_factor.CreatePainter();
 
-						int color;
+						// int color;
 						DefaultResult update_res;
 						//
-						while (true)
+						while (this->_is_window_alive)
 						{
 							// this part rightly belongs to DrawFunc
 							update_res = _update_func(message.world);
@@ -69,6 +74,7 @@ namespace Kamanri
 
 								for (unsigned int j = 0; j <= _screen_height; j++)
 								{
+
 									auto& buffer = message.world.Buffer(i, j);
 									if (buffer.z == -DBL_MAX)
 										continue;
