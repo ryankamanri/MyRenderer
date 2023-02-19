@@ -6,10 +6,10 @@ LogLevel Log::_level;
 
 LogLevel Log::Level()
 {
-    return _level;
+	return _level;
 }
 
 void Log::SetLevel(LogLevel level) {
-    _level = level;
+	_level = level;
 }
 

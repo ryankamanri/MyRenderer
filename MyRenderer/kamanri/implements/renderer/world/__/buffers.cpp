@@ -9,101 +9,82 @@ using namespace Kamanri::Utils;
 
 namespace Kamanri
 {
-    namespace Renderer
-    {
-        namespace World
-        {
-            namespace __
-            {
-                namespace __Buffers
-                {
-                    constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Buffers);
-                } // namespace __Buffers
-                
-            } // namespace __
-            
-        } // namespace World
-        
-    } // namespace Renderer
-    
+	namespace Renderer
+	{
+		namespace World
+		{
+			namespace __
+			{
+				namespace __Buffers
+				{
+					constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::__::Buffers);
+				} // namespace __Buffers
+				
+			} // namespace __
+			
+		} // namespace World
+		
+	} // namespace Renderer
+	
 } // namespace Kamanri
 
+#define Loc(x, y) ((_height - (y + 1)) * _height + x)
 
-void Buffers::Init(unsigned int width, unsigned int height)
+Buffers::~Buffers()
 {
-    _width = width;
-    _height = height;
-    _buffers = NewArray<FrameBuffer>(width * height);
-    
+	Log::Debug(__Buffers::LOG_NAME, "clean the buffers");
+}
+void Buffers::Init(size_t width, size_t height)
+{   
+	_width = width;
+	_height = height;
+	_buffers = NewArray<FrameBuffer>(width * height);
+	_bitmap_buffer = NewArray<DWORD>(width * height);
 }
 
 Buffers& Buffers::operator=(Buffers&& other)
 {
-    _width = other._width;
-    _height = other._height;
-    _buffers = std::move(other._buffers);
-    return *this;
+	_width = other._width;
+	_height = other._height;
+	_buffers = std::move(other._buffers);
+	_bitmap_buffer = std::move(other._bitmap_buffer);
+	return *this;
 }
 
-void Buffers::CleanZBuffer() const
+void Buffers::CleanAllBuffers() const
 {
-    for(unsigned int i = 0; i < _width; i++)
-    {
-        for(unsigned int j = 0; j < _height; j++)
-        {
-            _buffers[i * _height + j].z = -DBL_MAX;
-        }
-    }
+	for(size_t i = 0; i < _width; i++)
+	{
+		for(size_t j = 0; j < _height; j++)
+		{
+			_buffers[Loc(i, j)].z = -DBL_MAX;
+		}
+	}
+	ZeroMemory(_bitmap_buffer.get(), _width * _height * sizeof(DWORD));
 }
 
 
-// void Buffers::WriteFrom(Triangle3D const &t, double nearest_dist)
-// {
-//     int min_width;
-//     int min_height;
-//     int max_width;
-//     int max_height;
-
-//     t.GetMinMaxWidthHeight(min_width, min_height, max_width, max_height);
-
-//     double t_z;
-
-//     for (int i = min_width; i <= max_width; i++)
-//     {
-
-//         if (i >= _width || i < 0)
-//             continue;
-//         for (int j = min_height; j <= max_height; j++)
-//         {
-//             if (j >= _height || j < 0)
-//                 continue;
-
-//             if(!t.IsCover(i, j)) 
-//                 continue;
-            
-//             // Now the point is on the triangle
-//             // start to compare the depth
-//             t_z = t.Z(i, j);
-//             if(t_z > _buffers[i * _height + j].z && t_z < nearest_dist)
-//             {
-//                 auto& buffer = _buffers[i * _height + j];
-//                 buffer.z = t_z;
-//                 buffer.color = t.WritePixelTo(i, j);
-//             }
-                
-                
-//         }
-//     }
-// }
-
-
-FrameBuffer& Buffers::Get(unsigned int width, unsigned int height)
+FrameBuffer& Buffers::GetFrame(size_t x, size_t y)
 {
-    if(width < 0 || height < 0 || width >= _width || height >= _height)
-    {
-        Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", width, height);
-        return _buffers[0];
-    }
-    return _buffers[width * _height + height];
-    
+	if(x < 0 || y < 0 || x >= _width || y >= _height)
+	{
+		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", x, y);
+		PRINT_LOCATION;
+		return _buffers[0];
+	}
+	return _buffers[Loc(x, y)];
+	
+}
+
+// #define Loc(x, y, width, height) ()
+
+DWORD& Buffers::GetBitmapBuffer(size_t x, size_t y)
+{
+	if(x < 0 || y < 0 || x >= _width || y >= _height)
+	{
+		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", x, y);
+		PRINT_LOCATION;
+		return _bitmap_buffer[0];
+	}
+	return _bitmap_buffer[Loc(x, y)]; // (x, y) -> (x, _height - y)
 }

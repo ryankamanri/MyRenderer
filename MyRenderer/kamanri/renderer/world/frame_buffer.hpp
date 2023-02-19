@@ -2,27 +2,27 @@
 
 namespace Kamanri
 {
-    namespace Renderer
-    {
-        namespace World
-        {
+	namespace Renderer
+	{
+		namespace World
+		{
 
-            class FrameBuffer
-            {
-                public:
-                enum class Type
-                {
-                    Z, COLOR, INTENSITY, ALL
-                };
-                double z;
-                // BGR color
-                unsigned int color;
-                double intensity;
-            };
+			class FrameBuffer
+			{
+				public:
+				enum class Type
+				{
+					Z, COLOR, INTENSITY, ALL
+				};
+				double z;
+				// BGR color
+				unsigned int color;
+				double intensity;
+			};
 
 
-        } // namespace World
+		} // namespace World
 
-    } // namespace Renderer
+	} // namespace Renderer
 
 } // namespace Kamanri

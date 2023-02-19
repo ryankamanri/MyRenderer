@@ -27,21 +27,30 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
 endif()
 
+#################################################################### cuda_dll.dll
+FIND_PACKAGE(CUDA REQUIRED)
+if (NOT CUDA_FOUND)
+  message(STATUS "CUDA not found. Project will not be built.")
+endif(NOT CUDA_FOUND)
+
+file(GLOB_RECURSE CUDA_DLL cuda_dll/src/implements/*)
+message(CUDA_DLL: ${CUDA_DLL})
+CUDA_ADD_LIBRARY(cuda_dll SHARED ${CUDA_DLL})
+# cuda_add_library(cuda_dll ${CUDA_DLL})
+#####################################################################
 
 # 将源代码添加到此项目的可执行文件。
+# Add dependencies
 # aux_source_directory(./mylibs/implements MY_LIBS)
 file(GLOB_RECURSE KAMANRI ./kamanri/implements/*.cpp)
 add_library(kamanri ${KAMANRI})
 
 
-# use in visual studio
-# add_executable(MyRenderer WIN32 Main.cpp)
+
 # use in general
 add_executable(MyRenderer Main.cpp)
 
 target_link_libraries(MyRenderer kamanri)
-
-# Add dependencies
 
 
 message(CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE})

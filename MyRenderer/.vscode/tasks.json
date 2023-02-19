@@ -1,7 +1,7 @@
 {
     "tasks": [
         {
-            "type": "process",
+            "type": "shell",
             "label": "Clean",
             "command": "rm",
             "args": [
@@ -12,36 +12,28 @@
             ]
         },
         {
-            "type": "process",
+            "type": "shell",
             "label": "CMake Build",
             "command": "cmake",
             "args": [
-                "-D",
-                "CMAKE_MAKE_PROGRAM:PATH=C:/MinGW64/bin/make.exe",
-                "-G",
-                "Unix Makefiles",
                 "-B",
                 "./build/vscode-cmake-task"
             ],
             "detail": "Cmake Build"
         }, 
         {
-            "type": "process",
+            "type": "shell",
             "label": "Make Build",
-            "command": "make",
+            "command": "MSBuild",
             "args": [
-                "-C",
-                "./build/vscode-cmake-task"
+                "${workspaceFolder}\\build\\vscode-cmake-task\\MyRenderer.sln"
             ],
             "dependsOn":[
                 "CMake Build"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            
             "detail": "Build CMake Project",
-            "problemMatcher":"$gcc"
+            "problemMatcher":"$msCompile"
         }
     ],
     "version": "2.0.0"

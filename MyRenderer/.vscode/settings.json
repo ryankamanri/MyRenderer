@@ -87,6 +87,5 @@
         "coroutine": "cpp",
         "resumable": "cpp"
     },
-    "C_Cpp.errorSquiggles": "Disabled",
-    "sonarlint.pathToCompileCommands": "${workspaceFolder}\\build\\vscode-cmake-task\\compile_commands.json"
+    "C_Cpp.errorSquiggles": "Disabled"
 }

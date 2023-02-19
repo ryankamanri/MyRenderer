@@ -3,6 +3,8 @@
 #include <cfloat>
 #include <cmath>
 #include "kamanri/all.hpp"
+#include "cuda_dll/foo.hpp"
+#include "cuda_dll/exports/set_log_level.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
@@ -14,10 +16,10 @@ using namespace Kamanri::Renderer::World;
 
 
 constexpr const char* LOG_NAME = "Main";
-const int WINDOW_LENGTH = 600;
+const int WINDOW_LENGTH = 800;
 
-constexpr const char* OBJ_PATH = "../../out/floor.obj";
-constexpr const char* TGA_PATH = "../../out/floor_diffuse.tga";
+constexpr const char* OBJ_PATH = "../../out/diablo3_pose.obj";
+constexpr const char* TGA_PATH = "../../out/diablo3_pose_diffuse.tga";
 
 
 
@@ -25,7 +27,7 @@ constexpr const char* TGA_PATH = "../../out/floor_diffuse.tga";
 namespace __UpdateFunc
 {
 	Vector direction(4);
-	double theta = PI / 16;
+	double theta = PI / 64;
 	SMatrix revolve_matrix =
 	{
 		cos(theta), 0, -sin(theta), 0,
@@ -75,12 +77,12 @@ void StartRender(HINSTANCE hInstance)
 					WINDOW_LENGTH
 				)
 			).AddObjModel(
-				ObjModel("../../out/diablo3_pose.obj", "../../out/diablo3_pose_diffuse.tga"),
+				ObjModel(OBJ_PATH, TGA_PATH),
 				{
 					2, 0, 0, 0,
-				 	0, 2, 0, 0,
-				 	0, 0, 2, 0,
-				 	0, 0, 0, 1 
+					0, 2, 0, 0,
+					0, 0, 2, 0,
+					0, 0, 0, 1 
 				}
 			)
 			// .AddObjModel(
@@ -97,15 +99,53 @@ void StartRender(HINSTANCE hInstance)
 			).Show().MessageLoop();
 }
 
+void CUDATest()
+{
+	dll cuda_dll;
+	load_dll(cuda_dll, cuda_dll, LOG_NAME);
+
+	func_type(UseCUDA) use_cuda;
+	import_func(UseCUDA, cuda_dll, use_cuda, LOG_NAME);
+
+	func_type(UseCUDA2) use_cuda2;
+	import_func(UseCUDA2, cuda_dll, use_cuda2, LOG_NAME);
+
+	use_cuda();
+	TestStruct t;
+	t.a = 4;
+	t.b = 3;
+	use_cuda2(2, 2, t);
+
+	func_type(MemoryReadTest) memory_read_test;
+	import_func(MemoryReadTest, cuda_dll, memory_read_test, LOG_NAME);
+	int a[5] = {1, 2, 3, 4, 5};
+	memory_read_test(a, 5);
+
+	
+}
+
+void SetLevel(LogLevel level)
+{
+	Log::SetLevel(level);
+	dll cuda_dll;
+	func_type(SetLogLevel) set_log_level;
+	load_dll(cuda_dll, cuda_dll, LOG_NAME);
+	import_func(SetLogLevel, cuda_dll, set_log_level, LOG_NAME);
+	set_log_level(level);
+}
+
 //////////////////////////////////////////////////////
 
-int WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpCmdLine, int nCmdShow)
+int main()
+
 {
+	HINSTANCE instance = GetModuleHandle("MyRenderer.exe");
 	// set the log level and is_print
-	Log::SetLevel(Log$::DEBUG_LEVEL);
+	SetLevel(Log$::DEBUG_LEVEL);
+	Log::Info(LOG_NAME, "%p: May you have a nice day!", instance);
 
-	StartRender(hInstance);
+	StartRender(instance);
+	// CUDATest();
 
-	system("pause");
 	return 0;
 }

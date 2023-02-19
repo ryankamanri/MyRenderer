@@ -1,22 +1,23 @@
 {
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Build And Run",
-            "type": "cppdbg",
+            "type": "cppvsdbg",
             "request": "launch",
             "cwd": "${workspaceFolder}/build/vscode-cmake-task",
-            "program": "${workspaceFolder}/build/vscode-cmake-task/${workspaceFolderBasename}.exe",
+            "program": "${workspaceFolder}/build/vscode-cmake-task/Debug/${workspaceFolderBasename}.exe",
             "preLaunchTask": "Make Build",
-            "externalConsole": true
+            "console":"externalTerminal"
         },
         {
             "name": "Debug",
-            "type": "cppdbg",
+            "type": "cppvsdbg",
             "request": "launch",
             "cwd": "${workspaceFolder}/build/vscode-cmake-task",
-            "program": "${workspaceFolder}/build/vscode-cmake-task/${workspaceFolderBasename}.exe",
-            "externalConsole": true
+            "program": "${workspaceFolder}/build/vscode-cmake-task/Debug/${workspaceFolderBasename}.exe",
+            "console":  "internalConsole"
         },
         {
             "name": "Clean",

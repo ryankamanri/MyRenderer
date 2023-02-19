@@ -37,16 +37,22 @@ namespace Kamanri
 				unsigned int _screen_width;
 				unsigned int _screen_height;
 				bool _is_window_alive = true;
+				bool _is_thread_running = false;
 
 				void Func(Kamanri::Windows::WinGDI_Window$::WinGDI_Message& message)
 				{
 					InvokeNext(message);
 					if(message.u_msg == WM_CLOSE)
 					{
-						Log::Info(__UpdateProcedure::LOG_NAME, "Update thread exit with %d", pthread_cancel(_update_thread.native_handle()));
+						_is_window_alive = false;
+						_update_thread.join();
+						Log::Info(__UpdateProcedure::LOG_NAME, "Update thread exited");
+						return;
 					}
 
-					if (message.u_msg != WM_PAINT) return;
+					if (message.u_msg != WM_PAINT || _is_thread_running) return;
+
+					_is_thread_running = true;
 
 					_update_thread = std::thread([this, message]()
 					{
@@ -67,33 +73,13 @@ namespace Kamanri
 								update_res.Print();
 							}
 							//
-							Log::Info(__UpdateProcedure::LOG_NAME, "Start to render...");
+							Log::Debug(__UpdateProcedure::LOG_NAME, "Start to render...");
 
-							for (unsigned int i = 0; i <= _screen_width; i++)
-							{
-
-								for (unsigned int j = 0; j <= _screen_height; j++)
-								{
-
-									auto& buffer = message.world.Buffer(i, j);
-									if (buffer.z == -DBL_MAX)
-										continue;
-
-									/// @brief This part is used to render every pixel
-
-									// color = -(int) (255 / (buffer.z / 1500)); // depth range [1500, inf)
-									// painter.Dot(i, j, RGB(color, color, color));
-									painter.Dot(i, j, buffer.color);
-
-
-									///
-
-								}
-							}
+							painter.DrawFrom(message.world.Bitmap());
 
 							painter.Flush();
 							painter_factor.Clean(painter);
-							Log::Info(__UpdateProcedure::LOG_NAME, "Finish a frame render.");
+							Log::Debug(__UpdateProcedure::LOG_NAME, "Finish a frame render.");
 						}
 					});
 
