@@ -36,7 +36,7 @@ void UseCUDA()
 	cudaMalloc(&a, 10 * sizeof(int));
 	foo thread_num(5) (a);
 	printf("a at %p\n", a);
-	cudaMemcpyAsync(b, a, sizeof(int) * 10, cudaMemcpyDeviceToHost);
+	cudaMemcpy(b, a, sizeof(int) * 10, cudaMemcpyDeviceToHost);
 	
 	cudaFree(a);
 	for(size_t i = 0; i < 10; i++)

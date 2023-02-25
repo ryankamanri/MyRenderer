@@ -16,19 +16,12 @@ namespace Kamanri
 					/* data */
 				public:
 					Environment() = default;
-					Environment& operator=(Environment&& other) 
-					{ 
-						triangles = std::move(other.triangles); 
-						objects = std::move(other.objects);
-						for(auto& obj: objects)
-						{
-							obj.__UpdateTriangleRef(triangles);
-						}
-						return *this;
-					};
+					Environment& operator=(Environment&& other);
 					std::vector<Triangle3D> triangles;
+					Triangle3D* cuda_triangles;
 					/// @brief Store all objects.
 					std::vector<Object> objects;
+					Object* cuda_objects;
 				};
 			} // namespace __
 

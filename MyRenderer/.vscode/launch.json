@@ -17,7 +17,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}/build/vscode-cmake-task",
             "program": "${workspaceFolder}/build/vscode-cmake-task/Debug/${workspaceFolderBasename}.exe",
-            "console":  "internalConsole"
+            "console":  "externalTerminal"
         },
         {
             "name": "Clean",

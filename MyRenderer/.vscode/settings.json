@@ -85,7 +85,11 @@
         "*.rh": "cpp",
         "cfloat": "cpp",
         "coroutine": "cpp",
-        "resumable": "cpp"
+        "resumable": "cpp",
+        "bitset": "cpp",
+        "filesystem": "cpp",
+        "stack": "cpp",
+        "__nullptr": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

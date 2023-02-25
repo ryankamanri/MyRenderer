@@ -39,10 +39,12 @@ namespace Kamanri
 			public:
 				World3D();
 				World3D(Camera&& camera);
+				~World3D();
 				World3D& operator=(World3D&& other);
 				Camera& GetCamera() { return _camera; }
 				Utils::Result<Object *> AddObjModel(ObjModel const &model);
 				World3D&& AddObjModel(ObjModel const &model, Maths::SMatrix const& transform_matrix);
+				World3D&& Commit();
 				Utils::DefaultResult Build();
 				FrameBuffer const& FrameBuffer(int x, int y);
 				inline DWORD* Bitmap() { return _buffers.GetBitmapBufferPtr(); }

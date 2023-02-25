@@ -76,10 +76,11 @@ namespace Kamanri
 
 
 
-Triangle3D::Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3)
+Triangle3D::Triangle3D(std::vector<Object>& objects, size_t index, size_t v1, size_t v2, size_t v3, size_t vt1, size_t vt2, size_t vt3, size_t vn1, size_t vn2, size_t vn3)
 : _areal_coordinates_calculate_matrix(3)
 {
-	_p_object = &object;
+	_p_objects = &objects;
+	_index = index;
 	_v1 = v1;
 	_v2 = v2;
 	_v3 = v3;
@@ -220,7 +221,7 @@ void Triangle3D::WritePixelTo(double x, double y, FrameBuffer& frame_buffer, DWO
 	
 	// write to buffers
 	frame_buffer.z = world_z;
-	frame_buffer.color = _p_object->GetImage().Get(img_u, img_v).rgb;
+	frame_buffer.color = _p_objects->at(_index).GetImage().Get(img_u, img_v).rgb;
 
 	pixel = frame_buffer.color;
 }
@@ -239,18 +240,18 @@ void Triangle3D::WriteTo(Buffers& buffers, double nearest_dist)
 {
 	__Triangle3D::WriteTo::nearest_dist = nearest_dist;
 
-	int min_width = (int)Min(_v1_x, _v2_x, _v3_x);
-	int min_height = (int)Min(_v1_y, _v2_y, _v3_y);
-	int max_width = (int)Max(_v1_x, _v2_x, _v3_x);
-	int max_height = (int)Max(_v1_y, _v2_y, _v3_y);
+	size_t min_width = (int)Min(_v1_x, _v2_x, _v3_x);
+	size_t min_height = (int)Min(_v1_y, _v2_y, _v3_y);
+	size_t max_width = (int)Max(_v1_x, _v2_x, _v3_x);
+	size_t max_height = (int)Max(_v1_y, _v2_y, _v3_y);
 
 	// TODO: CUDA parallelize
-	for (int i = min_width; i <= max_width; i++)
+	for (size_t i = min_width; i <= max_width; i++)
 	{
 
 		if (i >= buffers.Width() || i < 0)
 			continue;
-		for (int j = min_height; j <= max_height; j++)
+		for (size_t j = min_height; j <= max_height; j++)
 		{
 			if (j >= buffers.Height() || j < 0)
 				continue;
@@ -258,7 +259,7 @@ void Triangle3D::WriteTo(Buffers& buffers, double nearest_dist)
 			if(!IsCover(i, j)) 
 				continue;
 			
-			// Now the point is on the triangle
+			// Now the posize_t is on the triangle
 			// start to compare the depth
 			WritePixelTo(i, j, buffers.GetFrame(i, j), buffers.GetBitmapBuffer(i, j));   
 				

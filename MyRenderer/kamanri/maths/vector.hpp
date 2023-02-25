@@ -1,6 +1,5 @@
 #pragma once
 #include <initializer_list>
-#include "kamanri/utils/memory.hpp"
 #include "kamanri/utils/logs.hpp"
 
 namespace Kamanri
@@ -33,7 +32,7 @@ namespace Kamanri
 			Vector();
 			explicit Vector(size_t n);
 
-			Vector(Vector &&v);
+			// Vector(Vector &&v);
 			Vector(Vector const &v);
 			Vector(std::initializer_list<VectorElemType> list);
 			Vector& operator=(Vector const& v);
@@ -48,8 +47,8 @@ namespace Kamanri
 			// VectorElemType GetFast(size_t n) const;
 
 			// setter
-			VectorCode Set(size_t index, VectorElemType value) const;
-			VectorCode SetAll(VectorElemType value = 0) const;
+			VectorCode Set(size_t index, VectorElemType value);
+			VectorCode SetAll(VectorElemType value = 0);
 
 			VectorCode operator+=(Vector const &v);
 			VectorCode operator+=(std::initializer_list<VectorElemType> list);
@@ -72,7 +71,7 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to vector.
-			Utils::P<VectorElemType[]> _V;
+			VectorElemType _V[Vector$::MAX_SUPPORTED_DIMENSION];
 			// The length of the vector.
 			std::size_t _N = Vector$::NOT_INITIALIZED_N;
 		};

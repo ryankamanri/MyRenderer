@@ -26,7 +26,8 @@ namespace Kamanri
 } // namespace Kamanri
 
 
-Object::Object(std::vector<Maths::Vector>& vertices, int offset, int length, std::string tga_image_name): _pvertices(&vertices), _offset(offset), _length(length)
+Object::Object(std::vector<Maths::Vector>& vertices, size_t v_offset, size_t v_length, size_t t_offset, size_t t_length, std::string tga_image_name): 
+_pvertices(&vertices), _v_offset(v_offset), _v_length(v_length), _t_offset(t_offset), _t_length(t_length)
 {
 	if(!_img.ReadTGAFile(tga_image_name))
 	{
@@ -35,32 +36,19 @@ Object::Object(std::vector<Maths::Vector>& vertices, int offset, int length, std
 	}
 }
 
-// Object::Object(Object const& obj): _pvertices(obj._pvertices), _offset(obj._offset), _length(obj._length), _img(obj._img)
-// {
-
-// }
-
-// Object& Object::operator=(Object& obj)
-// {
-//     _pvertices = obj._pvertices;
-//     _offset = obj._offset;
-//     _length = obj._length;
-//     _img = obj._img;
-//     return *this;
-// }
-
-void Object::__UpdateTriangleRef(std::vector<__::Triangle3D>& triangles)
+void Object::__UpdateTriangleRef(std::vector<__::Triangle3D>& triangles, std::vector<Object>& objects, size_t index)
 {
-	for(int i = _offset; i < _offset + _length; i++)
+	for(size_t i = _t_offset; i < _t_offset + _t_length; i++)
 	{
 		auto& t = triangles[i];
-		t._p_object = this;
+		t._p_objects = &objects;
+		t._index = index;
 	}
 }
 
 DefaultResult Object::Transform(SMatrix const& transform_matrix) const
 {
-	for(int i = _offset; i < _offset + _length; i++)
+	for(size_t i = _v_offset; i < _v_offset + _v_length; i++)
 	{
 		transform_matrix * (*_pvertices)[i];
 	}

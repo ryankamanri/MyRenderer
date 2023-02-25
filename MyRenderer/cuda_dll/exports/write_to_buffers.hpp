@@ -5,20 +5,24 @@
 #include "kamanri/renderer/world/world3d.hpp"
 
 // export functions codes
-typedef int WriteToBuffersCode;
+typedef unsigned int WriteToBuffersCode;
 
 namespace WriteToBuffers$
 {
-    WriteToBuffersCode CODE_NORM = 0;
+    constexpr const WriteToBuffersCode CODE_NORM = 0;
 } // namespace WriteToBuffer$
 
 // export functions types
 typedef WriteToBuffersCode 
     func_p(WriteToBuffers) 
-    (
-        std::vector<Kamanri::Renderer::World::__::Triangle3D>* p_triangles,
-		Kamanri::Renderer::World::__::Buffers* p_buffers,
-		double nearest_dist
-	);
+(
+	Kamanri::Renderer::World::__::Triangle3D* p_triangles,
+	size_t triangles_size,
+	Kamanri::Renderer::World::FrameBuffer* p_buffers,
+    DWORD* p_bitmap_buffer,
+	size_t buffer_width,
+	size_t buffer_height,
+	double nearest_dist
+);
 
 

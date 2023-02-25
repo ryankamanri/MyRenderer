@@ -26,7 +26,6 @@ namespace Kamanri
 Vector::Vector()
 {
 	this->_N = Vector$::MAX_SUPPORTED_DIMENSION;
-	this->_V = NewArray<VectorElemType>(Vector$::MAX_SUPPORTED_DIMENSION);
 }
 
 Vector::Vector(size_t n)
@@ -41,20 +40,16 @@ Vector::Vector(size_t n)
 	}
 
 	this->_N = n;
-	this->_V = NewArray<VectorElemType>(n);
 }
 
-Vector::Vector(Vector &&v) : _V(std::move(v._V)), _N(v._N)
-{
-	v._N = Vector$::NOT_INITIALIZED_N;
-}
+// Vector::Vector(Vector &&v) : _V(std::move(v._V)), _N(v._N)
+// {
+// 	v._N = Vector$::NOT_INITIALIZED_N;
+// }
 
 Vector::Vector(Vector const& v)
 {
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, )
-
 	_N = v._N;
-	_V = NewArray<VectorElemType>(_N);
 
 	for(size_t i = 0; i < _N; i++)
 	{
@@ -78,7 +73,6 @@ Vector::Vector(std::initializer_list<VectorElemType> list)
 	}
 
 	this->_N = n;
-	this->_V = NewArray<VectorElemType>(n);
 
 	auto i = 0;
 	for(auto list_elem: list)
@@ -91,13 +85,7 @@ Vector::Vector(std::initializer_list<VectorElemType> list)
 
 Vector& Vector::operator=(Vector const& v)
 {
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, *this)
-
-	if(_N != v._N)
-	{
-		_N = v._N;
-		_V = NewArray<VectorElemType>(_N);
-	}
+	_N = v._N;
 
 	for(size_t i = 0; i < _N; i++)
 	{
@@ -117,8 +105,6 @@ VectorCode Vector::operator=(std::initializer_list<VectorElemType> list)
 		return Vector$::CODE_NOT_EQUEL_N;
 	}
 
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR);
-
 	auto i = 0;
 	for(auto list_elem: list)
 	{
@@ -132,8 +118,6 @@ VectorCode Vector::operator=(std::initializer_list<VectorElemType> list)
 
 VectorElemType Vector::operator[](size_t n) const
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::NOT_INITIALIZED_VALUE)
-
 	if(n < 0 || n > this->_N)
 	{
 		Log::Error(__Vector::LOG_NAME, "Index %d out of bound %d", n, this->_N);
@@ -144,31 +128,15 @@ VectorElemType Vector::operator[](size_t n) const
 	return _V[n];
 }
 
-// VectorElemType Vector::GetFast(size_t n) const
-// {
-//     CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::NOT_INITIALIZED_VALUE)
 
-//     if(n < 0 || n > this->_N)
-//     {
-//         Log::Error(__Vector::LOG_NAME, "Index %d out of bound %d", n, this->_N);
-//         return Vector$::NOT_INITIALIZED_VALUE;
-//     }
-
-//     return _V[n];
-// }
-
-VectorCode Vector::Set(size_t index, VectorElemType value) const
+VectorCode Vector::Set(size_t index, VectorElemType value)
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	_V[index] = value;
 	return Vector$::CODE_NORM;
 }
 
-VectorCode Vector::SetAll(VectorElemType value) const
+VectorCode Vector::SetAll(VectorElemType value)
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	for(size_t i = 0; i < _N;i ++)
 	{
 		_V[i] = value;
@@ -178,11 +146,6 @@ VectorCode Vector::SetAll(VectorElemType value) const
 
 VectorCode Vector::operator+=(Vector const &v)
 {
-
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
-
 	size_t n1 = _N;
 	size_t n2 = v._N;
 
@@ -209,10 +172,6 @@ VectorCode Vector::operator+=(std::initializer_list<VectorElemType> list)
 
 VectorCode Vector::operator-=(Vector const &v)
 {
-
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	size_t n1 = _N;
 	size_t n2 = v._N;
 
@@ -240,10 +199,6 @@ VectorCode Vector::operator-=(std::initializer_list<VectorElemType> list)
 
 VectorCode Vector::operator*=(Vector const& v)
 {
-
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	size_t n1 = _N;
 	size_t n2 = v._N;
 
@@ -287,8 +242,6 @@ VectorCode Vector::operator*=(std::initializer_list<VectorElemType> list)
 
 VectorCode Vector::operator*=(VectorElemType value)
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-	
 	for(size_t i = 0; i < _N; i++)
 	{
 		_V[i] *= value;
@@ -299,9 +252,6 @@ VectorCode Vector::operator*=(VectorElemType value)
 
 VectorElemType Vector::operator*(Vector const& v) const
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-	CHECK_MEMORY_IS_ALLOCATED(v._V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	size_t n1 = _N;
 	size_t n2 = v._N;
 
@@ -332,8 +282,6 @@ VectorCode Vector::PrintVector(LogLevel level, const char *decimal_count) const
 {
 	if(Log::Level() > level) return Vector$::CODE_NORM;
 
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	std::string formatStr = "%.";
 	formatStr.append(decimal_count);
 	formatStr.append("f\t");
@@ -358,8 +306,6 @@ VectorCode Vector::PrintVector(LogLevel level, const char *decimal_count) const
 
 VectorCode Vector::Unitization()
 {
-	CHECK_MEMORY_IS_ALLOCATED(_V, __Vector::LOG_NAME, Vector$::CODE_NOT_INITIALIZED_VECTOR)
-
 	double length_square = 0;
 	for(size_t i = 0; i < _N; i++)
 	{

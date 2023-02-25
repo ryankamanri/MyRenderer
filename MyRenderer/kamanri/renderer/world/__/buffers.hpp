@@ -18,7 +18,9 @@ namespace Kamanri
 					size_t _width;
 					size_t _height;
 					Utils::P<FrameBuffer[]> _buffers;
+					FrameBuffer* _cuda_buffers;
 					Utils::P<DWORD[]> _bitmap_buffer;
+					DWORD* _cuda_bitmap_buffer;
 
 				public:
 					~Buffers();
@@ -31,6 +33,8 @@ namespace Kamanri
 					FrameBuffer& GetFrame(size_t width, size_t height);
 					inline DWORD* GetBitmapBufferPtr() { return _bitmap_buffer.get(); }
 					DWORD& GetBitmapBuffer(size_t width, size_t height);
+					inline FrameBuffer* CUDAGetBuffersPtr() { return _cuda_buffers; }
+					inline DWORD* CUDAGetBitmapBufferPtr() { return _cuda_bitmap_buffer; }
 				};
 
 			} // namespace __

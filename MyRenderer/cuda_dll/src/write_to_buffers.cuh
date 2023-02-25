@@ -3,7 +3,11 @@
 
 c_export WriteToBuffersCode WriteToBuffers
 (
-	std::vector<Kamanri::Renderer::World::__::Triangle3D>* p_triangles,
-	Kamanri::Renderer::World::__::Buffers* p_buffers,
+	Kamanri::Renderer::World::__::Triangle3D* p_triangles,
+	size_t triangles_size,
+	Kamanri::Renderer::World::FrameBuffer* p_buffers,
+    DWORD* p_bitmap_buffer,
+	size_t buffer_width,
+	size_t buffer_height,
 	double nearest_dist
 );

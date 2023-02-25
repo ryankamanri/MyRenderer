@@ -16,8 +16,8 @@ namespace Kamanri
 
 				namespace Triangle3D$
 				{
-					constexpr int CODE_NOT_IN_TRIANGLE = 100;
-					constexpr int INEXIST_INDEX = -1;
+					constexpr size_t CODE_NOT_IN_TRIANGLE = 100;
+					constexpr size_t INEXIST_INDEX = -1;
 				} // namespace Triangle3D$
 				
 				/**
@@ -29,12 +29,13 @@ namespace Kamanri
 				{
 				private:
 					/// @brief The object triangle belongs to.
-					Object* _p_object;
+					std::vector<Object>* _p_objects;
+					size_t _index;
 
 					// offset + index
-					int _v1, _v2, _v3;
-					int _vt1, _vt2, _vt3;
-					int _vn1, _vn2, _vn3;
+					size_t _v1, _v2, _v3;
+					size_t _vt1, _vt2, _vt3;
+					size_t _vn1, _vn2, _vn3;
 					
 					/// values
 					// on screen coordinates
@@ -53,11 +54,11 @@ namespace Kamanri
 					inline double ScreenZ(double x, double y) const { return (1 - _a * x - _b * y) / _c; }
 					bool IsCover(double x, double y) const;
 					void WritePixelTo(double x, double y, FrameBuffer& frame_buffer, DWORD& pixel) const;
-					friend void Object::__UpdateTriangleRef(std::vector<Triangle3D>& triangles);
+					friend void Object::__UpdateTriangleRef(std::vector<Triangle3D>& triangles, std::vector<Object>& objects, size_t index);
 					void ArealCoordinates(double x, double y, Maths::Vector& result) const;
 
 				public:
-					Triangle3D(Object& object, int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3);
+					Triangle3D(std::vector<Object>& objects, size_t index, size_t v1, size_t v2, size_t v3, size_t vt1, size_t vt2, size_t vt3, size_t vn1, size_t vn2, size_t vn3);
 					void Build(Resources const& res);
 					void PrintTriangle(Utils::LogLevel level = Utils::Log$::INFO_LEVEL) const;
 					void WriteTo(Buffers& buffers, double nearest_dist);

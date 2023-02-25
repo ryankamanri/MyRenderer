@@ -14,8 +14,6 @@ void Log::SetLevel(LogLevel level) {
 	_level = level;
 }
 
-// TODO:
-
 void SetLogLevel(LogLevel level)
 {
 	Log::SetLevel(level);

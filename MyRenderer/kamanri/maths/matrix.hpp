@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <initializer_list>
-#include "kamanri/utils/memory.hpp"
 #include "vector.hpp"
 
 namespace Kamanri
@@ -39,7 +38,7 @@ namespace Kamanri
 			SMatrix();
 			explicit SMatrix(size_t n);
 
-			SMatrix(SMatrix &&sm);
+			// SMatrix(SMatrix &&sm);
 			SMatrix(SMatrix const& sm);
 			SMatrix(std::initializer_list<SMatrixElemType> list);
 			SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
@@ -55,8 +54,8 @@ namespace Kamanri
 			SMatrixElemType Get(size_t row, size_t col) const;
 			Vector Get(size_t col) const;
 			// Setter
-			SMatrixCode Set(size_t row, size_t col, SMatrixElemType value) const;
-			SMatrixCode Set(size_t col, Vector const &v) const;
+			SMatrixCode Set(size_t row, size_t col, SMatrixElemType value);
+			SMatrixCode Set(size_t col, Vector const &v);
 
 			SMatrixCode operator+=(SMatrix const &sm);
 			SMatrixCode operator+=(std::initializer_list<SMatrixElemType> list);
@@ -91,7 +90,7 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to square matrix.
-			Utils::P<SMatrixElemType[]> _SM;
+			SMatrixElemType _SM[SMatrix$::MAX_SUPPORTED_DIMENSION * SMatrix$::MAX_SUPPORTED_DIMENSION];
 			// The length of the square amtrix.
 			std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
 

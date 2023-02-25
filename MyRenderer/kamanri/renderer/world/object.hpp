@@ -24,18 +24,16 @@ namespace Kamanri
 			{
 				private:
 					std::vector<Maths::Vector>* _pvertices = nullptr;
-					int _offset;
-					int _length;
+					size_t _v_offset;
+					size_t _v_length;
+					size_t _t_offset;
+					size_t _t_length;
 
 					TGAImage _img;
 				public:
 					// Object() = default;
-					Object(std::vector<Maths::Vector>& vertices, int offset, int length, std::string tga_image_name);
-					// Object(Object const& obj);
-					// Object(Object& obj);
-					// Object(Object&& obj);
-					// Object& operator=(Object& obj);
-					void __UpdateTriangleRef(std::vector<__::Triangle3D>& triangles);
+					Object(std::vector<Maths::Vector>& vertices, size_t v_offset, size_t v_length, size_t t_offset, size_t t_length, std::string tga_image_name);
+					void __UpdateTriangleRef(std::vector<__::Triangle3D>& triangles, std::vector<Object>& objects, size_t index);
 					inline TGAImage& GetImage() { return _img; }
 					Utils::DefaultResult Transform(Maths::SMatrix const& transform_matrix) const;
 			};
