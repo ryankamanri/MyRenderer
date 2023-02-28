@@ -2,6 +2,8 @@
 #include "kamanri/utils/result.hpp"
 #include "kamanri/maths/vector.hpp"
 #include "kamanri/utils/memory.hpp"
+#include "kamanri/renderer/world/__/resources.hpp"
+#include "bling_phong_reflection_model.hpp"
 namespace Kamanri
 {
 	namespace Renderer
@@ -12,7 +14,7 @@ namespace Kamanri
 			{
 				constexpr const int CODE_NULL_POINTER_PVERTICES = 100;
 				constexpr const int CODE_INVALID_VECTOR_LENGTH = 200;
-
+				constexpr const int CODE_UNEQUAL_NUM = 300;
 				class CameraAttributes
 				{
 				public:
@@ -32,11 +34,12 @@ namespace Kamanri
 			{
 			private:
 				/* data */
-				std::vector<Maths::Vector>* _pvertices = nullptr;
-				/// @brief the vertice which will have transformation of all types.
-				std::vector<Maths::Vector>* _pvertices_transformed = nullptr;
-				/// @brief the vertice which will have transformation of model and view.
-				std::vector<Maths::Vector>* _pvertices_model_view_transformed = nullptr;
+				///////////////////////////////
+				// references
+				__::Resources* _p_resources = nullptr;
+
+				BlingPhongReflectionModel* _p_bpr_model = nullptr;
+				/////////////////////////////////
 
 				// need 4d vector
 				Maths::Vector _location;
@@ -83,7 +86,7 @@ namespace Kamanri
 				Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height);
 				Camera(Camera&& camera);
 				Camera& operator=(Camera&& other);
-				void SetVertices(std::vector<Maths::Vector>& vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed);
+				void __SetRefs(__::Resources& resources, BlingPhongReflectionModel& bpr_model);
 				Utils::DefaultResult Transform();
 				/**
 				 * @brief Inverse the upper vector when the upper of direction changed.

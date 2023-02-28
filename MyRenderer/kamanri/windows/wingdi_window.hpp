@@ -72,9 +72,8 @@ namespace Kamanri
 		class WinGDI_Window
 		{
 		public:
-			WinGDI_Window(HINSTANCE h_instance, unsigned int window_width = 600, unsigned int window_height = 600);
+			WinGDI_Window(HINSTANCE h_instance, Renderer::World::World3D& world, unsigned int window_width = 600, unsigned int window_height = 600);
 			~WinGDI_Window();
-			WinGDI_Window& SetWorld(Renderer::World::World3D && world);
 			WinGDI_Window& AddProcedure(Utils::Delegate<WinGDI_Window$::WinGDI_Message>::ANode&& proc);
 			WinGDI_Window& Show();
 			WinGDI_Window& Update();
@@ -83,7 +82,7 @@ namespace Kamanri
 
 		private:
 			// The world
-			Renderer::World::World3D _world;
+			Renderer::World::World3D& _world;
 
 			friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 			// handle of window

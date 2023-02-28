@@ -51,17 +51,13 @@ namespace Kamanri
 
 
 
-World3D::World3D(): _camera(Camera()) 
-{
-	__World3D::ImportFunctions();
-}
 
-World3D::World3D(Camera&& camera): _camera(std::move(camera))
+World3D::World3D(Camera&& camera, BlingPhongReflectionModel&& model)
+: _camera(std::move(camera)), 
+_buffers(_camera.ScreenWidth(), _camera.ScreenHeight()),
+_environment(std::move(model))
 {
-	_camera.SetVertices(_resources.vertices, _resources.vertices_transformed, _resources.vertices_model_view_transformed);
-	
-	_buffers.Init(_camera.ScreenWidth(), _camera.ScreenHeight());
-
+	_camera.__SetRefs(_resources, _environment.bpr_model);
 	__World3D::ImportFunctions();
 }
 
@@ -69,16 +65,13 @@ World3D::World3D(Camera&& camera): _camera(std::move(camera))
 
 World3D& World3D::operator=(World3D && other)
 {
-	_resources.vertices = std::move(other._resources.vertices);
-	_resources.vertices_transformed = std::move(other._resources.vertices_transformed);
-	_resources.vertices_model_view_transformed = std::move(other._resources.vertices_model_view_transformed);
-	_resources.vertex_textures = std::move(other._resources.vertex_textures);
-	_resources.vertex_normals = std::move(other._resources.vertex_normals);
+	_resources = std::move(other._resources);
 	_camera = std::move(other._camera);
 	_environment = std::move(other._environment);
 	_buffers = std::move(other._buffers);
+	_configs = std::move(other._configs);
 	// Move the reference of vertices of camera
-	_camera.SetVertices(_resources.vertices, _resources.vertices_transformed, _resources.vertices_model_view_transformed);
+	_camera.__SetRefs(_resources, _environment.bpr_model);
 	return *this;
 }
 
@@ -103,14 +96,15 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model)
 	for(size_t i = 0; i < model.GetVertexNormalSize(); i++)
 	{
 		auto vertex = *model.GetVertexNormal(i);
-		Vector vector = {vertex[0], vertex[1], 1};
+		Vector vector = {vertex[0], vertex[1], vertex[2], 0};
 		_resources.vertex_normals.push_back(vector);
+		_resources.vertex_normals_model_view_transformed.push_back(vector);
 	}
 
 	for(size_t i = 0; i < model.GetVertexTextureSize(); i++)
 	{
 		auto vertex = *model.GetVertexTexture(i);
-		Vector vector = {vertex[0], vertex[1], vertex[2], 1};
+		Vector vector = {vertex[0], vertex[1], vertex.size() > 2 ? vertex[2] : 0};
 		_resources.vertex_textures.push_back(vector);
 	}
 
@@ -133,6 +127,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model)
 			auto splited_triangle = __::Triangle3D(
 				_environment.objects,
 				_environment.objects.size(),
+				_environment.triangles.size(),
 				v_offset + face.vertex_indexes[0] - 1,
 				v_offset + face.vertex_indexes[3] - 1,
 				v_offset + face.vertex_indexes[2] - 1,
@@ -147,6 +142,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model)
 		auto triangle = __::Triangle3D(
 			_environment.objects,
 			_environment.objects.size(),
+			_environment.triangles.size(),
 			v_offset + face.vertex_indexes[0] - 1,
 			v_offset + face.vertex_indexes[1] - 1,
 			v_offset + face.vertex_indexes[2] - 1,
@@ -169,7 +165,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model)
 }
 
 
-World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& transform_matrix)
+World3D& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& transform_matrix)
 {
 	auto res = AddObjModel(model);
 	if(res.IsException())
@@ -177,51 +173,67 @@ World3D&& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& tran
 		res.Print();
 	}
 	res.Data()->Transform(transform_matrix);
-	return std::move(*this);
+	return *this;
 }
 
 World3D::~World3D()
 {
-	__World3D::cuda_free(_environment.cuda_triangles);
-	__World3D::cuda_free(_environment.cuda_objects);
+	// __World3D::cuda_free(_environment.cuda_triangles);
+	// __World3D::cuda_free(_environment.cuda_objects);
 }
 
-World3D&& World3D::Commit()
+World3D& World3D::Commit(bool is_use_cuda)
 {
+	_configs.is_commited = true;
 
+	_configs.is_use_cuda = is_use_cuda;
+	if(!_configs.is_use_cuda) return *this;
+	
 	// objects
 	auto objects_size = _environment.objects.size() * sizeof(Object);
 	__World3D::cuda_malloc(&(void*)_environment.cuda_objects, objects_size);
 	__World3D::transmit_to_cuda(&_environment.objects[0], _environment.cuda_objects, objects_size);
 
-	return std::move(*this);
+	return *this;
 }
 
 DefaultResult World3D::Build()
 {
+	if(!_configs.is_commited)
+	{
+		Log::Warn(__World3D::LOG_NAME, "World3D not commited, build may not avaliable");
+	}
+
 	Log::Debug(__World3D::LOG_NAME, "Start to build the world...");
 	// TODO: CUDA parallelize "Build World"
 
-	_buffers.CleanAllBuffers();
+	_buffers.CleanBitmap();
+
 	for(auto& t: _environment.triangles)
 	{
 		t.Build(_resources);
-		t.PrintTriangle(Log$::TRACE_LEVEL);
-		t.WriteTo(_buffers, _camera.NearestDist());
+	}
+
+	for(size_t x = 0; x < _buffers.Width(); x++)
+	{
+		for(size_t y = 0; y < _buffers.Height(); y++)
+		{
+			BuildForPixel(x, y);
+		}
 	}
 	///////////////////
 	// triangles transmission
-	auto triangles_size = _environment.triangles.size() * sizeof(__::Triangle3D);
-	__World3D::transmit_to_cuda(&_environment.triangles[0], _environment.cuda_triangles, triangles_size);
-	__World3D::Build::write_to_buffers(
-		_environment.cuda_triangles, 
-		_environment.triangles.size(),
-		_buffers.CUDAGetBuffersPtr(), 
-		_buffers.CUDAGetBitmapBufferPtr(), 
-		_buffers.Width(), 
-		_buffers.Height(), 
-		_camera.NearestDist());
-	Log::Debug(__World3D::LOG_NAME, "cuda triangles at %p,", _environment.cuda_triangles);
+	// auto triangles_size = _environment.triangles.size() * sizeof(__::Triangle3D);
+	// __World3D::transmit_to_cuda(&_environment.triangles[0], _environment.cuda_triangles, triangles_size);
+	// __World3D::Build::write_to_buffers(
+	// 	_environment.cuda_triangles, 
+	// 	_environment.triangles.size(),
+	// 	_buffers.CUDAGetBuffersPtr(), 
+	// 	_buffers.CUDAGetBitmapBufferPtr(), 
+	// 	_buffers.Width(), 
+	// 	_buffers.Height(), 
+	// 	_camera.NearestDist());
+	// Log::Debug(__World3D::LOG_NAME, "cuda triangles at %p,", _environment.cuda_triangles);
 	
 	////////////////////
 	
@@ -229,11 +241,37 @@ DefaultResult World3D::Build()
 	return DEFAULT_RESULT;
 }
 
+void World3D::BuildForPixel(size_t x, size_t y)
+{
+	// set z = infinity
+	_buffers.InitPixel(x, y);
+
+	auto& buffer = _buffers.GetFrame(x, y);
+	auto& bitmap_pixel = _buffers.GetBitmapBuffer(x, y);
+
+	for(auto& t: _environment.triangles)
+	{
+		t.WriteToPixel(x, y, buffer, bitmap_pixel, _camera.NearestDist());
+	}
+
+	if(_buffers.GetFrame(x, y).location[2] == -DBL_MAX) return;
+
+	// set distance = infinity, is exposed.
+	_environment.bpr_model.InitLightBufferPixel(x, y, buffer);
+	for(auto& t: _environment.triangles)
+	{
+		_environment.bpr_model.__BuildPerTrianglePixel(x, y, t, buffer);
+	}
+
+	_environment.bpr_model.WriteToPixel(x, y, buffer, bitmap_pixel);
+	
+}
+
 FrameBuffer const& World3D::FrameBuffer(int x, int y)
 {
 	
-	x = x % _buffers.Height();
-	y = y % _buffers.Width();
+	x = x % _buffers.Width();
+	y = y % _buffers.Height();
 	
 	return _buffers.GetFrame(x, y);
 }

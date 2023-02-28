@@ -23,16 +23,17 @@ namespace Kamanri
 					DWORD* _cuda_bitmap_buffer;
 
 				public:
+					Buffers(size_t width, size_t height);
 					~Buffers();
-					void Init(size_t width, size_t height);
 					Buffers& operator=(Buffers&& other);
-					void CleanAllBuffers() const;
+					void InitPixel(size_t x, size_t y);
+					void CleanBitmap() const;
 					// void WriteFrom(Triangle3D const &t, double nearest_dist);
 					inline size_t Width() const { return _width; }
 					inline size_t Height() const { return _height; }
-					FrameBuffer& GetFrame(size_t width, size_t height);
+					FrameBuffer& GetFrame(size_t x, size_t y);
 					inline DWORD* GetBitmapBufferPtr() { return _bitmap_buffer.get(); }
-					DWORD& GetBitmapBuffer(size_t width, size_t height);
+					DWORD& GetBitmapBuffer(size_t x, size_t y);
 					inline FrameBuffer* CUDAGetBuffersPtr() { return _cuda_buffers; }
 					inline DWORD* CUDAGetBitmapBufferPtr() { return _cuda_bitmap_buffer; }
 				};
@@ -44,3 +45,4 @@ namespace Kamanri
 	} // namespace Renderer
 
 } // namespace Kamanri
+

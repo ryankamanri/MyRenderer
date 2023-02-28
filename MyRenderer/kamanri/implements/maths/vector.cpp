@@ -144,6 +144,27 @@ VectorCode Vector::SetAll(VectorElemType value)
 	return Vector$::CODE_NORM;
 }
 
+/// @brief calcudate the destination between two points
+/// @param v 
+/// @return 
+VectorElemType Vector::operator-(Vector const& v)
+{
+	if(_N != 4)
+	{
+		Log::Error(__Vector::LOG_NAME, "operator-: Invalid N");
+		PRINT_LOCATION;
+		return Vector$::NOT_INITIALIZED_VALUE;
+	}
+	if(_V[3] != 1 || v._V[3] != 1) 
+	{
+		Log::Error(__Vector::LOG_NAME, "operator-: Not uniformed.");
+		PRINT_LOCATION;
+		return Vector$::NOT_INITIALIZED_VALUE;
+	}
+	
+	return sqrt(pow(_V[0] - v._V[0], 2) + pow(_V[1] - v._V[1], 2) + pow(_V[2] - v._V[2], 2));
+}
+
 VectorCode Vector::operator+=(Vector const &v)
 {
 	size_t n1 = _N;
@@ -185,7 +206,7 @@ VectorCode Vector::operator-=(Vector const &v)
 	
 	for (size_t i = 0; i < n1; i++)
 	{
-		_V[i] += v._V[i];
+		_V[i] -= v._V[i];
 	}
 
 	return Vector$::CODE_NORM;
@@ -312,9 +333,9 @@ VectorCode Vector::Unitization()
 		length_square += pow(_V[i], 2);
 	}
 
-	if(length_square == 0)
+	if(length_square == 1)
 	{
-		// the length of vector is 0, need not to unitization.
+		// the length of vector is 1, need not to unitization.
 		return Vector$::CODE_NORM;
 	}
 

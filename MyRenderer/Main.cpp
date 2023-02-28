@@ -16,10 +16,12 @@ using namespace Kamanri::Renderer::World;
 
 
 constexpr const char* LOG_NAME = "Main";
-const int WINDOW_LENGTH = 800;
+const int WINDOW_LENGTH = 400;
 
 constexpr const char* OBJ_PATH = "../../out/diablo3_pose.obj";
 constexpr const char* TGA_PATH = "../../out/diablo3_pose_diffuse.tga";
+constexpr const char* OBJ2_PATH = "../../out/floor.obj";
+constexpr const char* TGA2_PATH = "../../out/floor_diffuse.tga";
 
 
 
@@ -64,65 +66,44 @@ DefaultResult UpdateFunc(World3D& world)
 
 void StartRender(HINSTANCE hInstance)
 {
-	WinGDI_Window(hInstance, WINDOW_LENGTH, WINDOW_LENGTH)
-		.SetWorld(
-			World3D(
-				Camera(
-					{ 0, 0, 4, 1 },
-					{ 0, 0, -1, 0 },
-					{ 0, 1, 0, 0 },
-					-1, 
-					-10,
-					WINDOW_LENGTH,
-					WINDOW_LENGTH
-				)
-			).AddObjModel(
-				ObjModel(OBJ_PATH, TGA_PATH),
-				{
-					2, 0, 0, 0,
-					0, 2, 0, 0,
-					0, 0, 2, 0,
-					0, 0, 0, 1 
-				}
-			)
-			// .AddObjModel(
-			// 	ObjModel("../../out/skybox.obj", "../../out/skybox.tga"),
-			// 	{
-			// 		10, 0, 0, 0,
-			// 	 	0, 10, 0, 0,
-			// 	 	0, 0, 10, 0,
-			// 	 	0, 0, 0, 1 
-			// 	}
-			// )
-			).AddProcedure(
-				UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
-			).Show().MessageLoop();
+	World3D world(
+		Camera(
+			{ 0, 0, 4, 1 },
+			{ 0, 0, -1, 0 },
+			{ 0, 1, 0, 0 },
+			-1,
+			-10,
+			WINDOW_LENGTH,
+			WINDOW_LENGTH
+		),
+		BlingPhongReflectionModel({
+			BlingPhongReflectionModel$::PointLight({0, 3, 4, 1}, 400, 0xffffff)
+		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.1)
+	);
+	world.AddObjModel(
+		ObjModel(OBJ_PATH, TGA_PATH),
+		{
+			2, 0, 0, 0,
+			0, 2, 0, 0,
+			0, 0, 2, 0,
+			0, 0, 0, 1
+		}
+	).AddObjModel(
+		ObjModel(OBJ2_PATH, TGA2_PATH),
+		{
+			2, 0, 0, 0,
+			0, 2, 0, 0,
+			0, 0, 2, 0,
+			0, 0, 0, 1
+		}
+	).Commit();
+	WinGDI_Window(hInstance, world, WINDOW_LENGTH, WINDOW_LENGTH)
+		.AddProcedure(
+			UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
+		).Show().MessageLoop();
 }
 
-void CUDATest()
-{
-	dll cuda_dll;
-	load_dll(cuda_dll, cuda_dll, LOG_NAME);
 
-	func_type(UseCUDA) use_cuda;
-	import_func(UseCUDA, cuda_dll, use_cuda, LOG_NAME);
-
-	func_type(UseCUDA2) use_cuda2;
-	import_func(UseCUDA2, cuda_dll, use_cuda2, LOG_NAME);
-
-	use_cuda();
-	TestStruct t;
-	t.a = 4;
-	t.b = 3;
-	use_cuda2(2, 2, t);
-
-	func_type(MemoryReadTest) memory_read_test;
-	import_func(MemoryReadTest, cuda_dll, memory_read_test, LOG_NAME);
-	int a[5] = {1, 2, 3, 4, 5};
-	memory_read_test(a, 5);
-
-	
-}
 
 void SetLevel(LogLevel level)
 {
@@ -133,6 +114,8 @@ void SetLevel(LogLevel level)
 	import_func(SetLogLevel, cuda_dll, set_log_level, LOG_NAME);
 	set_log_level(level);
 }
+
+
 
 //////////////////////////////////////////////////////
 
@@ -145,7 +128,6 @@ int main()
 	Log::Info(LOG_NAME, "%p: May you have a nice day!", instance);
 
 	StartRender(instance);
-	// CUDATest();
 
 	return 0;
 }

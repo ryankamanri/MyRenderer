@@ -586,7 +586,7 @@ SMatrix SMatrix::operator-() const
 	// A^(-1) == A* / |A|
 	auto pm_asm = operator*();
 	auto d = Determinant();
-	if(!d || d == SMatrix$::NOT_INITIALIZED_VALUE)
+	if(d == SMatrix$::NOT_INITIALIZED_VALUE)
 	{
 		Log::Error(__SMatrix::LOG_NAME, "Invalid determinant %f.", d);
 		PRINT_LOCATION;

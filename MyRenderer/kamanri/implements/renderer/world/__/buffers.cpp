@@ -44,31 +44,31 @@ namespace Kamanri
 	
 } // namespace Kamanri
 
-#define Loc(x, y) ((_height - (y + 1)) * _height + x)
+#define Scan_R270(x, y) ((_height - (y + 1)) * _height + x)
 
-Buffers::~Buffers()
+Buffers::Buffers(size_t width, size_t height)
 {
-	Log::Debug(__Buffers::LOG_NAME, "clean the buffers");
-	__Buffers::cuda_free(_cuda_buffers);
-	__Buffers::cuda_free(_cuda_bitmap_buffer);
-}
-void Buffers::Init(size_t width, size_t height)
-{   
 	_width = width;
 	_height = height;
 	_buffers = NewArray<FrameBuffer>(width * height);
 	_bitmap_buffer = NewArray<DWORD>(width * height);
+	// __Buffers::ImportFunctions();
 
-	__Buffers::ImportFunctions();
-
-	auto buffers_size = width * height * sizeof(FrameBuffer);
-	__Buffers::cuda_malloc(&(void*)_cuda_buffers, buffers_size);
-	__Buffers::transmit_to_cuda(_buffers.get(), _cuda_buffers, buffers_size);
+	// auto buffers_size = width * height * sizeof(FrameBuffer);
+	// __Buffers::cuda_malloc(&(void*)_cuda_buffers, buffers_size);
+	// __Buffers::transmit_to_cuda(_buffers.get(), _cuda_buffers, buffers_size);
 	
-	auto bitmap_buffer_size = width * height * sizeof(DWORD);
-	__Buffers::cuda_malloc(&(void*)_cuda_bitmap_buffer, bitmap_buffer_size);
-	__Buffers::transmit_to_cuda(_bitmap_buffer.get(), _cuda_bitmap_buffer, bitmap_buffer_size);
+	// auto bitmap_buffer_size = width * height * sizeof(DWORD);
+	// __Buffers::cuda_malloc(&(void*)_cuda_bitmap_buffer, bitmap_buffer_size);
+	// __Buffers::transmit_to_cuda(_bitmap_buffer.get(), _cuda_bitmap_buffer, bitmap_buffer_size);
 
+}
+
+Buffers::~Buffers()
+{
+	Log::Debug(__Buffers::LOG_NAME, "clean the buffers");
+	// __Buffers::cuda_free(_cuda_buffers);
+	// __Buffers::cuda_free(_cuda_bitmap_buffer);
 }
 
 Buffers& Buffers::operator=(Buffers&& other)
@@ -80,15 +80,20 @@ Buffers& Buffers::operator=(Buffers&& other)
 	return *this;
 }
 
-void Buffers::CleanAllBuffers() const
+void Buffers::InitPixel(size_t x, size_t y)
 {
-	for(size_t i = 0; i < _width; i++)
-	{
-		for(size_t j = 0; j < _height; j++)
-		{
-			_buffers[Loc(i, j)].z = -DBL_MAX;
-		}
-	}
+	GetFrame(x, y).location.Set(2, -DBL_MAX);
+}
+
+void Buffers::CleanBitmap() const
+{
+	// for(size_t i = 0; i < _width; i++)
+	// {
+	// 	for(size_t j = 0; j < _height; j++)
+	// 	{
+	// 		_buffers[YScan(i, j)].z = -DBL_MAX;
+	// 	}
+	// }
 	ZeroMemory(_bitmap_buffer.get(), _width * _height * sizeof(DWORD));
 }
 
@@ -97,11 +102,11 @@ FrameBuffer& Buffers::GetFrame(size_t x, size_t y)
 {
 	if(x < 0 || y < 0 || x >= _width || y >= _height)
 	{
-		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", x, y);
+		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", y, x);
 		PRINT_LOCATION;
 		return _buffers[0];
 	}
-	return _buffers[Loc(x, y)];
+	return _buffers[Scan_R270(x, y)];
 	
 }
 
@@ -115,5 +120,5 @@ DWORD& Buffers::GetBitmapBuffer(size_t x, size_t y)
 		PRINT_LOCATION;
 		return _bitmap_buffer[0];
 	}
-	return _bitmap_buffer[Loc(x, y)]; // (x, y) -> (x, _height - y)
+	return _bitmap_buffer[Scan_R270(x, y)]; // (x, y) -> (x, _height - y)
 }

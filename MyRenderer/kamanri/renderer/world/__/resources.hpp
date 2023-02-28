@@ -30,6 +30,19 @@ namespace Kamanri
 					std::vector<Maths::Vector> vertex_textures;
 					/// @brief 顶点法线，物理里面有说过眼睛看到物体是因为光线经过物体表面反射到眼睛，所以这个法线就是通过入射光线计算反射光线使用的法线。
 					std::vector<Maths::Vector> vertex_normals;
+					/// @brief Used to store ONLY MODEL VIEW transformed vertex normals
+					std::vector<Maths::Vector> vertex_normals_model_view_transformed;
+
+					Resources& operator=(Resources&& other)
+					{
+						vertices = std::move(other.vertices);
+						vertices_transformed = std::move(other.vertices_transformed);
+						vertices_model_view_transformed = std::move(other.vertices_model_view_transformed);
+						vertex_textures = std::move(other.vertex_textures);
+						vertex_normals = std::move(other.vertex_normals);
+						vertex_normals_model_view_transformed = std::move(other.vertex_normals_model_view_transformed);
+						return *this;
+					}
 				};
 			} // namespace __
 

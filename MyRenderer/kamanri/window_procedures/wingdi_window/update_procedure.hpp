@@ -71,6 +71,7 @@ namespace Kamanri
 							{
 								Log::Error(__UpdateProcedure::LOG_NAME, "Failed to execute the update_func caused by:");
 								update_res.Print();
+								exit(update_res.Code());
 							}
 							//
 							Log::Debug(__UpdateProcedure::LOG_NAME, "Start to render...");

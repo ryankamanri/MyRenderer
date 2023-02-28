@@ -89,7 +89,8 @@
         "bitset": "cpp",
         "filesystem": "cpp",
         "stack": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "__config": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

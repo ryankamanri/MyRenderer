@@ -47,9 +47,9 @@ std::map<HWND, WinGDI_Window *> window_map;
 
 MSG msg;
 
-WinGDI_Window::WinGDI_Window(HINSTANCE h_instance, unsigned int window_width, unsigned int window_height)
+WinGDI_Window::WinGDI_Window(HINSTANCE h_instance, Renderer::World::World3D& world, unsigned int window_width, unsigned int window_height)
+: _world(world)
 {
-	_world = Renderer::World::World3D();
 	_window_width = window_width;
 	_window_height = window_height;
 	_WindowProc = WindowProc;
@@ -97,11 +97,6 @@ WinGDI_Window::~WinGDI_Window()
 	}
 }
 
-WinGDI_Window& WinGDI_Window::SetWorld(Renderer::World::World3D && world)
-{
-	_world = std::move(world);
-	return *this;
-}
 
 WinGDI_Window& WinGDI_Window::AddProcedure(Delegate<WinGDI_Message>::ANode&& proc)
 {

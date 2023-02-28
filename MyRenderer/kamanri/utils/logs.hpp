@@ -43,7 +43,7 @@ namespace Kamanri
 		{
 			constexpr const char *TRACE_SIGN = "trace";
 			constexpr const char *DEBUG_SIGN = "debug";
-			constexpr const char *INFO_SIGN = "infor";
+			constexpr const char *INFO_SIGN = "infom";
 			constexpr const char *WARN_SIGN = "warng";
 			constexpr const char *ERROR_SIGN = "error";
 

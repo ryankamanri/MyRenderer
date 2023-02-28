@@ -50,6 +50,8 @@ namespace Kamanri
 			VectorCode Set(size_t index, VectorElemType value);
 			VectorCode SetAll(VectorElemType value = 0);
 
+			VectorElemType operator-(Vector const& v);
+
 			VectorCode operator+=(Vector const &v);
 			VectorCode operator+=(std::initializer_list<VectorElemType> list);
 

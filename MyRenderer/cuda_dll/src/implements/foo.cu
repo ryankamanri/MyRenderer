@@ -8,8 +8,10 @@
 #define CHECK(res) { if(res != cudaSuccess){printf("Error ：%s:%d , ", __FILE__,__LINE__);   \
 printf("code : %d , reason : %s \n", res,cudaGetErrorString(res));exit(-1);}}
 
-
-__global__ void foo(int* a)
+#ifdef __CUDA_RUNTIME_H__
+__global__ 
+#endif
+void foo(int* a)
 {
 	printf("CUDA!\n");
 	int index = thread_index;

@@ -138,7 +138,8 @@ void Camera::SetAngles()
 		_alpha, _beta, _gamma);
 }
 
-Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearest_dist(camera._nearest_dist), _furthest_dist(camera._furthest_dist), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
+Camera::Camera(Camera && camera) 
+: _p_resources(camera._p_resources), _p_bpr_model(camera._p_bpr_model), _alpha(camera._alpha), _beta(camera._beta), _gamma(camera._gamma), _nearest_dist(camera._nearest_dist), _furthest_dist(camera._furthest_dist), _screen_width(camera._screen_width), _screen_height(camera._screen_height)
 {
 	_location = std::move(camera._location);
 	_direction = std::move(camera._direction);
@@ -147,8 +148,8 @@ Camera::Camera(Camera && camera) : _pvertices(camera._pvertices), _alpha(camera.
 
 Camera& Camera::operator=(Camera&& other)
 {
-	_pvertices = other._pvertices;
-	_pvertices_transformed = other._pvertices_transformed;
+	_p_resources = other._p_resources;
+	_p_bpr_model = other._p_bpr_model;
 	_alpha = other._alpha;
 	_beta = other._beta;
 	_gamma = other._gamma;
@@ -162,22 +163,21 @@ Camera& Camera::operator=(Camera&& other)
 	return *this;
 }
 
-void Camera::SetVertices(std::vector<Maths::Vector> &vertices, std::vector<Maths::Vector> &vertices_transformed, std::vector<Maths::Vector> &vertices_model_view_transformed)
+void Camera::__SetRefs(__::Resources& resources, BlingPhongReflectionModel& bpr_model)
 {
-	_pvertices = &vertices;
-	_pvertices_transformed = &vertices_transformed;
-	_pvertices_model_view_transformed = &vertices_model_view_transformed;
+	_p_resources = &resources;
+	_p_bpr_model = &bpr_model;
 }
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
 DefaultResult Camera::Transform()
 {
-	CHECK_MEMORY_FOR_DEFAULT_RESULT(_pvertices, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES)
-
+	CHECK_MEMORY_FOR_DEFAULT_RESULT(_p_resources, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
+	CHECK_MEMORY_FOR_DEFAULT_RESULT(_p_bpr_model, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
 	SetAngles();
 
-	Log::Trace(__Camera::LOG_NAME, "vertices count: %d", _pvertices->size());
+	Log::Trace(__Camera::LOG_NAME, "vertices count: %d", _p_resources->vertices.size());
 	//
 	auto sin_a = sin(_alpha);
 	auto cos_a = cos(_alpha);
@@ -272,27 +272,41 @@ DefaultResult Camera::Transform()
 	//     0, 0, 1, 0
 	// };
 
+	// ensure the vertex normal num == vertex num
+	// if(_p_resources->vertex_normals.size() != _p_resources->vertices.size())
+	// {
+	// 	Log::Error(__Camera::LOG_NAME, "Unequal normal num %llu and vertex num %llu", _p_resources->vertex_normals.size(), _p_resources->vertices.size());
+	// 	return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_UNEQUAL_NUM, "Unequal normal num and vertex num");
+	// }
 	// copy vertices_transformed from vertices(origin) and transform it.
+	
 
 	// TODO: CUDA parallelize "Transform Vertices"
-	for(std::size_t i = 0; i != _pvertices_transformed->size(); i++)
+	for(std::size_t i = 0; i != _p_resources->vertices.size(); i++)
 	{
 		// IMPORTANT!!
-		_pvertices_transformed->at(i) = _pvertices->at(i); 
-		_pvertices_model_view_transformed->at(i) = _pvertices->at(i);
+		_p_resources->vertices_transformed[i] = _p_resources->vertices[i]; 
+		_p_resources->vertices_model_view_transformed[i] = _p_resources->vertices[i];
 		//
-
-		Log::Trace(__Camera::LOG_NAME, "Start a vertex transform...");
 		
-		_pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
-		model_view_transform * _pvertices_transformed->at(i);
-		model_view_transform * _pvertices_model_view_transformed->at(i);
-		_pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
-		projection_screen_transform * _pvertices_transformed->at(i);
-		_pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
-		_pvertices_transformed->at(i) *= (1 / (_pvertices_transformed->at(i)[3])); // homogeneous coordinates unitization
-		_pvertices_transformed->at(i).PrintVector(Log$::TRACE_LEVEL);
+		_p_resources->vertices_transformed[i].PrintVector(Log$::TRACE_LEVEL);
+		model_view_transform * _p_resources->vertices_transformed[i];
+		model_view_transform * _p_resources->vertices_model_view_transformed[i];
+		
+		_p_resources->vertices_transformed[i].PrintVector(Log$::TRACE_LEVEL);
+		projection_screen_transform * _p_resources->vertices_transformed[i];
+		_p_resources->vertices_transformed[i].PrintVector(Log$::TRACE_LEVEL);
+		_p_resources->vertices_transformed[i] *= (1 / (_p_resources->vertices_transformed[i][3])); // homogeneous coordinates unitization
+		_p_resources->vertices_transformed[i].PrintVector(Log$::TRACE_LEVEL);
 	}
+
+	for(std::size_t i = 0; i != _p_resources->vertex_normals.size(); i++)
+	{
+		_p_resources->vertex_normals_model_view_transformed[i] = _p_resources->vertex_normals[i];
+		model_view_transform * _p_resources->vertex_normals_model_view_transformed[i];
+	}
+
+	_p_bpr_model->ModelViewTransform(model_view_transform);
 	//
 	return DEFAULT_RESULT;
 }

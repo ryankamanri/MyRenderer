@@ -1,4 +1,5 @@
 #pragma once
+#include "kamanri/maths/all.hpp"
 
 namespace Kamanri
 {
@@ -10,14 +11,23 @@ namespace Kamanri
 			class FrameBuffer
 			{
 				public:
-				enum class Type
-				{
-					Z, COLOR, INTENSITY, ALL
-				};
-				double z;
-				// BGR color
+				/////////// update in triangle3D
+				/// @brief the located triangle index
+				size_t triangle_index;
+				/// the point location
+				Maths::Vector location;
+				/// the vertex normal
+				Maths::Vector vertex_normal;
+				/// RGB color reflect
 				unsigned int color;
-				double intensity;
+				// /////// update in bpr model
+				double power;
+				unsigned int r;
+				unsigned int g;
+				unsigned int b;
+				unsigned int specular_color;
+				unsigned int diffuse_color;
+				unsigned int ambient_color;
 			};
 
 
