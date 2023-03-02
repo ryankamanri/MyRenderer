@@ -324,8 +324,8 @@ DefaultResult Camera::InverseUpperByDirection(Maths::Vector const &last_directio
 
 	using namespace __Camera::InverseUpperByDirection;
 
-	upward_before = {0, 1, 0, 0};
-	upward_after = {0, 1, 0, 0};
+	upward_before = _upward;
+	upward_after = _upward;
 
 	upward_before *= last_direction;
 	upward_after *= _direction;

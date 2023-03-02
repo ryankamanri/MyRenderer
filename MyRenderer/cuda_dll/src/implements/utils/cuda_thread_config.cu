@@ -15,7 +15,7 @@ namespace __CUDAThreadConfig
 	{
 		if (num > MAX_BLOCK_NUM * MAX_THREAD_NUM_PER_BLOCK)
 		{
-			Log::Error(LOG_NAME, "num > MAX_BLOCK_NUM * MAX_THREAD_NUM_PER_BLOCK");
+			PrintLn("[%s]: num > MAX_BLOCK_NUM * MAX_THREAD_NUM_PER_BLOCK", LOG_NAME);
 			PRINT_LOCATION;
 			return 0;
 		}
@@ -34,7 +34,7 @@ namespace __CUDAThreadConfig
 		unsigned int thread_num_per_block = ThreadNumPerBlock(num);
 		if(!thread_num_per_block) 
 		{
-			Log::Error(LOG_NAME, "Invalid thread_num_per_block value 0.");
+			PrintLn("[%s]: Invalid thread_num_per_block value 0.", LOG_NAME);
 			PRINT_LOCATION;
 			return 0;
 		}

@@ -98,7 +98,7 @@ namespace Kamanri
 
 				inline Maths::Vector &Location() { return _location; }
 				inline Maths::Vector &Direction() { return _direction; }
-				inline Maths::Vector &Upper() { return _upward; }
+				inline Maths::Vector &Upward() { return _upward; }
 #ifdef __CUDA_RUNTIME_H__ 
 				__device__
 #endif

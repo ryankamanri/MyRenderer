@@ -3,10 +3,6 @@
 #include <cfloat>
 #include <cmath>
 #include "kamanri/all.hpp"
-#include "cuda_dll/foo.hpp"
-#include "cuda_dll/exports/set_log_level.hpp"
-
-using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
 using namespace Kamanri::Windows;
 using namespace Kamanri::Windows::WinGDI_Window$;
@@ -29,7 +25,7 @@ constexpr const char* TGA2_PATH = "../../out/floor_diffuse.tga";
 namespace __UpdateFunc
 {
 	Vector direction(4);
-	double theta = PI / 32;
+	double theta = PI / 1024;
 	SMatrix revolve_matrix =
 	{
 		cos(theta), 0, -sin(theta), 0,
@@ -43,12 +39,12 @@ DefaultResult UpdateFunc(World3D& world)
 {
 	using namespace __UpdateFunc;
 	Camera& camera = world.GetCamera();
-	direction = camera.Direction();
+	// direction = camera.Direction();
 
-	revolve_matrix* camera.Direction();
-	revolve_matrix* camera.Location();
+	// revolve_matrix* camera.Direction();
+	// revolve_matrix* camera.Location();
 
-	camera.InverseUpperByDirection(direction);
+	// camera.InverseUpperByDirection(direction);
 
 	camera.Transform();
 
@@ -94,21 +90,10 @@ void StartRender(HINSTANCE hInstance)
 		}
 	).Commit();
 	WinGDI_Window(hInstance, world, WINDOW_LENGTH, WINDOW_LENGTH)
+		.AddProcedure(MovePositionProcedure(0.05, PI / 256))
 		.AddProcedure(
 			UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
 		).Show().MessageLoop();
-}
-
-
-
-void SetLevel(LogLevel level)
-{
-	Log::SetLevel(level);
-	dll cuda_dll;
-	func_type(SetLogLevel) set_log_level;
-	load_dll(cuda_dll, cuda_dll, LOG_NAME);
-	import_func(SetLogLevel, cuda_dll, set_log_level, LOG_NAME);
-	set_log_level(level);
 }
 
 
@@ -120,7 +105,7 @@ int main()
 {
 	HINSTANCE instance = GetModuleHandle("MyRenderer.exe");
 	// set the log level and is_print
-	SetLevel(Log$::DEBUG_LEVEL);
+	Log::SetLevel(Log$::INFO_LEVEL);
 	Log::Info(LOG_NAME, "%p: May you have a nice day!", instance);
 
 	StartRender(instance);

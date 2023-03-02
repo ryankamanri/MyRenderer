@@ -16,7 +16,6 @@ namespace __BuildWorld
 {
 	constexpr const char* LOG_NAME = STR(BuildWorld);
 
-	
 } // namespace BuildWorld$
 
 __global__ void BuildPixelEntry(Kamanri::Renderer::World::World3D* p_world, unsigned int height)
@@ -46,11 +45,10 @@ __device__ inline int DevicePrint(const char* formatStr, Ts... argv)
 	return retCode;
 }
 
-////////////////////////////////////////////////////////////////////////////
-// Maths
+#pragma region Maths
 
-		////////////////////////////////////////////
-		// Vector
+#pragma region Vector
+
 __device__ Kamanri::Maths::Vector::Vector(size_t n)
 {
 	this->_N = Vector$::NOT_INITIALIZED_N;
@@ -291,8 +289,11 @@ __device__ VectorCode Kamanri::Maths::Vector::Unitization()
 
 	return Vector$::CODE_NORM;
 }
-//////////////////////////////////////////////////
-// Matrix
+
+#pragma endregion
+
+
+#pragma region SMatrix
 namespace __SMatrix
 {
 
@@ -353,37 +354,6 @@ namespace __SMatrix
 
 			return result;
 		}
-
-
-
-		/// row_count > 4
-		// size_t col_first = col_list.front();
-		// size_t col_first_sorted = __SMatrix::GetSortedIndex(col_list, col_first);
-		// col_list.erase(col_list.begin());
-
-		// for (size_t i = 0; i < row_count; i++)
-		// {
-		// 	size_t row_first = row_list[0];
-		// 	size_t row_first_sorted = __SMatrix::GetSortedIndex(row_list, row_first);
-		// 	row_list.erase(row_list.begin());
-		// 	//////////////////////// calculate sub result
-		// 	auto value = psm[_N * row_first + col_first];
-
-		// 	// use -1^(a+b) * n * |A*_ab| to calculate
-		// 	auto result_sub = (
-		// 		_Determinant(psm, row_list, col_list) *
-		// 		value *
-		// 		(((row_first_sorted + col_first_sorted) % 2 == 0) ? 1.f : -1.f));
-
-		// 	result += result_sub;
-
-		// 	//////////////////////// calculate sub result
-		// 	row_list.push_back(row_first);
-		// }
-
-		// col_list.insert(col_list.begin(), col_first);
-
-		// return result;
 	}
 }
 
@@ -548,11 +518,14 @@ __device__ SMatrixElemType Kamanri::Maths::SMatrix::Determinant() const
 	}
 }
 
-///////////////////////////////////////////////////////////////
-// Renderer
+#pragma endregion
 
-		///////////////////////////////////////////////
-		// TGAImage
+#pragma endregion
+
+#pragma region Renderer
+
+#pragma region TGAImage
+
 __device__ TGAColor Kamanri::Renderer::TGAImage::Get(const int x, const int y) const
 {
 	if (x < 0 || y < 0 || x >= _width || y >= _height)
@@ -566,10 +539,12 @@ __device__ TGAColor Kamanri::Renderer::TGAImage::Get(double u, double v) const
 	return Get(x, _height - y); // y axis towards up, so use height - y
 }
 
-//////////////////////////////////////////////////////////////////
-// Renderer::World
-			//////////////////////////////////////////////////
-			// World3D
+#pragma endregion
+
+#pragma region World
+
+#pragma region World3D
+
 __device__ void Kamanri::Renderer::World::World3D::__BuildForPixel(size_t x, size_t y)
 {
 	// set z = infinity
@@ -599,18 +574,11 @@ __device__ void Kamanri::Renderer::World::World3D::__BuildForPixel(size_t x, siz
 
 
 }
-////////////////////////////////////////////////////////////
-// BlingPhongReflectionModel
 
-// namespace __BlingPhongReflectionModel
-// {
-// 	namespace WriteToPixel
-// 	{
-// 		__device__ void Handle(unsigned int& y, RGB x) { y += x; }
-// 	} // namespace WriteToPixel
-	
-// } // namespace __BlingPhongReflectionModel
+#pragma endregion
 
+
+#pragma region BlingPhongReflectionModel
 
 #define Scan_R270(height, x, y) ((height - (y + 1)) * height + x)
 #define LightBufferLoc(width, height, index, x, y) (width * height * index + Scan_R270(height, x, y))
@@ -736,11 +704,13 @@ __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::WriteToPixe
 	// DevicePrint("%X ", pixel);
 }
 
+#pragma endregion
 
-/////////////////////////////////////////////////////////////////
-// Renderer::World::__
-				////////////////////////////////////
-				// Buffers
+
+#pragma region __
+
+#pragma region Buffers
+
 
 __device__ FrameBuffer& Kamanri::Renderer::World::__::Buffers::GetFrame(size_t x, size_t y)
 {
@@ -773,8 +743,11 @@ __device__ DWORD& Kamanri::Renderer::World::__::Buffers::GetBitmapBuffer(size_t 
 	}
 	return _cuda_bitmap_buffer[Scan_R270(_height, x, y)]; // (x, y) -> (x, _height - y)
 }
-////////////////////////////////////////
-// Triangle3D
+
+#pragma endregion
+
+#pragma region Triangle3D
+
 __device__ void Kamanri::Renderer::World::__::Triangle3D::ScreenArealCoordinates(double x, double y, Maths::Vector& result) const
 {
 	result = { x, y, ScreenZ(x, y) };
@@ -945,14 +918,14 @@ __device__ void Kamanri::Renderer::World::__::Triangle3D::WriteToPixel(size_t x,
 
 	frame_buffer.color = cuda_objects[_object_index].GetImage().Get(img_u, img_v).rgb;
 
-	// DevicePrint("%X ", frame_buffer.color);
 }
 
+#pragma endregion
 
 
+#pragma endregion
 
-
-
+#pragma endregion
 
 
 

@@ -2,7 +2,6 @@
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/exports/build_world.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
-#include "cuda_dll/exports/write_to_buffers.hpp"
 #include "kamanri/utils/result.hpp"
 
 using namespace Kamanri::Renderer::World;
@@ -28,7 +27,6 @@ namespace Kamanri
 				namespace Build
 				{
 					func_type(BuildWorld) build_world;
-					func_type(WriteToBuffers) write_to_buffers;
 				} // namespace Build
 
 				void ImportFunctions()
@@ -39,7 +37,6 @@ namespace Kamanri
 					import_func(TransmitToCUDA, cuda_dll, transmit_to_cuda, LOG_NAME);
 					import_func(TransmitFromCUDA, cuda_dll, transmit_from_cuda, LOG_NAME);
 					import_func(BuildWorld, cuda_dll, Build::build_world, LOG_NAME);
-					import_func(WriteToBuffers, cuda_dll, Build::write_to_buffers, LOG_NAME);
 				}
 				
 			} // namespace __World3D
