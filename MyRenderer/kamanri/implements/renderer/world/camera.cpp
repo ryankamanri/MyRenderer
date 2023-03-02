@@ -2,6 +2,7 @@
 #include "kamanri/maths/math.hpp"
 #include "kamanri/utils/logs.hpp"
 #include "kamanri/renderer/world/camera.hpp"
+#include "kamanri/utils/result.hpp"
 #include "kamanri/maths/matrix.hpp"
 #include "kamanri/utils/string.hpp"
 

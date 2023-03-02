@@ -21,9 +21,11 @@ namespace Kamanri
 					BlingPhongReflectionModel bpr_model;
 					std::vector<Triangle3D> triangles;
 					Triangle3D* cuda_triangles;
+					size_t* cuda_triangles_size;
 					/// @brief Store all objects.
 					std::vector<Object> objects;
 					Object* cuda_objects;
+					size_t* cuda_objects_size;
 				};
 			} // namespace __
 

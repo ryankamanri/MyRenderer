@@ -44,31 +44,32 @@ namespace Kamanri
 	
 } // namespace Kamanri
 
-#define Scan_R270(x, y) ((_height - (y + 1)) * _height + x)
+#define Scan_R270(height, x, y) ((height - (y + 1)) * height + x)
 
-Buffers::Buffers(size_t width, size_t height)
+Buffers::Buffers(size_t width, size_t height, bool is_use_cuda)
 {
 	_width = width;
 	_height = height;
 	_buffers = NewArray<FrameBuffer>(width * height);
 	_bitmap_buffer = NewArray<DWORD>(width * height);
-	// __Buffers::ImportFunctions();
 
-	// auto buffers_size = width * height * sizeof(FrameBuffer);
-	// __Buffers::cuda_malloc(&(void*)_cuda_buffers, buffers_size);
-	// __Buffers::transmit_to_cuda(_buffers.get(), _cuda_buffers, buffers_size);
-	
-	// auto bitmap_buffer_size = width * height * sizeof(DWORD);
-	// __Buffers::cuda_malloc(&(void*)_cuda_bitmap_buffer, bitmap_buffer_size);
-	// __Buffers::transmit_to_cuda(_bitmap_buffer.get(), _cuda_bitmap_buffer, bitmap_buffer_size);
+	if(!is_use_cuda) return;
+
+	__Buffers::ImportFunctions();
+
+	auto buffers_size = width * height;
+	__Buffers::cuda_malloc(&(void*)_cuda_buffers, buffers_size * sizeof(FrameBuffer));
+
+	auto bitmap_buffer_size = width * height;
+	__Buffers::cuda_malloc(&(void*)_cuda_bitmap_buffer, bitmap_buffer_size * sizeof(DWORD));
 
 }
 
 Buffers::~Buffers()
 {
 	Log::Debug(__Buffers::LOG_NAME, "clean the buffers");
-	// __Buffers::cuda_free(_cuda_buffers);
-	// __Buffers::cuda_free(_cuda_bitmap_buffer);
+	__Buffers::cuda_free(_cuda_buffers);
+	__Buffers::cuda_free(_cuda_bitmap_buffer);
 }
 
 Buffers& Buffers::operator=(Buffers&& other)
@@ -77,6 +78,9 @@ Buffers& Buffers::operator=(Buffers&& other)
 	_height = other._height;
 	_buffers = std::move(other._buffers);
 	_bitmap_buffer = std::move(other._bitmap_buffer);
+
+	_cuda_buffers = other._cuda_buffers;
+	_cuda_bitmap_buffer = other._cuda_bitmap_buffer;
 	return *this;
 }
 
@@ -106,7 +110,7 @@ FrameBuffer& Buffers::GetFrame(size_t x, size_t y)
 		PRINT_LOCATION;
 		return _buffers[0];
 	}
-	return _buffers[Scan_R270(x, y)];
+	return _buffers[Scan_R270(_height, x, y)];
 	
 }
 
@@ -120,5 +124,5 @@ DWORD& Buffers::GetBitmapBuffer(size_t x, size_t y)
 		PRINT_LOCATION;
 		return _bitmap_buffer[0];
 	}
-	return _bitmap_buffer[Scan_R270(x, y)]; // (x, y) -> (x, _height - y)
+	return _bitmap_buffer[Scan_R270(_height, x, y)]; // (x, y) -> (x, _height - y)
 }

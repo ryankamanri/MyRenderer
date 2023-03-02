@@ -1,7 +1,5 @@
 #pragma once
-#include <cuda_runtime.h>
 
-#define cuda #ifdef 
 
 // cuda error check
 /////////////////////////////////////////////////////////////////

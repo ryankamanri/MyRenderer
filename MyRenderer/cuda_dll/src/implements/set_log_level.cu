@@ -3,15 +3,19 @@
 
 using namespace Kamanri::Utils;
 
-LogLevel Kamanri::Utils::Log::_level;
+namespace __SetLogLevel
+{
+	LogLevel _level;
+}
+
 
 LogLevel Log::Level()
 {
-	return _level;
+	return __SetLogLevel::_level;
 }
 
 void Log::SetLevel(LogLevel level) {
-	_level = level;
+	__SetLogLevel::_level = level;
 }
 
 void SetLogLevel(LogLevel level)

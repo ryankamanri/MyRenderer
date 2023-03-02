@@ -38,8 +38,9 @@ namespace __CUDAThreadConfig
 			PRINT_LOCATION;
 			return 0;
 		}
-		return (num % thread_num_per_block == 0) ? 
+		auto res = (num % thread_num_per_block == 0) ? 
 		(num / thread_num_per_block) :
-		(num / thread_num_per_block) + 1;
+		((num / thread_num_per_block) + 1);
+		return res;
 	}
 } // namespace __CUDAThreadConfig

@@ -313,7 +313,7 @@ inline double Min(double x1, double x2, double x3)
 #define PerspectiveCorrect(areal_coordinates, v1_factor, v2_factor, v3_factor, c_v1_factor, c_v2_factor, c_v3_factor, c_this_factor) \
 ((areal_coordinates[0] * v1_factor / c_v1_factor + areal_coordinates[1] * v2_factor / c_v2_factor + areal_coordinates[2] * v3_factor / c_v3_factor) * c_this_factor)
 
-void Triangle3D::WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, DWORD& pixel, double nearest_dist) const
+void Triangle3D::WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, double nearest_dist, Object* cuda_objects) const
 {
 	// pruning
 	if(x < Min(_s_v1_x, _s_v2_x, _s_v3_x) || x > Max(_s_v1_x, _s_v2_x, _s_v3_x)) return;
@@ -356,62 +356,12 @@ void Triangle3D::WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, DWO
 		PerspectiveCorrect(screen_areal_coordinates, _vn1_z, _vn2_z, _vn3_z, _w_v1_z, _w_v2_z, _w_v3_z, world_z),
 		0
 	};
+	
 	frame_buffer.vertex_normal.Unitization();
 
 	frame_buffer.color = _p_objects->at(_object_index).GetImage().Get(img_u, img_v).rgb;
 
-	pixel = frame_buffer.color;
 }
-
-// void Triangle3D::WriteToLightBufferPixel(size_t x, size_t y, BlingPhongReflectionModel& model)
-// {
-// 	// pruning
-// 	if(x < Min(_v1_x, _v2_x, _v3_x) || x > Max(_v1_x, _v2_x, _v3_x)) return;
-// 	if(y < Min(_v1_y, _v2_y, _v3_y) || y > Max(_v1_y, _v2_y, _v3_y)) return;
-// 	if(!IsScreenCover(x, y)) return;
-
-// 	// get location
-// 	Vector screen_areal_coordinates(3);
-// 	ScreenArealCoordinates(x, y, screen_areal_coordinates);
-// 	double world_x = 1.0 / (screen_areal_coordinates[0] / _w_v1_x + screen_areal_coordinates[1] / _w_v2_x + screen_areal_coordinates[2] / _w_v3_x);
-// 	double world_y = 1.0 / (screen_areal_coordinates[0] / _w_v1_y + screen_areal_coordinates[1] / _w_v2_y + screen_areal_coordinates[2] / _w_v3_y);
-// 	double world_z = 1.0 / (screen_areal_coordinates[0] / _w_v1_z + screen_areal_coordinates[1] / _w_v2_z + screen_areal_coordinates[2] / _w_v3_z);
-
-	
-
-// }
-
-
-// void Triangle3D::WriteTo(Buffers& buffers, double nearest_dist)
-// {
-// 	__Triangle3D::WriteTo::nearest_dist = nearest_dist;
-
-// 	size_t min_x = (int)Min(_v1_x, _v2_x, _v3_x);
-// 	size_t min_y = (int)Min(_v1_y, _v2_y, _v3_y);
-// 	size_t max_x = (int)Max(_v1_x, _v2_x, _v3_x);
-// 	size_t max_y = (int)Max(_v1_y, _v2_y, _v3_y);
-
-// 	// TODO: CUDA parallelize
-// 	for (size_t x = min_x; x <= max_x; x++)
-// 	{
-
-// 		if (x >= buffers.Width() || x < 0)
-// 			continue;
-// 		for (size_t y = min_y; y <= max_y; y++)
-// 		{
-// 			if (y >= buffers.Height() || y < 0)
-// 				continue;
-
-// 			if(!IsScreenCover(x, y)) 
-// 				continue;
-			
-// 			// Now the posize_t is on the triangle
-// 			// start to compare the depth
-// 			WriteToPixel(x, y, buffers.GetFrame(x, y), buffers.GetBitmapBuffer(x, y), nearest_dist);   
-				
-// 		}
-// 	}
-// }
 
 
 void Triangle3D::ScreenArealCoordinates(double x, double y, Maths::Vector& result) const

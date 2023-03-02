@@ -131,6 +131,12 @@ VectorElemType Vector::operator[](size_t n) const
 
 VectorCode Vector::Set(size_t index, VectorElemType value)
 {
+	if (index < 0 || index > this->_N)
+	{
+		Log::Error(__Vector::LOG_NAME, "Index %d out of bound %d", index, this->_N);
+		PRINT_LOCATION;
+		return Vector$::NOT_INITIALIZED_VALUE;
+	}
 	_V[index] = value;
 	return Vector$::CODE_NORM;
 }

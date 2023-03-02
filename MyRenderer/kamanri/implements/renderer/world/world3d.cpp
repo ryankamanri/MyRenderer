@@ -3,6 +3,7 @@
 #include "cuda_dll/exports/build_world.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
 #include "cuda_dll/exports/write_to_buffers.hpp"
+#include "kamanri/utils/result.hpp"
 
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Maths;
@@ -52,13 +53,28 @@ namespace Kamanri
 
 
 
-World3D::World3D(Camera&& camera, BlingPhongReflectionModel&& model)
+World3D::World3D(Camera&& camera, BlingPhongReflectionModel&& model, bool is_use_cuda)
 : _camera(std::move(camera)), 
-_buffers(_camera.ScreenWidth(), _camera.ScreenHeight()),
+_buffers(_camera.ScreenWidth(), _camera.ScreenHeight(), is_use_cuda),
 _environment(std::move(model))
 {
+	if(_environment.bpr_model.ScreenWidth() != _camera.ScreenWidth() ||
+	_environment.bpr_model.ScreenHeight() != _camera.ScreenHeight())
+	{
+		Log::Error(__World3D::LOG_NAME, "Uneuqal screen size (%u, %u), (%u, %u)", 
+		_camera.ScreenWidth(), 
+		_camera.ScreenHeight(), 
+		_environment.bpr_model.ScreenWidth(), 
+		_environment.bpr_model.ScreenHeight());
+		exit(World3D$::CODE_UNHANDLED_EXCEPTION);
+	}
 	_camera.__SetRefs(_resources, _environment.bpr_model);
+
+	if(!is_use_cuda) return;
+	_configs.is_use_cuda = is_use_cuda;
 	__World3D::ImportFunctions();
+
+	__World3D::cuda_malloc(&(void*)_cuda_world, sizeof(World3D));
 }
 
 
@@ -70,6 +86,7 @@ World3D& World3D::operator=(World3D && other)
 	_environment = std::move(other._environment);
 	_buffers = std::move(other._buffers);
 	_configs = std::move(other._configs);
+	_cuda_world = other._cuda_world;
 	// Move the reference of vertices of camera
 	_camera.__SetRefs(_resources, _environment.bpr_model);
 	return *this;
@@ -157,7 +174,7 @@ Result<Object *> World3D::AddObjModel(ObjModel const &model)
 	}
 
 	// Add an object
-	_environment.objects.push_back(Object(_resources.vertices, v_offset, model.GetVertexSize(), t_offset, model.GetFaceSize(), model.GetTGAImageName()));
+	_environment.objects.push_back(Object(_resources.vertices, v_offset, model.GetVertexSize(), t_offset, model.GetFaceSize(), model.GetTGAImageName(), _configs.is_use_cuda));
 	// Now you can get the object& by _environment.objects.back()
 	auto& object = _environment.objects.back();
 
@@ -178,21 +195,36 @@ World3D& World3D::AddObjModel(ObjModel const& model, Maths::SMatrix const& trans
 
 World3D::~World3D()
 {
-	// __World3D::cuda_free(_environment.cuda_triangles);
-	// __World3D::cuda_free(_environment.cuda_objects);
+	for(auto& obj: _environment.objects)
+	{
+		obj.DeleteCUDA();
+	}
+	_environment.bpr_model.DeleteCUDA();
+
+	__World3D::cuda_free(_environment.cuda_objects);
+	__World3D::cuda_free(_environment.cuda_objects_size);
+	__World3D::cuda_free(_environment.cuda_triangles);
+	__World3D::cuda_free(_environment.cuda_triangles_size);
+	__World3D::cuda_free(_cuda_world);
 }
 
-World3D& World3D::Commit(bool is_use_cuda)
+World3D& World3D::Commit()
 {
 	_configs.is_commited = true;
 
-	_configs.is_use_cuda = is_use_cuda;
 	if(!_configs.is_use_cuda) return *this;
 	
 	// objects
-	auto objects_size = _environment.objects.size() * sizeof(Object);
-	__World3D::cuda_malloc(&(void*)_environment.cuda_objects, objects_size);
-	__World3D::transmit_to_cuda(&_environment.objects[0], _environment.cuda_objects, objects_size);
+	auto objects_size = _environment.objects.size();
+	__World3D::cuda_malloc(&(void*)_environment.cuda_objects_size, sizeof(size_t));
+	__World3D::transmit_to_cuda(&objects_size, _environment.cuda_objects_size, sizeof(size_t));
+	__World3D::cuda_malloc(&(void*)_environment.cuda_objects, objects_size * sizeof(Object));
+	__World3D::transmit_to_cuda(&_environment.objects[0], _environment.cuda_objects, objects_size * sizeof(Object));
+	// triangles
+	auto triangles_size = _environment.triangles.size();
+	__World3D::cuda_malloc(&(void*)_environment.cuda_triangles_size, sizeof(size_t));
+	__World3D::transmit_to_cuda(&triangles_size, _environment.cuda_triangles_size, sizeof(size_t));
+	__World3D::cuda_malloc(&(void*)_environment.cuda_triangles, triangles_size * sizeof(__::Triangle3D));
 
 	return *this;
 }
@@ -214,34 +246,36 @@ DefaultResult World3D::Build()
 		t.Build(_resources);
 	}
 
-	for(size_t x = 0; x < _buffers.Width(); x++)
-	{
-		for(size_t y = 0; y < _buffers.Height(); y++)
-		{
-			BuildForPixel(x, y);
-		}
-	}
+	// for(size_t x = 0; x < _buffers.Width(); x++)
+	// {
+	// 	for(size_t y = 0; y < _buffers.Height(); y++)
+	// 	{
+	// 		__BuildForPixel(x, y);
+	// 		// Print("%X ", _buffers.GetBitmapBuffer(x, y));
+	// 	}
+	// }
+
+	// _environment.cuda_objects[0].GetImage().Get()
+
 	///////////////////
 	// triangles transmission
-	// auto triangles_size = _environment.triangles.size() * sizeof(__::Triangle3D);
-	// __World3D::transmit_to_cuda(&_environment.triangles[0], _environment.cuda_triangles, triangles_size);
-	// __World3D::Build::write_to_buffers(
-	// 	_environment.cuda_triangles, 
-	// 	_environment.triangles.size(),
-	// 	_buffers.CUDAGetBuffersPtr(), 
-	// 	_buffers.CUDAGetBitmapBufferPtr(), 
-	// 	_buffers.Width(), 
-	// 	_buffers.Height(), 
-	// 	_camera.NearestDist());
-	// Log::Debug(__World3D::LOG_NAME, "cuda triangles at %p,", _environment.cuda_triangles);
+	auto triangles_size = _environment.triangles.size();
+	__World3D::transmit_to_cuda(&_environment.triangles[0], _environment.cuda_triangles, triangles_size * sizeof(__::Triangle3D));
+	__World3D::transmit_to_cuda(this, _cuda_world, sizeof(World3D));
+
+	__World3D::Build::build_world(_cuda_world, _buffers.Width(), _buffers.Height());
+
+	auto bitmap_size = _buffers.Width() * _buffers.Height();
+	__World3D::transmit_from_cuda(_buffers.GetBitmapBufferPtr(), _buffers.CUDAGetBitmapBufferPtr(), bitmap_size * sizeof(DWORD));
+
+	Log::Debug(__World3D::LOG_NAME, "cuda triangles at %p,", _environment.cuda_triangles);
 	
 	////////////////////
-	
 	//
 	return DEFAULT_RESULT;
 }
 
-void World3D::BuildForPixel(size_t x, size_t y)
+void World3D::__BuildForPixel(size_t x, size_t y)
 {
 	// set z = infinity
 	_buffers.InitPixel(x, y);
@@ -251,7 +285,7 @@ void World3D::BuildForPixel(size_t x, size_t y)
 
 	for(auto& t: _environment.triangles)
 	{
-		t.WriteToPixel(x, y, buffer, bitmap_pixel, _camera.NearestDist());
+		t.WriteToPixel(x, y, buffer, _camera.NearestDist());
 	}
 
 	if(_buffers.GetFrame(x, y).location[2] == -DBL_MAX) return;

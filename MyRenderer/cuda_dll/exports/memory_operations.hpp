@@ -1,11 +1,9 @@
 #pragma once
 #include "kamanri/utils/imexport.hpp"
+#include <cuda_runtime.h>
 
 typedef unsigned int MemoryOperationsCode;
-namespace MemoryOperations$
-{
-    constexpr const MemoryOperationsCode CODE_NORM = 0;
-} // namespace MemoryOperations$
+
 
 // export functions types
 typedef MemoryOperationsCode func_p(CUDAMalloc) (void** out_p, size_t size);

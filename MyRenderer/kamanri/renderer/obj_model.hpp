@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "kamanri/utils/result.hpp"
+#include "kamanri/utils/result_declare.hpp"
 #include "tga_image.hpp"
 
 namespace Kamanri

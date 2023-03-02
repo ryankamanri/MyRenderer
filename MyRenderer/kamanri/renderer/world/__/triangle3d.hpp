@@ -31,6 +31,8 @@ namespace Kamanri
 				private:
 					/// @brief The object triangle belongs to.
 					std::vector<Object>* _p_objects;
+					Object* _cuda_p_objects;
+
 					size_t _object_index;
 					size_t _index;
 
@@ -61,23 +63,40 @@ namespace Kamanri
 
 					// areal coordinates calculate matrix
 					Maths::SMatrix _areal_coordinates_calculate_matrix;
-
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 					inline double ScreenZ(double x, double y) const { return (1 - _s_a * x - _s_b * y) / _s_c; }
 					
 					
 					friend void Object::__UpdateTriangleRef(std::vector<Triangle3D>& triangles, std::vector<Object>& objects, size_t index);
+					
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif
 					void ScreenArealCoordinates(double x, double y, Maths::Vector& result) const;
 
 				public:
 					Triangle3D(std::vector<Object>& objects, size_t object_index, size_t index, size_t v1, size_t v2, size_t v3, size_t vt1, size_t vt2, size_t vt3, size_t vn1, size_t vn2, size_t vn3);
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif			
 					inline size_t Index() const { return _index; }
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif
 					bool IsScreenCover(double x, double y) const;
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif
 					bool IsThrough(Maths::Vector& location, Maths::Vector& direction, double& output_distance);
 					void Build(Resources const& res);
 					void PrintTriangle(Utils::LogLevel level = Utils::Log$::INFO_LEVEL) const;
-					// void WriteTo(Buffers& buffers, double nearest_dist);
-					void WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, DWORD& pixel, double nearest_dist) const;
-					// void WriteToLightBufferPixel(size_t x, size_t y, BlingPhongReflectionModel& model);
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif
+					void WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, double nearest_dist, Object* cuda_objects = nullptr) const;
+
 				};
 			} // namespace __
 

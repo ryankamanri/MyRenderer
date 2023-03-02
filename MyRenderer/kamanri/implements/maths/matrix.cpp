@@ -113,14 +113,6 @@ namespace Kamanri
 				Vector v_temp;
 			}
 
-			namespace operator_star_void
-			{
-				
-				std::vector<std::size_t> row_list;
-				std::vector<std::size_t> col_list;
-			} // namespace operator*()
-			
-			
 			namespace Determinant
 			{
 				std::vector<std ::size_t> row_list;
@@ -660,8 +652,6 @@ SMatrixCode SMatrix::PrintMatrix(LogLevel level, const char *decimal_count) cons
 SMatrix SMatrix::operator*() const
 {
 
-	using namespace __SMatrix::operator_star_void;
-
 	if(_N != 3 && _N != 4)
 	{
 		Log::Error(__SMatrix::LOG_NAME, "operator* not allowed when _N = %llu", _N);
@@ -712,20 +702,17 @@ SMatrixElemType SMatrix::_Determinant(SMatrixElemType* psm, std::vector<std::siz
 	auto row_count = row_list.size();
 	SMatrixElemType result = 0;
 
-	#define r row_list
-	#define c col_list
-
 	if (row_count < 4)
 	{
-		if (row_count == 1) result = SMGet(psm, _N, r[0], c[0]);
-		if (row_count == 2) result = SMDet2(psm, _N, r[0], r[1], c[0], c[1]);
-		if (row_count == 3) result = SMDet3(psm, _N, r[0], r[1], r[2], c[0], c[1], c[2]);
+		if (row_count == 1) result = SMGet(psm, _N, row_list[0], col_list[0]);
+		if (row_count == 2) result = SMDet2(psm, _N, row_list[0], row_list[1], col_list[0], col_list[1]);
+		if (row_count == 3) result = SMDet3(psm, _N, row_list[0], row_list[1], row_list[2], col_list[0], col_list[1], col_list[2]);
 		if (row_count == 4)
 		{
-			result = SMGet(psm, _N, r[0], c[0]) * SMDet3(psm, _N, 1, 2, 3, 1, 2, 3) -
-			SMGet(psm, _N, r[1], c[0]) * SMDet3(psm, _N, r[0], r[2], r[3], c[1], c[2], c[3]) +
-			SMGet(psm, _N, r[2], c[0]) * SMDet3(psm, _N, r[0], r[1], r[3], c[1], c[2], c[3]) -
-			SMGet(psm, _N, r[3], c[0]) * SMDet3(psm, _N, r[0], r[1], r[2], c[1], c[2], c[3]);
+			result = SMGet(psm, _N, row_list[0], col_list[0]) * SMDet3(psm, _N, 1, 2, 3, 1, 2, 3) -
+			SMGet(psm, _N, row_list[1], col_list[0]) * SMDet3(psm, _N, row_list[0], row_list[2], row_list[3], col_list[1], col_list[2], col_list[3]) +
+			SMGet(psm, _N, row_list[2], col_list[0]) * SMDet3(psm, _N, row_list[0], row_list[1], row_list[3], col_list[1], col_list[2], col_list[3]) -
+			SMGet(psm, _N, row_list[3], col_list[0]) * SMDet3(psm, _N, row_list[0], row_list[1], row_list[2], col_list[1], col_list[2], col_list[3]);
 		}
 		// This is to avoid the bigger index is in front of the smaller
 		result *= __SMatrix::Pow_NegativeOne_ReverseOrderNumber(row_list);
@@ -807,14 +794,21 @@ SMatrixElemType SMatrix::Determinant(std::vector<std::size_t> row_list, std::vec
 SMatrixElemType SMatrix::Determinant() const
 {
 	using namespace __SMatrix::Determinant;
-	row_list.clear();
-	col_list.clear();
-	for (size_t i= 0; i < _N; i++)
+	switch (_N)
 	{
-		row_list.push_back(i);
-		col_list.push_back(i);
+	case 2:
+		row_list = col_list = {0, 1};
+		break;
+	case 3:
+		row_list = col_list = {0, 1, 2};
+		break;
+	case 4:
+		row_list = col_list = {0, 1, 2, 3};
+		break;
+	default:
+		Log::Error(__SMatrix::LOG_NAME, "Invalid dimension %d", _N);
+		break;
 	}
-
 	return _Determinant((SMatrixElemType*)_SM, row_list, col_list);
 }
 

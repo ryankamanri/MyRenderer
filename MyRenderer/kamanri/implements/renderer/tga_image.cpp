@@ -1,12 +1,35 @@
 #include <iostream>
 #include <cstring>
 #include "kamanri/renderer/tga_image.hpp"
+#include "cuda_dll/exports/memory_operations.hpp"
 
 using namespace Kamanri::Renderer;
 
+namespace __TGAImage
+{
+	constexpr const char* LOG_NAME = STR(TGAImage);
+
+	dll cuda_dll;
+	func_type(CUDAMalloc) cuda_malloc;
+	func_type(CUDAFree) cuda_free;
+	func_type(TransmitToCUDA) transmit_to_cuda;
+
+} // namespace __TGAImage
+
+
 TGAImage::TGAImage(const int w, const int h, const int bpp) : _width(w), _height(h), _bytes_per_pixel(bpp), _data(w*h*bpp, 0) {}
 
-bool TGAImage::ReadTGAFile(const std::string filename) {
+TGAImage::~TGAImage()
+{
+	
+}
+
+void TGAImage::DeleteCUDA()
+{
+	__TGAImage::cuda_free(_cuda_data);
+}
+
+bool TGAImage::ReadTGAFile(const std::string filename, bool is_use_cuda) {
 	std::ifstream in;
 	in.open (filename, std::ios::binary);
 	if (!in.is_open()) {
@@ -55,6 +78,19 @@ bool TGAImage::ReadTGAFile(const std::string filename) {
 		FlipHorizontally();
 	std::cerr << _width << "x" << _height << "/" << _bytes_per_pixel*8 << "\n";
 	in.close();
+
+///////////////////////////////////////////////
+	if(!is_use_cuda) return true;
+
+	using namespace __TGAImage;
+	load_dll(cuda_dll, cuda_dll, LOG_NAME);
+	import_func(CUDAMalloc, cuda_dll, cuda_malloc, LOG_NAME);
+	import_func(CUDAFree, cuda_dll, cuda_free, LOG_NAME);
+	import_func(TransmitToCUDA, cuda_dll, transmit_to_cuda, LOG_NAME);
+
+	auto data_size = _data.size();
+	cuda_malloc(&(void*)_cuda_data, data_size * sizeof(std::uint8_t));
+	transmit_to_cuda(&_data[0], _cuda_data, data_size * sizeof(std::uint8_t));
 	return true;
 }
 

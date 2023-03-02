@@ -1,15 +1,17 @@
 #include "kamanri/utils/logs.hpp"
 
 using namespace Kamanri::Utils;
-
-LogLevel Log::_level;
+namespace __Logs
+{
+	LogLevel _level;
+} // namespace __Logs
 
 LogLevel Log::Level()
 {
-	return _level;
+	return __Logs::_level;
 }
 
 void Log::SetLevel(LogLevel level) {
-	_level = level;
+	__Logs::_level = level;
 }
 

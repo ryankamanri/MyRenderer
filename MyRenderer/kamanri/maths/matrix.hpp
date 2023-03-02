@@ -35,11 +35,20 @@ namespace Kamanri
 		class SMatrix
 		{
 		public:
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrix();
 			explicit SMatrix(size_t n);
 
 			// SMatrix(SMatrix &&sm);
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrix(SMatrix const& sm);
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrix(std::initializer_list<SMatrixElemType> list);
 			SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
 
@@ -68,21 +77,35 @@ namespace Kamanri
 			SMatrixCode operator*=(SMatrix const &sm);
 			SMatrixCode operator*=(std::initializer_list<SMatrixElemType> list);
 			SMatrixCode operator*=(std::initializer_list<std::vector<SMatrixElemType>> v_list);
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrixCode operator*=(SMatrixElemType value);
-
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrixCode operator*(Vector &v) const;
 
 			// Transpose matrix
 			SMatrix operator+() const;
 			// Inverse matrix
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrix operator-() const;
 			// Adjoint matrix
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrix operator*() const;
 
 			SMatrixCode PrintMatrix(Utils::LogLevel level = Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
 
 			// The determinant
 			SMatrixElemType Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrixElemType Determinant() const;
 
 			// algebraic complement

@@ -1,5 +1,5 @@
 #pragma once
-#include "kamanri/utils/result.hpp"
+#include "kamanri/utils/result_declare.hpp"
 #include "kamanri/maths/vector.hpp"
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/renderer/world/__/resources.hpp"
@@ -99,7 +99,9 @@ namespace Kamanri
 				inline Maths::Vector &Location() { return _location; }
 				inline Maths::Vector &Direction() { return _direction; }
 				inline Maths::Vector &Upper() { return _upward; }
-
+#ifdef __CUDA_RUNTIME_H__ 
+				__device__
+#endif
 				inline double NearestDist() const { return _nearest_dist; }
 				inline unsigned int ScreenWidth() const { return _screen_width; }
 				inline unsigned int ScreenHeight() const { return _screen_height; }

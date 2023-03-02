@@ -38,6 +38,9 @@ namespace Kamanri
 
 			TGAColor() = default;
 			TGAColor(const std::uint8_t R, const std::uint8_t G, const std::uint8_t B, const std::uint8_t A = 255) : bgra{B, G, R, A}, bytespp(4) {}
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			TGAColor(const std::uint8_t *p, const std::uint8_t bpp) : bytespp(bpp)
 			{
 				for (int i = bpp; i--; bgra[i] = p[i]);
@@ -63,12 +66,20 @@ namespace Kamanri
 
 			TGAImage() = default;
 			TGAImage(const int w, const int h, const int bpp);
-			bool ReadTGAFile(const std::string filename);
+			~TGAImage();
+			void DeleteCUDA();
+			bool ReadTGAFile(const std::string filename, bool is_use_cuda = false);
 			bool WriteTGAFile(const std::string filename, const bool vflip = true, const bool rle = true) const;
 			void FlipHorizontally();
 			void FlipVertically();
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			TGAColor Get(const int x, const int y) const;
 			/// @brief Get with UV coordinates.
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			TGAColor Get(double u, double v) const;
 			void Set(const int x, const int y, const TGAColor &c);
 
@@ -83,6 +94,7 @@ namespace Kamanri
 			int _height = 0;
 			int _bytes_per_pixel = 0;
 			std::vector<std::uint8_t> _data = {};
+			unsigned char* _cuda_data;
 		};
 	}
 }

@@ -2,7 +2,7 @@
 #include "kamanri/utils/logs.hpp"
 #include "kamanri/renderer/obj_model.hpp"
 #include "kamanri/utils/string.hpp"
-
+#include "kamanri/utils/result.hpp"
 
 using namespace Kamanri::Utils;
 using namespace Kamanri::Renderer;
@@ -30,6 +30,7 @@ ObjModel::ObjModel(std::string const& file_name, std::string const& tga_file_nam
 	{
 		Log::Error(__ObjModel::LOG_NAME, "An Exception occured while initing the ObjModel:");
 		result.Print();
+		exit(result.Code());
 	}
 	if(tga_file_name.empty()) return;
 	_tga_image_name = tga_file_name;

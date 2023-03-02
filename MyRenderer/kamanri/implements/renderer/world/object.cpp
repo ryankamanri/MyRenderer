@@ -26,10 +26,10 @@ namespace Kamanri
 } // namespace Kamanri
 
 
-Object::Object(std::vector<Maths::Vector>& vertices, size_t v_offset, size_t v_length, size_t t_offset, size_t t_length, std::string tga_image_name): 
+Object::Object(std::vector<Maths::Vector>& vertices, size_t v_offset, size_t v_length, size_t t_offset, size_t t_length, std::string tga_image_name, bool is_use_cuda): 
 _pvertices(&vertices), _v_offset(v_offset), _v_length(v_length), _t_offset(t_offset), _t_length(t_length)
 {
-	if(!_img.ReadTGAFile(tga_image_name))
+	if(!_img.ReadTGAFile(tga_image_name, is_use_cuda))
 	{
 		Log::Error(__Object::LOG_NAME, "Cannot read the TGA image '%s'.", tga_image_name.c_str());
 		PRINT_LOCATION;

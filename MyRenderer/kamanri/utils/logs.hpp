@@ -9,18 +9,19 @@ namespace Kamanri
 	namespace Utils
 	{
 		template <typename... Ts>
-		inline int Print(const char *formatStr, Ts... argv)
+		inline int Print(const char* formatStr, Ts... argv)
 		{
 			return printf(formatStr, argv...);
 		}
 
 		template <typename... Ts>
-		inline int PrintLn(const char *formatStr, Ts... argv)
+		inline int PrintLn(const char* formatStr, Ts... argv)
 		{
 			int retCode = printf(formatStr, argv...);
 			printf("\n");
 			return retCode;
 		}
+
 
 		inline int PrintLn()
 		{
@@ -41,11 +42,11 @@ namespace Kamanri
 
 		namespace __Log
 		{
-			constexpr const char *TRACE_SIGN = "trace";
-			constexpr const char *DEBUG_SIGN = "debug";
-			constexpr const char *INFO_SIGN = "infom";
-			constexpr const char *WARN_SIGN = "warng";
-			constexpr const char *ERROR_SIGN = "error";
+			constexpr const char* TRACE_SIGN = "trace";
+			constexpr const char* DEBUG_SIGN = "debug";
+			constexpr const char* INFO_SIGN = "infom";
+			constexpr const char* WARN_SIGN = "warng";
+			constexpr const char* ERROR_SIGN = "error";
 
 			constexpr WORD DEFAULT_COLOR = 0x07;
 			constexpr WORD TRACE_COLOR = 0x8F;
@@ -55,12 +56,15 @@ namespace Kamanri
 			constexpr WORD ERROR_COLOR = 0x4F;
 
 			template <typename... Ts>
-			void Logger(WORD color, std::string sign, std::string name, std::string message, Ts... argv)
+				void Logger(WORD color, std::string sign, std::string name, std::string message, Ts... argv)
 			{
-
+ 
 				HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 				SetConsoleTextAttribute(handle, color);
+
+
 				printf(sign.c_str());
+
 				if (color == __Log::TRACE_COLOR || color == __Log::DEBUG_COLOR || color == __Log::INFO_COLOR)
 				{
 					SetConsoleTextAttribute(handle, __Log::DEFAULT_COLOR);
@@ -74,96 +78,80 @@ namespace Kamanri
 				PrintLn(message.c_str(), argv...);
 
 				SetConsoleTextAttribute(handle, __Log::DEFAULT_COLOR);
+
 			}
 		}
 
-		#define PRINT_LOCATION Kamanri::Utils::PrintLn("    at file %s, line %d.", __FILE__, __LINE__);
+#define PRINT_LOCATION Kamanri::Utils::PrintLn("    at file %s, line %d.", __FILE__, __LINE__);
 
 
 		/**
 		 * @brief Log Class
-		 * , Note that the `std::string` property should be converted to `char*`(use c_str() method) 
+		 * , Note that the `std::string` property should be converted to `char*`(use c_str() method)
 		 *
 		 */
 		class Log
 		{
-		private:
-			static LogLevel _level;
-
-		public:
+			public:
 			static LogLevel Level();
 			static void SetLevel(LogLevel level);
 			template <typename... Ts>
-			static void Trace(std::string name, std::string message, Ts... argv);
+				static void Trace(std::string name, std::string message, Ts... argv)
+			{
+				if (Level() <= Log$::TRACE_LEVEL)
+				{
+					__Log::Logger(__Log::TRACE_COLOR, __Log::TRACE_SIGN, name, message, argv...);
+				}
+			}
 			template <typename... Ts>
-			static void Debug(std::string name, std::string message, Ts... argv);
+				static void Debug(std::string name, std::string message, Ts... argv)
+			{
+				if (Level() <= Log$::DEBUG_LEVEL)
+				{
+					__Log::Logger(__Log::DEBUG_COLOR, __Log::DEBUG_SIGN, name, message, argv...);
+				}
+			}
 			template <typename... Ts>
-			static void Info(std::string name, std::string message, Ts... argv);
+				static void Info(std::string name, std::string message, Ts... argv)
+			{
+				if (Level() <= Log$::INFO_LEVEL)
+				{
+					__Log::Logger(__Log::INFO_COLOR, __Log::INFO_SIGN, name, message, argv...);
+				}
+			}
 			template <typename... Ts>
-			static void Warn(std::string name, std::string message, Ts... argv);
+				static void Warn(std::string name, std::string message, Ts... argv)
+			{
+				if (Level() <= Log$::WARN_LEVEL)
+				{
+					__Log::Logger(__Log::WARN_COLOR, __Log::WARN_SIGN, name, message, argv...);
+				}
+			}
 			template <typename... Ts>
-			static void Error(std::string name, std::string message, Ts... argv);
+				static void Error(std::string name, std::string message, Ts... argv)
+			{
+				if (Level() <= Log$::ERROR_LEVEL)
+				{
+					__Log::Logger(__Log::ERROR_COLOR, __Log::ERROR_SIGN, name, message, argv...);
+				}
+			}
 
 			template <LogLevel LOG_LEVEL, typename... Ts>
-			static void Print(const char* formatStr, Ts... argv)
+				static void Print(const char* formatStr, Ts... argv)
 			{
-				if(_level > LOG_LEVEL) return;
+				if (Level() > LOG_LEVEL) return;
 				printf(formatStr, argv...);
 			}
 
 			template <LogLevel LOG_LEVEL, typename... Ts>
-			static void PrintLn(const char* formatStr, Ts... argv)
+				static void PrintLn(const char* formatStr, Ts... argv)
 			{
-				if(_level > LOG_LEVEL) return;
+				if (Level() > LOG_LEVEL) return;
 				printf(formatStr, argv...);
 				printf("\n");
 			}
 		};
 
-		template <typename... Ts>
-		void Log::Trace(std::string name, std::string message, Ts... argv)
-		{
-			if (_level <= Log$::TRACE_LEVEL)
-			{
-				__Log::Logger(__Log::TRACE_COLOR, __Log::TRACE_SIGN, name, message, argv...);
-			}
-		}
-
-		template <typename... Ts>
-		void Log::Debug(std::string name, std::string message, Ts... argv)
-		{
-			if (_level <= Log$::DEBUG_LEVEL)
-			{
-				__Log::Logger(__Log::DEBUG_COLOR, __Log::DEBUG_SIGN, name, message, argv...);
-			}
-		}
-
-		template <typename... Ts>
-		void Log::Info(std::string name, std::string message, Ts... argv)
-		{
-			if (_level <= Log$::INFO_LEVEL)
-			{
-				__Log::Logger(__Log::INFO_COLOR, __Log::INFO_SIGN, name, message, argv...);
-			}
-		}
-
-		template <typename... Ts>
-		void Log::Warn(std::string name, std::string message, Ts... argv)
-		{
-			if (_level <= Log$::WARN_LEVEL)
-			{
-				__Log::Logger(__Log::WARN_COLOR, __Log::WARN_SIGN, name, message, argv...);
-			}
-		}
-
-		template <typename... Ts>
-		void Log::Error(std::string name, std::string message, Ts... argv)
-		{
-			if (_level <= Log$::ERROR_LEVEL)
-			{
-				__Log::Logger(__Log::ERROR_COLOR, __Log::ERROR_SIGN, name, message, argv...);
-			}
-		}
 
 	}
 }

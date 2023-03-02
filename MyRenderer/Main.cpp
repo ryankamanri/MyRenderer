@@ -16,7 +16,7 @@ using namespace Kamanri::Renderer::World;
 
 
 constexpr const char* LOG_NAME = "Main";
-const int WINDOW_LENGTH = 400;
+const int WINDOW_LENGTH = 800;
 
 constexpr const char* OBJ_PATH = "../../out/diablo3_pose.obj";
 constexpr const char* TGA_PATH = "../../out/diablo3_pose_diffuse.tga";
@@ -29,7 +29,7 @@ constexpr const char* TGA2_PATH = "../../out/floor_diffuse.tga";
 namespace __UpdateFunc
 {
 	Vector direction(4);
-	double theta = PI / 64;
+	double theta = PI / 32;
 	SMatrix revolve_matrix =
 	{
 		cos(theta), 0, -sin(theta), 0,
@@ -37,13 +37,6 @@ namespace __UpdateFunc
 		sin(theta), 0, cos(theta), 0,
 		0, 0, 0, 1
 	};
-	// SMatrix revolve_matrix =
-	// {
-	// 	1, 0, 0, 0,
-	// 	0, cos(theta), -sin(theta), 0,
-	// 	0, sin(theta), cos(theta), 0,
-	// 	0, 0, 0, 1
-	// };
 } // namespace __UpdateFunc
 
 DefaultResult UpdateFunc(World3D& world)
@@ -68,7 +61,7 @@ void StartRender(HINSTANCE hInstance)
 {
 	World3D world(
 		Camera(
-			{ 0, 0, 4, 1 },
+			{ 0, -1, 5, 1 },
 			{ 0, 0, -1, 0 },
 			{ 0, 1, 0, 0 },
 			-1,
@@ -77,18 +70,21 @@ void StartRender(HINSTANCE hInstance)
 			WINDOW_LENGTH
 		),
 		BlingPhongReflectionModel({
-			BlingPhongReflectionModel$::PointLight({0, 3, 4, 1}, 400, 0xffffff)
-		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.1)
+			BlingPhongReflectionModel$::PointLight({0, 3, 4, 1}, 800, 0xffffff)
+		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.2, true),
+		true
 	);
-	world.AddObjModel(
+	world
+	.AddObjModel(
 		ObjModel(OBJ_PATH, TGA_PATH),
 		{
 			2, 0, 0, 0,
 			0, 2, 0, 0,
-			0, 0, 2, 0,
+			0, 0, 2, 1,
 			0, 0, 0, 1
 		}
-	).AddObjModel(
+	)
+	.AddObjModel(
 		ObjModel(OBJ2_PATH, TGA2_PATH),
 		{
 			2, 0, 0, 0,
