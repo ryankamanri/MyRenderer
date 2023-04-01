@@ -243,32 +243,38 @@ DefaultResult World3D::Build()
 		t.Build(_resources);
 	}
 
-	// for(size_t x = 0; x < _buffers.Width(); x++)
-	// {
-	// 	for(size_t y = 0; y < _buffers.Height(); y++)
-	// 	{
-	// 		__BuildForPixel(x, y);
-	// 		// Print("%X ", _buffers.GetBitmapBuffer(x, y));
-	// 	}
-	// }
+	if (_configs.is_use_cuda)
+	{
 
-	// _environment.cuda_objects[0].GetImage().Get()
+		__World3D::transmit_to_cuda(
+			&_environment.triangles[0], 
+			_environment.cuda_triangles, 
+			_environment.triangles.size() * sizeof(__::Triangle3D)
+		);
+		__World3D::transmit_to_cuda(this, _cuda_world, sizeof(World3D));
 
-	///////////////////
-	// triangles transmission
-	auto triangles_size = _environment.triangles.size();
-	__World3D::transmit_to_cuda(&_environment.triangles[0], _environment.cuda_triangles, triangles_size * sizeof(__::Triangle3D));
-	__World3D::transmit_to_cuda(this, _cuda_world, sizeof(World3D));
+		__World3D::Build::build_world(_cuda_world, _buffers.Width(), _buffers.Height());
 
-	__World3D::Build::build_world(_cuda_world, _buffers.Width(), _buffers.Height());
+		__World3D::transmit_from_cuda(
+			_buffers.GetBitmapBufferPtr(), 
+			_buffers.CUDAGetBitmapBufferPtr(), 
+			_buffers.Width() * _buffers.Height() * sizeof(DWORD)
+		);
+	}
 
-	auto bitmap_size = _buffers.Width() * _buffers.Height();
-	__World3D::transmit_from_cuda(_buffers.GetBitmapBufferPtr(), _buffers.CUDAGetBitmapBufferPtr(), bitmap_size * sizeof(DWORD));
+	else
+	{
+		for (size_t x = 0; x < _buffers.Width(); x++)
+		{
+			for (size_t y = 0; y < _buffers.Height(); y++)
+			{
+				__BuildForPixel(x, y);
+			}
+		}
+	}
 
-	Log::Debug(__World3D::LOG_NAME, "cuda triangles at %p,", _environment.cuda_triangles);
-	
-	////////////////////
-	//
+
+
 	return DEFAULT_RESULT;
 }
 

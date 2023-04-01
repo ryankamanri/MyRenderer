@@ -114,7 +114,7 @@ namespace Kamanri
 		private:
 			// The pointer indicated to square matrix.
 			SMatrixElemType _SM[SMatrix$::MAX_SUPPORTED_DIMENSION * SMatrix$::MAX_SUPPORTED_DIMENSION];
-			// The length of the square amtrix.
+			// The length of the square matrix.
 			std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
 
 			// SMatrixElemType _Get(size_t row, size_t col) const;

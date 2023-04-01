@@ -135,7 +135,7 @@ VectorCode Vector::Set(size_t index, VectorElemType value)
 	{
 		Log::Error(__Vector::LOG_NAME, "Index %d out of bound %d", index, this->_N);
 		PRINT_LOCATION;
-		return Vector$::NOT_INITIALIZED_VALUE;
+		return Vector$::CODE_INDEX_OUT_OF_BOUND;
 	}
 	_V[index] = value;
 	return Vector$::CODE_NORM;

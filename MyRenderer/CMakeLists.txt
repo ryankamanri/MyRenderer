@@ -33,7 +33,7 @@ if (NOT CUDA_FOUND)
   message(STATUS "CUDA not found. Project will not be built.")
 endif(NOT CUDA_FOUND)
 
-file(GLOB_RECURSE CUDA_DLL cuda_dll/src/implements/*)
+file(GLOB_RECURSE CUDA_DLL cuda_dll/src/implementations/*.cu)
 message(CUDA_DLL: ${CUDA_DLL})
 CUDA_ADD_LIBRARY(cuda_dll SHARED ${CUDA_DLL})
 # cuda_add_library(cuda_dll ${CUDA_DLL})
@@ -42,7 +42,7 @@ CUDA_ADD_LIBRARY(cuda_dll SHARED ${CUDA_DLL})
 # 将源代码添加到此项目的可执行文件。
 # Add dependencies
 # aux_source_directory(./mylibs/implements MY_LIBS)
-file(GLOB_RECURSE KAMANRI ./kamanri/implements/*.cpp)
+file(GLOB_RECURSE KAMANRI ./kamanri/implementations/*.cpp)
 add_library(kamanri ${KAMANRI})
 
 

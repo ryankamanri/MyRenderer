@@ -318,11 +318,11 @@ void Triangle3D::WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, dou
 	// pruning
 	if(x < Min(_s_v1_x, _s_v2_x, _s_v3_x) || x > Max(_s_v1_x, _s_v2_x, _s_v3_x)) return;
 	if(y < Min(_s_v1_y, _s_v2_y, _s_v3_y) || y > Max(_s_v1_y, _s_v2_y, _s_v3_y)) return;
-	if(!IsScreenCover(x, y)) return;
+	if(!IsScreenCover((double)x, (double)y)) return;
 
 	// get world location
 	Vector screen_areal_coordinates(3);
-	ScreenArealCoordinates(x, y, screen_areal_coordinates);
+	ScreenArealCoordinates((double)x, (double)y, screen_areal_coordinates);
 
 	double world_z = PerspectiveUndo(screen_areal_coordinates, _w_v1_z, _w_v2_z, _w_v3_z);
 

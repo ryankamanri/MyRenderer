@@ -17,7 +17,7 @@ namespace Kamanri
 				namespace Triangle3D$
 				{
 					constexpr size_t CODE_NOT_IN_TRIANGLE = 100;
-					constexpr size_t INEXIST_INDEX = -1;
+					constexpr size_t INEXIST_INDEX = 0xffffffffffffffff;
 				} // namespace Triangle3D$
 
 				

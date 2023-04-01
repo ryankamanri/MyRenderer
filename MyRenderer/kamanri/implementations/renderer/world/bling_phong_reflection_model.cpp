@@ -53,10 +53,11 @@ BlingPhongReflectionModel::BlingPhongReflectionModel(std::vector<BlingPhongRefle
 	_screen_width = screen_width;
 	_screen_height = screen_height;
     _lights_buffer = NewArray<PointLightBufferItem>(_point_lights.size() * screen_width * screen_height);
+	_is_use_cuda = is_use_cuda;
+
 
 	if(!is_use_cuda) return;
 	
-	_is_use_cuda = is_use_cuda;
 	__BlingPhongReflectionModel::ImportFunctions();
 
 	auto point_lights_size = _point_lights.size();

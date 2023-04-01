@@ -255,8 +255,8 @@ TGAColor TGAImage::Get(const int x, const int y) const {
 
 TGAColor TGAImage::Get(double u, double v) const
 {
-	int x = u * _width;
-	int y = v * _height;
+	int x = (int)(u * _width);
+	int y = (int)(v * _height);
 	return Get(x, _height - y); // y axis towards up, so use height - y
 }
 

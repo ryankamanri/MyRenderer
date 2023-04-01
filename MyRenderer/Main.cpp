@@ -12,12 +12,15 @@ using namespace Kamanri::Renderer::World;
 
 
 constexpr const char* LOG_NAME = "Main";
-const int WINDOW_LENGTH = 800;
+constexpr const int WINDOW_LENGTH = 400;
+constexpr const bool IS_USE_CUDA = true;
 
-constexpr const char* OBJ_PATH = "../../out/diablo3_pose.obj";
-constexpr const char* TGA_PATH = "../../out/diablo3_pose_diffuse.tga";
-constexpr const char* OBJ2_PATH = "../../out/floor.obj";
-constexpr const char* TGA2_PATH = "../../out/floor_diffuse.tga";
+#define BASE_PATH "C:/Users/97448/totFolder/source/repos/MyRenderer/MyRenderer/models/"
+
+constexpr const char* OBJ_PATH = BASE_PATH "shiba/Shiba_Obj/Shiba.obj";
+constexpr const char* TGA_PATH = BASE_PATH "shiba/Textures/Shiba_DIF01.tga";
+constexpr const char* OBJ2_PATH = BASE_PATH "floor/floor.obj";
+constexpr const char* TGA2_PATH = BASE_PATH "floor/floor_diffuse.tga";
 
 
 
@@ -39,12 +42,12 @@ DefaultResult UpdateFunc(World3D& world)
 {
 	using namespace __UpdateFunc;
 	Camera& camera = world.GetCamera();
-	// direction = camera.Direction();
+	direction = camera.Direction();
 
-	// revolve_matrix* camera.Direction();
-	// revolve_matrix* camera.Location();
+	revolve_matrix* camera.Direction();
+	revolve_matrix* camera.Location();
 
-	// camera.InverseUpperByDirection(direction);
+	camera.InverseUpperByDirection(direction);
 
 	camera.Transform();
 
@@ -61,22 +64,22 @@ void StartRender(HINSTANCE hInstance)
 			{ 0, 0, -1, 0 },
 			{ 0, 1, 0, 0 },
 			-1,
-			-10,
+			-5,
 			WINDOW_LENGTH,
 			WINDOW_LENGTH
 		),
 		BlingPhongReflectionModel({
 			BlingPhongReflectionModel$::PointLight({0, 3, 4, 1}, 800, 0xffffff)
-		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.2, true),
-		true
+		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.2, IS_USE_CUDA),
+		IS_USE_CUDA
 	);
 	world
 	.AddObjModel(
 		ObjModel(OBJ_PATH, TGA_PATH),
 		{
-			2, 0, 0, 0,
-			0, 2, 0, 0,
-			0, 0, 2, 1,
+			6, 0, 0, 0,
+			0, 6, 0, -1.5,
+			0, 0, 6, 1,
 			0, 0, 0, 1
 		}
 	)
@@ -90,7 +93,7 @@ void StartRender(HINSTANCE hInstance)
 		}
 	).Commit();
 	WinGDI_Window(hInstance, world, WINDOW_LENGTH, WINDOW_LENGTH)
-		.AddProcedure(MovePositionProcedure(0.05, PI / 256))
+		//.AddProcedure(MovePositionProcedure(0.05, PI / 256))
 		.AddProcedure(
 			UpdateProcedure(UpdateFunc, WINDOW_LENGTH, WINDOW_LENGTH)
 		).Show().MessageLoop();
@@ -105,7 +108,7 @@ int main()
 {
 	HINSTANCE instance = GetModuleHandle("MyRenderer.exe");
 	// set the log level and is_print
-	Log::SetLevel(Log$::INFO_LEVEL);
+	Log::SetLevel(Log$::DEBUG_LEVEL);
 	Log::Info(LOG_NAME, "%p: May you have a nice day!", instance);
 
 	StartRender(instance);
