@@ -34,6 +34,11 @@ namespace Kamanri
 						import_func(TransmitToCUDA, cuda_dll, transmit_to_cuda, LOG_NAME);
 						import_func(TransmitFromCUDA, cuda_dll, transmit_from_cuda, LOG_NAME);
 					}
+
+					inline size_t Scan_R270(size_t height, size_t x, size_t y)
+					{
+						return ((height - (y + 1)) * height + x);
+					}
 				} // namespace __Buffers
 				
 			} // namespace __
@@ -44,7 +49,6 @@ namespace Kamanri
 	
 } // namespace Kamanri
 
-#define Scan_R270(height, x, y) ((height - (y + 1)) * height + x)
 
 Buffers::Buffers(size_t width, size_t height, bool is_use_cuda)
 {
@@ -91,19 +95,13 @@ void Buffers::InitPixel(size_t x, size_t y)
 
 void Buffers::CleanBitmap() const
 {
-	// for(size_t i = 0; i < _width; i++)
-	// {
-	// 	for(size_t j = 0; j < _height; j++)
-	// 	{
-	// 		_buffers[YScan(i, j)].z = -DBL_MAX;
-	// 	}
-	// }
 	ZeroMemory(_bitmap_buffer.get(), _width * _height * sizeof(DWORD));
 }
 
 
 FrameBuffer& Buffers::GetFrame(size_t x, size_t y)
 {
+	using namespace __Buffers;
 	if(x < 0 || y < 0 || x >= _width || y >= _height)
 	{
 		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", y, x);
@@ -114,10 +112,10 @@ FrameBuffer& Buffers::GetFrame(size_t x, size_t y)
 	
 }
 
-// #define Loc(x, y, width, height) ()
 
 DWORD& Buffers::GetBitmapBuffer(size_t x, size_t y)
 {
+	using namespace __Buffers;
 	if(x < 0 || y < 0 || x >= _width || y >= _height)
 	{
 		Log::Error(__Buffers::LOG_NAME, "Invalid Index (%d, %d), return the 0 index content", x, y);

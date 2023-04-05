@@ -30,6 +30,26 @@ namespace Kamanri
 					import_func(TransmitFromCUDA, cuda_dll, transmit_from_cuda, LOG_NAME);
 				}
 
+				inline size_t Scan_R270(size_t height, size_t x, size_t y)
+				{
+					return ((height - (y + 1)) * height + x);
+				}
+
+				inline size_t LightBufferLoc(size_t width, size_t height, size_t index, size_t x, size_t y)
+				{
+					return (width * height * index + Scan_R270(height, x, y));
+				}
+
+				inline double SpecularTransition(double min_theta,  double theta)
+				{
+					return pow((theta - min_theta) / (1 - min_theta), 3);
+				}
+
+				inline RGB GenerizeReflection(unsigned int r, unsigned int g, unsigned int b, double factor)
+				{
+					return BlingPhongReflectionModel$::CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor));
+				}
+
             } // namespace __BlingPhongReflectionModel
             
         } // namespace World
@@ -38,8 +58,6 @@ namespace Kamanri
     
 } // namespace Kamanri
 
-#define Scan_R270(height, x, y) ((height - (y + 1)) * height + x)
-#define LightBufferLoc(width, height, index, x, y) (width * height * index + Scan_R270(height, x, y))
 
 using namespace Kamanri::Renderer::World::BlingPhongReflectionModel$;
 
@@ -131,6 +149,7 @@ void BlingPhongReflectionModel::ModelViewTransform(Maths::SMatrix const& matrix)
 
 void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBuffer& buffer)
 {
+	using namespace __BlingPhongReflectionModel;
 	for(size_t i = 0; i < _point_lights.size(); i++)
 	{
 		auto& this_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
@@ -141,10 +160,11 @@ void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBu
 	
 }
 
-#define SpecularTransition(min_theta, theta) pow((theta - min_theta) / (1 - min_theta), 3)
+
 
 void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
 {
+	using namespace __BlingPhongReflectionModel;
 
 	if (triangle.Index() == buffer.triangle_index)
 	{
@@ -192,8 +212,6 @@ void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::
 
 }
 
-#define GenerizeReflection(r, g, b, factor) CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor))
-
 
 /// @brief Require normal unitized.
 /// @param location 
@@ -201,6 +219,8 @@ void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::
 /// @param reflect_point 
 void BlingPhongReflectionModel::WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, DWORD& pixel)
 {
+	using namespace __BlingPhongReflectionModel;
+	
     buffer.r = buffer.g = buffer.b = 0;
 	buffer.power = 0;
 	buffer.specular_color = buffer.diffuse_color = buffer.ambient_color = 0;

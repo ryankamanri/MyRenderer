@@ -1,11 +1,46 @@
 #pragma once
 #include "kamanri/renderer/world/bling_phong_reflection_model.hpp"
 
-#define Scan_R270(height, x, y) ((height - (y + 1)) * height + x)
-#define LightBufferLoc(width, height, index, x, y) (width * height * index + Scan_R270(height, x, y))
+namespace Kamanri
+{
+	namespace Renderer
+	{
+		namespace World
+		{
+			namespace __BlingPhongReflectionModel
+			{
+				__device__ inline size_t Scan_R270(size_t height, size_t x, size_t y)
+				{
+					return ((height - (y + 1)) * height + x);
+				}
+
+				__device__ inline size_t LightBufferLoc(size_t width, size_t height, size_t index, size_t x, size_t y)
+				{
+					return (width * height * index + Scan_R270(height, x, y));
+				}
+
+				__device__ inline double SpecularTransition(double min_theta,  double theta)
+				{
+					return pow((theta - min_theta) / (1 - min_theta), 3);
+				}
+
+				__device__ inline RGB GenerizeReflection(unsigned int r, unsigned int g, unsigned int b, double factor)
+				{
+					return BlingPhongReflectionModel$::CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor));
+				}
+			} // namespace __BlingPhongReflectionModel
+			
+		} // namespace World
+		
+	} // namespace Renderer
+	
+} // namespace Kamanri
+
+
 
 __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBuffer& buffer)
 {
+	using namespace __BlingPhongReflectionModel;
 	for (size_t i = 0; i < *_cuda_point_lights_size; i++)
 	{
 		auto& this_item = _cuda_lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
@@ -16,11 +51,10 @@ __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::InitLightBu
 
 }
 
-#define SpecularTransition(min_theta, theta) pow((theta - min_theta) / (1 - min_theta), 3)
 
 __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
 {
-
+	using namespace __BlingPhongReflectionModel;
 	if (triangle.Index() == buffer.triangle_index)
 	{
 		for (size_t i = 0; i < *_cuda_point_lights_size; i++)
@@ -68,8 +102,6 @@ __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::__BuildPerT
 
 }
 
-#define GenerizeReflection(r, g, b, factor) BlingPhongReflectionModel$::CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor))
-
 
 /// @brief Require normal unitized.
 /// @param location 
@@ -77,6 +109,7 @@ __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::__BuildPerT
 /// @param reflect_point 
 __device__ void Kamanri::Renderer::World::BlingPhongReflectionModel::WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, DWORD& pixel)
 {
+	using namespace __BlingPhongReflectionModel;
 	buffer.r = buffer.g = buffer.b = 0;
 	buffer.power = 0;
 	buffer.specular_color = buffer.diffuse_color = buffer.ambient_color = 0;

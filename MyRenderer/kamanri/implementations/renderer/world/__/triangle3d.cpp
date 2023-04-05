@@ -64,8 +64,35 @@ namespace Kamanri
 						
 						SMatrix a(3);
 					} // namespace ArealCoordinates
-					
-				} // namespace Triangle3D$
+
+
+					inline double Determinant(double a00, double a01, double a10, double a11)
+					{
+						return ((a00) * (a11) - (a10) * (a01));
+					}
+
+					inline double PerspectiveUndo(Vector const& areal_coordinates, double v1_factor, double v2_factor, double v3_factor)
+					{
+						return (1.0 / (areal_coordinates[0] / v1_factor + areal_coordinates[1] / v2_factor + areal_coordinates[2] / v3_factor));
+					}
+
+					inline double PerspectiveCorrect(Vector const& areal_coordinates, double v1_factor, double v2_factor, double v3_factor, double c_v1_factor, double c_v2_factor, double c_v3_factor, double c_this_factor)
+					{
+						return ((areal_coordinates[0] * v1_factor / c_v1_factor + areal_coordinates[1] * v2_factor / c_v2_factor + areal_coordinates[2] * v3_factor / c_v3_factor) * c_this_factor);
+					}
+
+					inline double Max(double x1, double x2, double x3)
+					{
+						return x1 > x2 ? (x1 > x3 ? x1 : x3) : (x2 > x3 ? x2 : x3);
+					}
+
+					inline double Min(double x1, double x2, double x3)
+					{
+						return x1 < x2 ? (x1 < x3 ? x1 : x3) : (x2 < x3 ? x2 : x3);
+					}
+
+
+				} // namespace __Triangle3D
 				
 			} // namespace __
 			
@@ -196,10 +223,10 @@ void Triangle3D::Build(Resources const& res)
 
 }
 
-#define Determinant(a00, a01, a10, a11) ((a00) * (a11) - (a10) * (a01))
 
 bool Triangle3D::IsScreenCover(double x, double y) const
 {
+	using namespace __Triangle3D;
 	using namespace __Triangle3D::IsScreenCover;
 	v1_v2_xy_determinant = Determinant
 	(
@@ -296,25 +323,12 @@ bool Triangle3D::IsThrough(Maths::Vector& location, Maths::Vector& direction, do
 
 }
 
-inline double Max(double x1, double x2, double x3)
-{
-	return x1 > x2 ? (x1 > x3 ? x1 : x3) : (x2 > x3 ? x2 : x3);
-}
-
-inline double Min(double x1, double x2, double x3)
-{
-	return x1 < x2 ? (x1 < x3 ? x1 : x3) : (x2 < x3 ? x2 : x3);
-}
 
 
-#define PerspectiveUndo(areal_coordinates, v1_factor, v2_factor, v3_factor) \
-(1.0 / (areal_coordinates[0] / v1_factor + areal_coordinates[1] / v2_factor + areal_coordinates[2] / v3_factor))
-
-#define PerspectiveCorrect(areal_coordinates, v1_factor, v2_factor, v3_factor, c_v1_factor, c_v2_factor, c_v3_factor, c_this_factor) \
-((areal_coordinates[0] * v1_factor / c_v1_factor + areal_coordinates[1] * v2_factor / c_v2_factor + areal_coordinates[2] * v3_factor / c_v3_factor) * c_this_factor)
 
 void Triangle3D::WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, double nearest_dist, Object* cuda_objects) const
 {
+	using namespace __Triangle3D;
 	// pruning
 	if(x < Min(_s_v1_x, _s_v2_x, _s_v3_x) || x > Max(_s_v1_x, _s_v2_x, _s_v3_x)) return;
 	if(y < Min(_s_v1_y, _s_v2_y, _s_v3_y) || y > Max(_s_v1_y, _s_v2_y, _s_v3_y)) return;

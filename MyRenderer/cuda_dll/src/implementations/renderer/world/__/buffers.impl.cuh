@@ -1,9 +1,30 @@
 #pragma once
 #include "kamanri/renderer/world/__/buffers.hpp"
-#include "maths/vector.impl.cuh"
+
+namespace Kamanri
+{
+	namespace Renderer
+	{
+		namespace World
+		{
+			namespace __
+			{
+				namespace __Buffers
+				{
+					__device__ inline size_t Scan_R270(size_t height, size_t x, size_t y)
+					{
+						return ((height - (y + 1)) * height + x);
+					}
+				}
+			}
+		}
+	}
+}
+
 
 __device__ Kamanri::Renderer::World::FrameBuffer& Kamanri::Renderer::World::__::Buffers::GetFrame(size_t x, size_t y)
 {
+	using namespace __Buffers;
 	if (x >= _width || y >= _height)
 	{
 		DevicePrint("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);
@@ -26,6 +47,7 @@ __device__ void Kamanri::Renderer::World::__::Buffers::InitPixel(size_t x, size_
 
 __device__ DWORD& Kamanri::Renderer::World::__::Buffers::GetBitmapBuffer(size_t x, size_t y)
 {
+	using namespace __Buffers;
 	if (x >= _width || y >= _height)
 	{
 		DevicePrint("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);

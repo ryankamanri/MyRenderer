@@ -170,7 +170,6 @@ void Camera::__SetRefs(__::Resources& resources, BlingPhongReflectionModel& bpr_
 	_p_bpr_model = &bpr_model;
 }
 
-#define min(a,b) (((a) < (b)) ? (a) : (b))
 
 DefaultResult Camera::Transform()
 {

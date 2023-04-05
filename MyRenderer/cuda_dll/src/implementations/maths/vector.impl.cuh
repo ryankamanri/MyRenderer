@@ -1,6 +1,6 @@
 #pragma once
 #include "kamanri/maths/vector.hpp"
-#include "utils/logs.impl.cuh"
+#include "cuda_dll/src/utils/logs.cuh"
 
 __device__ Kamanri::Maths::Vector::Vector(size_t n)
 {

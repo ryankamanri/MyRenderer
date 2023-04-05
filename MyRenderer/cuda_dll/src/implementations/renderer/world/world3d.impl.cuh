@@ -1,10 +1,6 @@
 #pragma once
 #include "kamanri/renderer/world/world3d.hpp"
 
-#include "bling_phong_reflection_model.impl.cuh"
-#include "__/buffers.impl.cuh"
-#include "__/triangle3d.impl.cuh"
-
 __device__ void Kamanri::Renderer::World::World3D::__BuildForPixel(size_t x, size_t y)
 {
 	// set z = infinity
