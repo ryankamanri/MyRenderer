@@ -388,3 +388,15 @@ void Triangle3D::ScreenArealCoordinates(double x, double y, Maths::Vector& resul
 	_areal_coordinates_calculate_matrix * result;
 
 }
+
+Vector Triangle3D::MinWorldBounding() const
+{
+	using namespace __Triangle3D;
+	return {Min(_w_v1_x, _w_v2_x, _w_v3_x), Min(_w_v1_y, _w_v2_y, _w_v3_y), Min(_w_v1_z, _w_v2_z, _w_v3_z), 1};
+}
+
+Vector Triangle3D::MaxWorldBounding() const
+{
+	using namespace __Triangle3D;
+	return {Max(_w_v1_x, _w_v2_x, _w_v3_x), Max(_w_v1_y, _w_v2_y, _w_v3_y), Max(_w_v1_z, _w_v2_z, _w_v3_z), 1};
+}

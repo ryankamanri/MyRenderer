@@ -8,13 +8,21 @@ namespace Kamanri
 {
 	namespace Utils
 	{
+
 		template <typename... Ts>
+#ifdef __CUDA_RUNTIME_H__  
+		__host__ __device__
+#endif
 		inline int Print(const char* formatStr, Ts... argv)
 		{
 			return printf(formatStr, argv...);
 		}
 
+
 		template <typename... Ts>
+#ifdef __CUDA_RUNTIME_H__  
+		__host__ __device__
+#endif
 		inline int PrintLn(const char* formatStr, Ts... argv)
 		{
 			int retCode = printf(formatStr, argv...);
@@ -22,7 +30,9 @@ namespace Kamanri
 			return retCode;
 		}
 
-
+#ifdef __CUDA_RUNTIME_H__  
+		__host__ __device__
+#endif
 		inline int PrintLn()
 		{
 			return printf("\n");
@@ -56,9 +66,9 @@ namespace Kamanri
 			constexpr WORD ERROR_COLOR = 0x4F;
 
 			template <typename... Ts>
-				void Logger(WORD color, std::string sign, std::string name, std::string message, Ts... argv)
+			void Logger(WORD color, std::string sign, std::string name, std::string message, Ts... argv)
 			{
- 
+
 				HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 				SetConsoleTextAttribute(handle, color);
 
@@ -96,7 +106,7 @@ namespace Kamanri
 			static LogLevel Level();
 			static void SetLevel(LogLevel level);
 			template <typename... Ts>
-				static void Trace(std::string name, std::string message, Ts... argv)
+			static void Trace(std::string name, std::string message, Ts... argv)
 			{
 				if (Level() <= Log$::TRACE_LEVEL)
 				{
@@ -104,7 +114,7 @@ namespace Kamanri
 				}
 			}
 			template <typename... Ts>
-				static void Debug(std::string name, std::string message, Ts... argv)
+			static void Debug(std::string name, std::string message, Ts... argv)
 			{
 				if (Level() <= Log$::DEBUG_LEVEL)
 				{
@@ -112,7 +122,7 @@ namespace Kamanri
 				}
 			}
 			template <typename... Ts>
-				static void Info(std::string name, std::string message, Ts... argv)
+			static void Info(std::string name, std::string message, Ts... argv)
 			{
 				if (Level() <= Log$::INFO_LEVEL)
 				{
@@ -120,7 +130,7 @@ namespace Kamanri
 				}
 			}
 			template <typename... Ts>
-				static void Warn(std::string name, std::string message, Ts... argv)
+			static void Warn(std::string name, std::string message, Ts... argv)
 			{
 				if (Level() <= Log$::WARN_LEVEL)
 				{
@@ -128,7 +138,7 @@ namespace Kamanri
 				}
 			}
 			template <typename... Ts>
-				static void Error(std::string name, std::string message, Ts... argv)
+			static void Error(std::string name, std::string message, Ts... argv)
 			{
 				if (Level() <= Log$::ERROR_LEVEL)
 				{
@@ -137,14 +147,14 @@ namespace Kamanri
 			}
 
 			template <LogLevel LOG_LEVEL, typename... Ts>
-				static void Print(const char* formatStr, Ts... argv)
+			static void Print(const char* formatStr, Ts... argv)
 			{
 				if (Level() > LOG_LEVEL) return;
 				printf(formatStr, argv...);
 			}
 
 			template <LogLevel LOG_LEVEL, typename... Ts>
-				static void PrintLn(const char* formatStr, Ts... argv)
+			static void PrintLn(const char* formatStr, Ts... argv)
 			{
 				if (Level() > LOG_LEVEL) return;
 				printf(formatStr, argv...);

@@ -1,6 +1,7 @@
 #include "kamanri/renderer/world/bling_phong_reflection_model.hpp"
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
+#include "kamanri/renderer/world/__/bounding_box.hpp"
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Utils;
 using namespace Kamanri::Maths;
@@ -78,11 +79,9 @@ BlingPhongReflectionModel::BlingPhongReflectionModel(std::vector<BlingPhongRefle
 	
 	__BlingPhongReflectionModel::ImportFunctions();
 
-	auto point_lights_size = _point_lights.size();
-	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_point_lights_size, sizeof(size_t));
-	__BlingPhongReflectionModel::transmit_to_cuda(&point_lights_size, _cuda_point_lights_size, sizeof(size_t));
-	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_point_lights, point_lights_size * sizeof(PointLight));
-	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights, point_lights_size * sizeof(PointLight));
+	_cuda_point_lights.size = _point_lights.size();
+	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
+	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
 
 	auto lights_buffer_size = _point_lights.size() * _screen_width * _screen_height;
 	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_lights_buffer, lights_buffer_size * sizeof(PointLightBufferItem));
@@ -96,8 +95,7 @@ BlingPhongReflectionModel::~BlingPhongReflectionModel()
 void BlingPhongReflectionModel::DeleteCUDA()
 {
 	__BlingPhongReflectionModel::cuda_free(_cuda_lights_buffer);
-	__BlingPhongReflectionModel::cuda_free(_cuda_point_lights);
-	__BlingPhongReflectionModel::cuda_free(_cuda_point_lights_size);
+	__BlingPhongReflectionModel::cuda_free(_cuda_point_lights.data);
 }
 
 BlingPhongReflectionModel::BlingPhongReflectionModel(BlingPhongReflectionModel&& other)
@@ -112,7 +110,6 @@ BlingPhongReflectionModel::BlingPhongReflectionModel(BlingPhongReflectionModel&&
 
 	_cuda_lights_buffer = other._cuda_lights_buffer;
 	_cuda_point_lights = other._cuda_point_lights;
-	_cuda_point_lights_size = other._cuda_point_lights_size;
 
 	_is_use_cuda = other._is_use_cuda;
 }
@@ -129,7 +126,6 @@ BlingPhongReflectionModel& BlingPhongReflectionModel::operator=(BlingPhongReflec
 
 	_cuda_lights_buffer = other._cuda_lights_buffer;
 	_cuda_point_lights = other._cuda_point_lights;
-	_cuda_point_lights_size = other._cuda_point_lights_size;
 
 	_is_use_cuda = other._is_use_cuda;
 	return *this;
@@ -144,7 +140,7 @@ void BlingPhongReflectionModel::ModelViewTransform(Maths::SMatrix const& matrix)
 	}
 
 	if(!_is_use_cuda) return;
-	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights, _point_lights.size() * sizeof(PointLight));
+	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
 }
 
 void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBuffer& buffer)
@@ -160,56 +156,84 @@ void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBu
 	
 }
 
-
-
-void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
+void BlingPhongReflectionModel::__BuildPerTriangleLightPixel(size_t x, size_t y, __::Triangle3D& triangle, size_t point_light_index, FrameBuffer& buffer)
 {
 	using namespace __BlingPhongReflectionModel;
-
+	auto& light_buffer_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, point_light_index, x, y)];
+	auto& light_location = _point_lights[point_light_index].location_model_view_transformed;
+	auto light_point_distance = light_location - buffer.location;
 	if (triangle.Index() == buffer.triangle_index)
 	{
-		for (size_t i = 0; i < _point_lights.size(); i++)
+		if (light_point_distance < light_buffer_item.distance) light_buffer_item.distance = light_point_distance;
+
+		// judge whether is specular
+		// camera is at (0, 0, 0, 1)
+		auto point_camera_add_point_light_vector = light_location;
+		point_camera_add_point_light_vector += { 0, 0, 0, 1 };
+		point_camera_add_point_light_vector -= buffer.location;
+		point_camera_add_point_light_vector -= buffer.location;
+
+		point_camera_add_point_light_vector.Unitization();
+		auto cos_theta = point_camera_add_point_light_vector * buffer.vertex_normal;
+		if (cos_theta >= _specular_min_cos)
 		{
-			auto distance = _point_lights[i].location_model_view_transformed - buffer.location;
-			auto& light_buffer_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
-			if (distance < light_buffer_item.distance) light_buffer_item.distance = distance;
-
-			// judge whether is specular
-			// camera is at (0, 0, 0, 1)
-			auto point_camera_add_point_light_vector = _point_lights[i].location_model_view_transformed;
-			point_camera_add_point_light_vector += { 0, 0, 0, 1 };
-			point_camera_add_point_light_vector -= buffer.location;
-			point_camera_add_point_light_vector -= buffer.location;
-
-			point_camera_add_point_light_vector.Unitization();
-			auto cos_theta = point_camera_add_point_light_vector * buffer.vertex_normal;
-			if(cos_theta >= _specular_min_cos)
-			{
-				light_buffer_item.is_specular = true;
-				light_buffer_item.specular_factor = SpecularTransition(_specular_min_cos, cos_theta);
-			} 
+			light_buffer_item.is_specular = true;
+			light_buffer_item.specular_factor = SpecularTransition(_specular_min_cos, cos_theta);
 		}
-		return;
 	}
-
-	for (size_t i = 0; i < _point_lights.size(); i++)
+	else
 	{
-		auto& light_buffer_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
-		auto& light_location = _point_lights[i].location_model_view_transformed;
 		auto light_point_direction = buffer.location;
 		light_point_direction -= light_location;
-		double light_point_distance = light_location - buffer.location;
-		double distance;
-		if(triangle.IsThrough(light_location, light_point_direction, distance))
+
+		double light_triangle_distance;
+		if (triangle.IsThrough(light_location, light_point_direction, light_triangle_distance))
 		{
-			if(distance < light_point_distance)
+			if (light_triangle_distance < light_point_distance)
 			{
-				light_buffer_item.distance = distance;
+				light_buffer_item.distance = light_triangle_distance;
 				light_buffer_item.is_exposed = false;
 			}
 		}
 	}
+}
 
+void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
+{
+	for (size_t i = 0; i < _point_lights.size(); i++)
+	{
+		__BuildPerTriangleLightPixel(x, y, triangle, i, buffer);
+	}
+}
+
+void BlingPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
+{
+	// Utils::ArrayStack<size_t> triangle_index_stack;
+	using namespace __BlingPhongReflectionModel;
+	for (size_t i = 0; i < _point_lights.size(); i++)
+	{
+		auto& light_location = _point_lights[i].location_model_view_transformed;
+		auto& light_buffer_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
+		auto light_point_direction = buffer.location;
+		light_point_direction -= light_location;
+		__::BoundingBox$::MayThrough(
+			boxes, 
+			0, 
+			triangles, 
+			light_location, 
+			light_point_direction, 
+			light_buffer_item, 
+			[](BlingPhongReflectionModel& bpr_model, 
+			size_t x, 
+			size_t y, 
+			__::Triangle3D& triangle, 
+			size_t point_light_index, 
+			FrameBuffer& buffer){
+				bpr_model.__BuildPerTriangleLightPixel(x, y, triangle, point_light_index, buffer);
+			}, *this, x, y, i, buffer);
+		
+	}
+	
 }
 
 

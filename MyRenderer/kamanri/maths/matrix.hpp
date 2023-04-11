@@ -39,6 +39,9 @@ namespace Kamanri
 			__device__
 #endif
 			SMatrix();
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			explicit SMatrix(size_t n);
 
 			// SMatrix(SMatrix &&sm);
@@ -53,6 +56,9 @@ namespace Kamanri
 			SMatrix(std::initializer_list<std::vector<SMatrixElemType>> v_list);
 
 			SMatrix &operator=(SMatrix const& sm);
+#ifdef __CUDA_RUNTIME_H__  
+			__device__
+#endif
 			SMatrixCode operator=(std::initializer_list<SMatrixElemType> list);
 			SMatrixCode operator=(std::initializer_list<std::vector<SMatrixElemType>> v_list);
 			// Get the size of the Matrix.

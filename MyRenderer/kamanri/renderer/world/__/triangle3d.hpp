@@ -97,6 +97,9 @@ namespace Kamanri
 #endif
 					void WriteToPixel(size_t x, size_t y, FrameBuffer& frame_buffer, double nearest_dist, Object* cuda_objects = nullptr) const;
 
+					Maths::Vector MinWorldBounding() const;
+					Maths::Vector MaxWorldBounding() const;
+
 				};
 			} // namespace __
 

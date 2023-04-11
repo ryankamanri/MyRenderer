@@ -43,6 +43,7 @@ CUDA_ADD_LIBRARY(cuda_dll SHARED ${CUDA_DLL})
 # Add dependencies
 # aux_source_directory(./mylibs/implements MY_LIBS)
 file(GLOB_RECURSE KAMANRI ./kamanri/implementations/*.cpp)
+message(KAMANRI: ${KAMANRI})
 add_library(kamanri ${KAMANRI})
 
 

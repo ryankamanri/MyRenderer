@@ -12,15 +12,17 @@ using namespace Kamanri::Renderer::World;
 
 
 constexpr const char* LOG_NAME = "Main";
-constexpr const int WINDOW_LENGTH = 400;
+constexpr const int WINDOW_LENGTH = 600;
 constexpr const bool IS_USE_CUDA = true;
 
 #define BASE_PATH "C:/Users/97448/totFolder/source/repos/MyRenderer/MyRenderer/models/"
 
-constexpr const char* OBJ_PATH = BASE_PATH "shiba/Shiba_Obj/Shiba.obj";
-constexpr const char* TGA_PATH = BASE_PATH "shiba/Textures/Shiba_DIF01.tga";
-constexpr const char* OBJ2_PATH = BASE_PATH "floor/floor.obj";
-constexpr const char* TGA2_PATH = BASE_PATH "floor/floor_diffuse.tga";
+constexpr const char* DIABLO3_POSE_OBJ = BASE_PATH "diablo3_pose/diablo3_pose.obj";
+constexpr const char* DIABLO3_POSE_TGA = BASE_PATH "diablo3_pose/diablo3_pose_diffuse.tga";
+constexpr const char* SHIBA_OBJ = BASE_PATH "shiba/Shiba_Obj/Shiba.obj";
+constexpr const char* SHIBA_TGA = BASE_PATH "shiba/Textures/Shiba_DIF01.tga";
+constexpr const char* FLOOR_OBJ = BASE_PATH "floor/floor.obj";
+constexpr const char* FLOOR_TGA = BASE_PATH "floor/floor_diffuse.tga";
 
 
 
@@ -28,7 +30,7 @@ constexpr const char* TGA2_PATH = BASE_PATH "floor/floor_diffuse.tga";
 namespace __UpdateFunc
 {
 	Vector direction(4);
-	double theta = PI / 1024;
+	double theta = PI / 128;
 	SMatrix revolve_matrix =
 	{
 		cos(theta), 0, -sin(theta), 0,
@@ -75,16 +77,16 @@ void StartRender(HINSTANCE hInstance)
 	);
 	world
 	.AddObjModel(
-		ObjModel(OBJ_PATH, TGA_PATH),
+		ObjModel(DIABLO3_POSE_OBJ, DIABLO3_POSE_TGA),
 		{
-			6, 0, 0, 0,
-			0, 6, 0, -1.5,
-			0, 0, 6, 1,
+			2, 0, 0, 0,
+			0, 2, 0, 0,
+			0, 0, 2, 1,
 			0, 0, 0, 1
 		}
 	)
 	.AddObjModel(
-		ObjModel(OBJ2_PATH, TGA2_PATH),
+		ObjModel(FLOOR_OBJ, FLOOR_TGA),
 		{
 			2, 0, 0, 0,
 			0, 2, 0, 0,

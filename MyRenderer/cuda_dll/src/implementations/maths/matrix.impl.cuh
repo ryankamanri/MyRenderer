@@ -71,6 +71,20 @@ __device__ Kamanri::Maths::SMatrix::SMatrix()
 	this->_N = SMatrix$::MAX_SUPPORTED_DIMENSION;
 }
 
+__device__ Kamanri::Maths::SMatrix::SMatrix(size_t n)
+{
+	this->_N = SMatrix$::NOT_INITIALIZED_N;
+
+	if (n != 2 && n != 3 && n != 4)
+	{
+		Kamanri::Utils::PrintLn("The size of initializer list is not valid: %d", (int)n);
+		PRINT_LOCATION;
+		return;
+	}
+
+	this->_N = n;
+}
+
 __device__ Kamanri::Maths::SMatrix::SMatrix(SMatrix const& sm)
 {
 	_N = sm._N;
@@ -89,7 +103,7 @@ __device__ Kamanri::Maths::SMatrix::SMatrix(std::initializer_list<Kamanri::Maths
 	auto size = list.size();
 	if (size != 4 && size != 9 && size != 16)
 	{
-		DevicePrint("The size of initializer list is not valid: %d", (int) size);
+		Kamanri::Utils::PrintLn("The size of initializer list is not valid: %d", (int) size);
 		return;
 	}
 
@@ -101,6 +115,27 @@ __device__ Kamanri::Maths::SMatrix::SMatrix(std::initializer_list<Kamanri::Maths
 		_SM[i] = list_elem;
 		i++;
 	}
+}
+
+__device__ Kamanri::Maths::SMatrixCode Kamanri::Maths::SMatrix::operator=(std::initializer_list<SMatrixElemType> list)
+{
+	auto size = list.size();
+	if(size != _N * _N)
+	{
+		Kamanri::Utils::PrintLn("The size of initializer list(%d) is not equal to SMatrix(%d)", size, _N * _N);
+		PRINT_LOCATION;
+		return SMatrix$::CODE_NOT_EQUEL_N;
+	}
+
+	auto i = 0;
+	for(auto list_elem: list)
+	{
+		_SM[i] = list_elem;
+		i++;
+	}
+
+	return SMatrix$::CODE_NORM;
+
 }
 
 __device__ Kamanri::Maths::SMatrixCode Kamanri::Maths::SMatrix::operator*=(Kamanri::Maths::SMatrixElemType value)
@@ -117,7 +152,7 @@ __device__ Kamanri::Maths::SMatrixCode Kamanri::Maths::SMatrix::operator*(Vector
 {
 	if (_N != v.N())
 	{
-		DevicePrint("Call of SMatrix::operator*: matrix and vector of unequal length: %d and %d", _N, v.N());
+		Kamanri::Utils::PrintLn("Call of SMatrix::operator*: matrix and vector of unequal length: %d and %d", _N, v.N());
 		return SMatrix$::CODE_NOT_EQUEL_N;
 	}
 
@@ -146,7 +181,7 @@ __device__ Kamanri::Maths::SMatrix Kamanri::Maths::SMatrix::operator-() const
 	auto d = Determinant();
 	if (d == SMatrix$::NOT_INITIALIZED_VALUE)
 	{
-		DevicePrint("Invalid determinant %f.", d);
+		Kamanri::Utils::PrintLn("Invalid determinant %f.", d);
 	}
 	pm_asm *= (1 / d);
 
@@ -180,7 +215,7 @@ __device__ Kamanri::Maths::SMatrix Kamanri::Maths::SMatrix::operator*() const
 
 	if (_N != 3 && _N != 4)
 	{
-		DevicePrint("operator* not allowed when _N = %llu", _N);
+		Kamanri::Utils::PrintLn("operator* not allowed when _N = %llu", _N);
 		return SMatrix();
 	}
 
@@ -222,7 +257,7 @@ __device__ Kamanri::Maths::SMatrixElemType Kamanri::Maths::SMatrix::Determinant(
 		case 4:
 			return __SMatrix::__Determinant((Kamanri::Maths::SMatrixElemType*) _SM, row_list, col_list, 4);
 		default:
-			DevicePrint("Invalid dimension %d", _N);
+			Kamanri::Utils::PrintLn("Invalid dimension %d", _N);
 			break;
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "kamanri/utils/list.hpp"
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/renderer/world/__/triangle3d.hpp"
 #include "kamanri/maths/all.hpp"
@@ -117,14 +118,19 @@ namespace Kamanri
                 };
             } // namespace BlingPhongReflectionModel$
 
+            namespace __
+            {
+                // declare a bounding box
+                class BoundingBox;
+            }
+
             class BlingPhongReflectionModel
             {
                 private:
                 /* data */
                 std::vector<BlingPhongReflectionModel$::PointLight> _point_lights;
-                BlingPhongReflectionModel$::PointLight* _cuda_point_lights;
-                size_t* _cuda_point_lights_size;
-                // std::vector<BlingPhongReflectionModel$::PointLight> _point_lights_model_view_transformed;
+                Utils::List<BlingPhongReflectionModel$::PointLight> _cuda_point_lights;
+
                 // Note that its size is buffer_size * _point_lights.size()
                 Utils::P<BlingPhongReflectionModel$::PointLightBufferItem[]> _lights_buffer;
                 BlingPhongReflectionModel$::PointLightBufferItem* _cuda_lights_buffer;
@@ -136,6 +142,11 @@ namespace Kamanri
                 double _diffuse_factor;
 
                 bool _is_use_cuda;
+
+#ifdef __CUDA_RUNTIME_H__  
+                __device__
+#endif
+					void __BuildPerTriangleLightPixel(size_t x, size_t y, __::Triangle3D& triangle, size_t point_light_index, FrameBuffer& buffer);
 
                 public:
                 // BlingPhongReflectionModel() = default;
@@ -155,6 +166,10 @@ namespace Kamanri
                 __device__
 #endif
                     void __BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer);
+#ifdef __CUDA_RUNTIME_H__  
+                __device__
+#endif
+					void __BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer);
 #ifdef __CUDA_RUNTIME_H__  
                 __device__
 #endif

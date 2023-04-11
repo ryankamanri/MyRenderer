@@ -8,7 +8,7 @@ __device__ Kamanri::Maths::Vector::Vector(size_t n)
 
 	if (n != 2 && n != 3 && n != 4)
 	{
-		DevicePrint("The size of initializer list is not valid: %d", (int) n);
+		Kamanri::Utils::PrintLn("The size of initializer list is not valid: %d", (int) n);
 		return;
 	}
 
@@ -33,7 +33,7 @@ __device__ Kamanri::Maths::Vector::Vector(std::initializer_list<Kamanri::Maths::
 	auto n = list.size();
 	if (n != 2 && n != 3 && n != 4)
 	{
-		DevicePrint("The size of initializer list is not valid: %d", (int)n);
+		Kamanri::Utils::PrintLn("The size of initializer list is not valid: %d", (int)n);
 		return;
 	}
 
@@ -56,7 +56,7 @@ __device__ Kamanri::Maths::VectorElemType Kamanri::Maths::Vector::operator*(Kama
 
 	if (n1 != n2)
 	{
-		DevicePrint("Call of Vector::operator*=: Two vectors of unequal length: %d and %d", n1, n2);
+		Kamanri::Utils::PrintLn("Call of Vector::operator*=: Two vectors of unequal length: %d and %d", n1, n2);
 		return Vector$::NOT_INITIALIZED_VALUE;
 	}
 
@@ -74,12 +74,12 @@ __device__ Kamanri::Maths::VectorElemType Kamanri::Maths::Vector::operator-(Kama
 {
 	if (_N != 4)
 	{
-		DevicePrint("operator-: Invalid N");
+		Kamanri::Utils::PrintLn("operator-: Invalid N");
 		return Vector$::NOT_INITIALIZED_VALUE;
 	}
 	if (_V[3] != 1 || v._V[3] != 1)
 	{
-		DevicePrint("operator-: Not uniformed.");
+		Kamanri::Utils::PrintLn("operator-: Not uniformed.");
 		return Vector$::NOT_INITIALIZED_VALUE;
 	}
 
@@ -93,7 +93,7 @@ __device__ Kamanri::Maths::VectorCode Kamanri::Maths::Vector::operator+=(Kamanri
 
 	if (n1 != n2)
 	{
-		DevicePrint("Call of Vector::operator+=: Two vectors of unequal length: %d and %d", n1, n2);
+		Kamanri::Utils::PrintLn("Call of Vector::operator+=: Two vectors of unequal length: %d and %d", n1, n2);
 		return Vector$::CODE_NOT_EQUEL_N;
 	}
 
@@ -118,7 +118,7 @@ __device__ Kamanri::Maths::VectorCode Kamanri::Maths::Vector::operator-=(Kamanri
 
 	if (n1 != n2)
 	{
-		DevicePrint("Call of Vector::operator-=: It is impossible to add two vectors of unequal length: %d and %d", n1, n2);
+		Kamanri::Utils::PrintLn("Call of Vector::operator-=: It is impossible to add two vectors of unequal length: %d and %d", n1, n2);
 		return Vector$::CODE_NOT_EQUEL_N;
 	}
 
@@ -138,14 +138,14 @@ __device__ Kamanri::Maths::VectorCode Kamanri::Maths::Vector::operator*=(Kamanri
 
 	if (n1 != n2)
 	{
-		DevicePrint("Call of Vector::operator*=: Two vectors of unequal length: %d and %d", n1, n2);
+		Kamanri::Utils::PrintLn("Call of Vector::operator*=: Two vectors of unequal length: %d and %d", n1, n2);
 		return Vector$::CODE_NOT_EQUEL_N;
 	}
 
 	if(n1 != 3 && n1 != 4)
 	{
 		auto message = "Call of Vector::operator*=: Vector has not cross product when n != 3 or 4";
-		DevicePrint(message);
+		Kamanri::Utils::PrintLn(message);
 		return Vector$::CODE_INVALID_OPERATION;
 	}
 
@@ -183,7 +183,7 @@ __device__ Kamanri::Maths::VectorCode Kamanri::Maths::Vector::operator=(std::ini
 	auto n = list.size();
 	if (n != _N)
 	{
-		DevicePrint("The size of initializer list(%d) is not equal to vector(%d)", (int) n, _N);
+		Kamanri::Utils::PrintLn("The size of initializer list(%d) is not equal to vector(%d)", (int) n, _N);
 		return Vector$::CODE_NOT_EQUEL_N;
 	}
 
@@ -201,7 +201,7 @@ __device__ Kamanri::Maths::VectorElemType Kamanri::Maths::Vector::operator[](siz
 {
 	if (n > this->_N)
 	{
-		DevicePrint("Kamanri::Maths::Vector::operator[]: Index %llu out of bound %llu\n", n, this->_N);
+		Kamanri::Utils::PrintLn("Kamanri::Maths::Vector::operator[]: Index %llu out of bound %llu\n", n, this->_N);
 		return Vector$::NOT_INITIALIZED_VALUE;
 	}
 
@@ -212,7 +212,7 @@ __device__ Kamanri::Maths::VectorCode Kamanri::Maths::Vector::Set(size_t index, 
 {
 	if (index > this->_N)
 	{
-		DevicePrint("Kamanri::Maths::Vector::Set: Index %llu out of bound %llu\n", index, this->_N);
+		Kamanri::Utils::PrintLn("Kamanri::Maths::Vector::Set: Index %llu out of bound %llu\n", index, this->_N);
 		return Vector$::NOT_INITIALIZED_VALUE;
 	}
 	_V[index] = value;

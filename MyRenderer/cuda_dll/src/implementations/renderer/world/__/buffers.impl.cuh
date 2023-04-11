@@ -27,7 +27,7 @@ __device__ Kamanri::Renderer::World::FrameBuffer& Kamanri::Renderer::World::__::
 	using namespace __Buffers;
 	if (x >= _width || y >= _height)
 	{
-		DevicePrint("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);
+		Kamanri::Utils::PrintLn("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);
 		return _cuda_buffers[0];
 	}
 	return _cuda_buffers[Scan_R270(_height, x, y)];
@@ -50,7 +50,7 @@ __device__ DWORD& Kamanri::Renderer::World::__::Buffers::GetBitmapBuffer(size_t 
 	using namespace __Buffers;
 	if (x >= _width || y >= _height)
 	{
-		DevicePrint("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);
+		Kamanri::Utils::PrintLn("Invalid Index (%llu, %llu), (width, height) = (%llu, %llu), return the 0 index content\n", x, y, _width, _height);
 		return _cuda_bitmap_buffer[0];
 	}
 	return _cuda_bitmap_buffer[Scan_R270(_height, x, y)]; // (x, y) -> (x, _height - y)

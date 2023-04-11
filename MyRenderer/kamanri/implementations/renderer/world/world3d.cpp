@@ -1,4 +1,5 @@
 #include "kamanri/renderer/world/world3d.hpp"
+#include "kamanri/renderer/world/__/bounding_box.hpp"
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/exports/build_world.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
@@ -198,30 +199,38 @@ World3D::~World3D()
 	}
 	_environment.bpr_model.DeleteCUDA();
 
-	__World3D::cuda_free(_environment.cuda_objects);
-	__World3D::cuda_free(_environment.cuda_objects_size);
-	__World3D::cuda_free(_environment.cuda_triangles);
-	__World3D::cuda_free(_environment.cuda_triangles_size);
+	__World3D::cuda_free(_environment.cuda_objects.data);
+	__World3D::cuda_free(_environment.cuda_triangles.data);
 	__World3D::cuda_free(_cuda_world);
 }
 
 World3D& World3D::Commit()
 {
+	if(_configs.is_commited) return *this;
 	_configs.is_commited = true;
+
+	// create bounding boxes buffer
+	_environment.boxes = NewArray<__::BoundingBox>(
+		__::BoundingBox$::BoxSize(
+			_environment.triangles.size()
+		)
+	);
 
 	if(!_configs.is_use_cuda) return *this;
 	
 	// objects
 	auto objects_size = _environment.objects.size();
-	__World3D::cuda_malloc(&(void*)_environment.cuda_objects_size, sizeof(size_t));
-	__World3D::transmit_to_cuda(&objects_size, _environment.cuda_objects_size, sizeof(size_t));
-	__World3D::cuda_malloc(&(void*)_environment.cuda_objects, objects_size * sizeof(Object));
-	__World3D::transmit_to_cuda(&_environment.objects[0], _environment.cuda_objects, objects_size * sizeof(Object));
+	_environment.cuda_objects.size = objects_size;
+	__World3D::cuda_malloc(&(void*)_environment.cuda_objects.data, objects_size * sizeof(Object));
+	__World3D::transmit_to_cuda(&_environment.objects[0], _environment.cuda_objects.data, objects_size * sizeof(Object));
 	// triangles
 	auto triangles_size = _environment.triangles.size();
-	__World3D::cuda_malloc(&(void*)_environment.cuda_triangles_size, sizeof(size_t));
-	__World3D::transmit_to_cuda(&triangles_size, _environment.cuda_triangles_size, sizeof(size_t));
-	__World3D::cuda_malloc(&(void*)_environment.cuda_triangles, triangles_size * sizeof(__::Triangle3D));
+	_environment.cuda_triangles.size = triangles_size;
+	__World3D::cuda_malloc(&(void*)_environment.cuda_triangles.data, triangles_size * sizeof(__::Triangle3D));
+	// boxes
+	auto boxes_size = __::BoundingBox$::BoxSize(_environment.triangles.size());
+	_environment.cuda_boxes.size = boxes_size;
+	__World3D::cuda_malloc(&(void*)_environment.cuda_boxes.data, boxes_size * sizeof(__::BoundingBox));
 
 	return *this;
 }
@@ -234,7 +243,6 @@ DefaultResult World3D::Build()
 	}
 
 	Log::Debug(__World3D::LOG_NAME, "Start to build the world...");
-	// TODO: CUDA parallelize "Build World"
 
 	_buffers.CleanBitmap();
 
@@ -243,13 +251,21 @@ DefaultResult World3D::Build()
 		t.Build(_resources);
 	}
 
+	// build bounding box
+	__::BoundingBox$::Build(_environment.boxes.get(), _environment.triangles);
+
 	if (_configs.is_use_cuda)
 	{
 
 		__World3D::transmit_to_cuda(
 			&_environment.triangles[0], 
-			_environment.cuda_triangles, 
+			_environment.cuda_triangles.data, 
 			_environment.triangles.size() * sizeof(__::Triangle3D)
+		);
+		__World3D::transmit_to_cuda(
+			_environment.boxes.get(), 
+			_environment.cuda_boxes.data, 
+			__::BoundingBox$::BoxSize(_environment.triangles.size()) * sizeof(__::BoundingBox)
 		);
 		__World3D::transmit_to_cuda(this, _cuda_world, sizeof(World3D));
 
@@ -295,11 +311,18 @@ void World3D::__BuildForPixel(size_t x, size_t y)
 
 	// set distance = infinity, is exposed.
 	_environment.bpr_model.InitLightBufferPixel(x, y, buffer);
-	for(auto& t: _environment.triangles)
-	{
-		_environment.bpr_model.__BuildPerTrianglePixel(x, y, t, buffer);
-	}
 
+	///////////////////////////////////////////////////////////////////////////
+	 //for(auto& t: _environment.triangles)
+	 //{
+	 //	_environment.bpr_model.__BuildPerTrianglePixel(x, y, t, buffer);
+	 //}
+
+	Utils::List<__::Triangle3D> triangles;
+	triangles.data = &_environment.triangles[0];
+	triangles.size = _environment.triangles.size();
+	_environment.bpr_model.__BuildPixel(x, y, triangles, _environment.boxes.get(), buffer);
+	//////////////////////////////////////////////////////////////////////////////
 	_environment.bpr_model.WriteToPixel(x, y, buffer, bitmap_pixel);
 	
 }
