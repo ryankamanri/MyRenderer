@@ -70,8 +70,8 @@ void StartRender(HINSTANCE hInstance)
 			WINDOW_LENGTH,
 			WINDOW_LENGTH
 		),
-		BlingPhongReflectionModel({
-			BlingPhongReflectionModel$::PointLight({0, 3, 4, 1}, 800, 0xffffff)
+		BlinnPhongReflectionModel({
+			BlinnPhongReflectionModel$::PointLight({0, 3, 4, 1}, 800, 0xffffff)
 		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.2, IS_USE_CUDA),
 		IS_USE_CUDA
 	);

@@ -164,7 +164,7 @@ Camera& Camera::operator=(Camera&& other)
 	return *this;
 }
 
-void Camera::__SetRefs(__::Resources& resources, BlingPhongReflectionModel& bpr_model)
+void Camera::__SetRefs(__::Resources& resources, BlinnPhongReflectionModel& bpr_model)
 {
 	_p_resources = &resources;
 	_p_bpr_model = &bpr_model;

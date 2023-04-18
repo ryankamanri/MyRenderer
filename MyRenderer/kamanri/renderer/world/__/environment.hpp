@@ -4,7 +4,7 @@
 #include "kamanri/utils/list.hpp"
 #include "triangle3d.hpp"
 #include "bounding_box.hpp"
-#include "kamanri/renderer/world/bling_phong_reflection_model.hpp"
+#include "kamanri/renderer/world/blinn_phong_reflection_model.hpp"
 
 namespace Kamanri
 {
@@ -19,9 +19,9 @@ namespace Kamanri
 				private:
 					/* data */
 				public:
-					Environment(BlingPhongReflectionModel&& model): bpr_model(std::move(model)) {}
+					Environment(BlinnPhongReflectionModel&& model): bpr_model(std::move(model)) {}
 					Environment& operator=(Environment&& other);
-					BlingPhongReflectionModel bpr_model;
+					BlinnPhongReflectionModel bpr_model;
 					/// @brief Store all Triangles
 					std::vector<Triangle3D> triangles;
 					Utils::List<Triangle3D> cuda_triangles;

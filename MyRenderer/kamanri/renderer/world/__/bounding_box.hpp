@@ -4,7 +4,7 @@
 #include "kamanri/utils/list.hpp"
 #include "kamanri/maths/vector.hpp"
 #include "triangle3d.hpp"
-#include "kamanri/renderer/world/bling_phong_reflection_model.hpp"
+#include "kamanri/renderer/world/blinn_phong_reflection_model.hpp"
 
 namespace Kamanri
 {
@@ -18,8 +18,10 @@ namespace Kamanri
 				class BoundingBox
 				{
 					public:
-					Maths::Vector min;
-					Maths::Vector max;
+					Maths::Vector world_min;
+					Maths::Vector world_max;
+					Maths::Vector screen_min;
+					Maths::Vector screen_max;
 					size_t triangle_count = 0;
 					size_t triangle_index = 0;
 				};
@@ -77,19 +79,39 @@ namespace Kamanri
 							Utils::List<Triangle3D> const& triangles,
 							Maths::Vector const& location,
 							Maths::Vector const& direction,
-							BlingPhongReflectionModel$::PointLightBufferItem const& light_buffer_item,
+							BlinnPhongReflectionModel$::PointLightBufferItem const& light_buffer_item,
 							void (*build_per_triangle_light_pixel)(
-								BlingPhongReflectionModel& bpr_model,
+								BlinnPhongReflectionModel& bpr_model,
 								size_t x,
 								size_t y,
 								__::Triangle3D& triangle,
 								size_t point_light_index,
 								FrameBuffer& buffer),
-							BlingPhongReflectionModel& bpr_model,
+							BlinnPhongReflectionModel& bpr_model,
 							size_t x,
 							size_t y,
 							size_t point_light_index,
 							FrameBuffer& buffer);
+
+#ifdef __CUDA_RUNTIME_H__  
+					__device__
+#endif
+						void MayScreenCover(
+							BoundingBox* boxes, 
+							size_t b_i, 
+							Utils::List<__::Triangle3D> const& triangles, 
+							size_t x, 
+							size_t y, 
+							void (*write_to_pixel_per_triangle)(
+								__::Triangle3D& triangle, 
+								size_t x, 
+								size_t y, 
+								FrameBuffer& buffer, 
+								double nearest_dist, 
+								Object* cuda_objects), 
+							FrameBuffer& buffer, 
+							double nearest_dist, 
+							Object* cuda_objects = nullptr);
 
 				} // namespace BoundingBox$
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "camera.hpp"
-#include "bling_phong_reflection_model.hpp"
+#include "blinn_phong_reflection_model.hpp"
 #include "kamanri/renderer/obj_model.hpp"
 #include "object.hpp"
 #include "__/all.hpp"
@@ -37,7 +37,7 @@ namespace Kamanri
 				World3D* _cuda_world;
 
 			public:
-				World3D(Camera&& camera, BlingPhongReflectionModel&& model, bool is_use_cuda = false);
+				World3D(Camera&& camera, BlinnPhongReflectionModel&& model, bool is_use_cuda = false);
 				~World3D();
 				World3D& operator=(World3D&& other);
 				Camera& GetCamera() { return _camera; }
@@ -49,7 +49,7 @@ namespace Kamanri
 				__device__
 #endif
 				void __BuildForPixel(size_t x, size_t y);
-				FrameBuffer const& FrameBuffer(int x, int y);
+				FrameBuffer const& GetFrameBuffer(int x, int y);
 				inline DWORD* Bitmap() { return _buffers.GetBitmapBufferPtr(); }
 			};
 			

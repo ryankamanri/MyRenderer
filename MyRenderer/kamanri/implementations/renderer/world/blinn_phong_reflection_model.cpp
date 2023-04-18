@@ -1,4 +1,4 @@
-#include "kamanri/renderer/world/bling_phong_reflection_model.hpp"
+#include "kamanri/renderer/world/blinn_phong_reflection_model.hpp"
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
 #include "kamanri/renderer/world/__/bounding_box.hpp"
@@ -11,10 +11,10 @@ namespace Kamanri
     {
         namespace World
         {
-            namespace __BlingPhongReflectionModel
+            namespace __BlinnPhongReflectionModel
             {
                 
-				constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::BlingPhongReflectionModel);
+				constexpr const char* LOG_NAME = STR(Kamanri::Renderer::World::BlinnPhongReflectionModel);
 				
 				dll cuda_dll;
 				func_type(CUDAMalloc) cuda_malloc;
@@ -48,10 +48,10 @@ namespace Kamanri
 
 				inline RGB GenerizeReflection(unsigned int r, unsigned int g, unsigned int b, double factor)
 				{
-					return BlingPhongReflectionModel$::CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor));
+					return BlinnPhongReflectionModel$::CombineRGB((unsigned int)(r * factor), (unsigned int)(g * factor), (unsigned int)(b * factor));
 				}
 
-            } // namespace __BlingPhongReflectionModel
+            } // namespace __BlinnPhongReflectionModel
             
         } // namespace World
         
@@ -60,10 +60,10 @@ namespace Kamanri
 } // namespace Kamanri
 
 
-using namespace Kamanri::Renderer::World::BlingPhongReflectionModel$;
+using namespace Kamanri::Renderer::World::BlinnPhongReflectionModel$;
 
 
-BlingPhongReflectionModel::BlingPhongReflectionModel(std::vector<BlingPhongReflectionModel$::PointLight>&& point_lights, size_t screen_width, size_t screen_height, double specular_min_cos, double diffuse_factor, double ambient_factor, bool is_use_cuda)
+BlinnPhongReflectionModel::BlinnPhongReflectionModel(std::vector<BlinnPhongReflectionModel$::PointLight>&& point_lights, size_t screen_width, size_t screen_height, double specular_min_cos, double diffuse_factor, double ambient_factor, bool is_use_cuda)
 {
 	_point_lights = std::move(point_lights);
 	_specular_min_cos = specular_min_cos;
@@ -77,28 +77,28 @@ BlingPhongReflectionModel::BlingPhongReflectionModel(std::vector<BlingPhongRefle
 
 	if(!is_use_cuda) return;
 	
-	__BlingPhongReflectionModel::ImportFunctions();
+	__BlinnPhongReflectionModel::ImportFunctions();
 
 	_cuda_point_lights.size = _point_lights.size();
-	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
-	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
+	__BlinnPhongReflectionModel::cuda_malloc(&(void*)_cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
+	__BlinnPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
 
 	auto lights_buffer_size = _point_lights.size() * _screen_width * _screen_height;
-	__BlingPhongReflectionModel::cuda_malloc(&(void*)_cuda_lights_buffer, lights_buffer_size * sizeof(PointLightBufferItem));
+	__BlinnPhongReflectionModel::cuda_malloc(&(void*)_cuda_lights_buffer, lights_buffer_size * sizeof(PointLightBufferItem));
 }
 
-BlingPhongReflectionModel::~BlingPhongReflectionModel()
+BlinnPhongReflectionModel::~BlinnPhongReflectionModel()
 {
 
 }
 
-void BlingPhongReflectionModel::DeleteCUDA()
+void BlinnPhongReflectionModel::DeleteCUDA()
 {
-	__BlingPhongReflectionModel::cuda_free(_cuda_lights_buffer);
-	__BlingPhongReflectionModel::cuda_free(_cuda_point_lights.data);
+	__BlinnPhongReflectionModel::cuda_free(_cuda_lights_buffer);
+	__BlinnPhongReflectionModel::cuda_free(_cuda_point_lights.data);
 }
 
-BlingPhongReflectionModel::BlingPhongReflectionModel(BlingPhongReflectionModel&& other)
+BlinnPhongReflectionModel::BlinnPhongReflectionModel(BlinnPhongReflectionModel&& other)
 {
     _point_lights = std::move(other._point_lights);
 	_screen_width = other._screen_width;
@@ -114,7 +114,7 @@ BlingPhongReflectionModel::BlingPhongReflectionModel(BlingPhongReflectionModel&&
 	_is_use_cuda = other._is_use_cuda;
 }
 
-BlingPhongReflectionModel& BlingPhongReflectionModel::operator=(BlingPhongReflectionModel&& other)
+BlinnPhongReflectionModel& BlinnPhongReflectionModel::operator=(BlinnPhongReflectionModel&& other)
 {
     _point_lights = std::move(other._point_lights);
 	_screen_width = other._screen_width;
@@ -131,7 +131,7 @@ BlingPhongReflectionModel& BlingPhongReflectionModel::operator=(BlingPhongReflec
 	return *this;
 }
 
-void BlingPhongReflectionModel::ModelViewTransform(Maths::SMatrix const& matrix)
+void BlinnPhongReflectionModel::ModelViewTransform(Maths::SMatrix const& matrix)
 {
 	for(size_t i = 0; i < _point_lights.size(); i++)
 	{
@@ -140,12 +140,12 @@ void BlingPhongReflectionModel::ModelViewTransform(Maths::SMatrix const& matrix)
 	}
 
 	if(!_is_use_cuda) return;
-	__BlingPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
+	__BlinnPhongReflectionModel::transmit_to_cuda(&_point_lights[0], _cuda_point_lights.data, _point_lights.size() * sizeof(PointLight));
 }
 
-void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBuffer& buffer)
+void BlinnPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBuffer& buffer)
 {
-	using namespace __BlingPhongReflectionModel;
+	using namespace __BlinnPhongReflectionModel;
 	for(size_t i = 0; i < _point_lights.size(); i++)
 	{
 		auto& this_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, i, x, y)];
@@ -156,9 +156,9 @@ void BlingPhongReflectionModel::InitLightBufferPixel(size_t x, size_t y, FrameBu
 	
 }
 
-void BlingPhongReflectionModel::__BuildPerTriangleLightPixel(size_t x, size_t y, __::Triangle3D& triangle, size_t point_light_index, FrameBuffer& buffer)
+void BlinnPhongReflectionModel::__BuildPerTriangleLightPixel(size_t x, size_t y, __::Triangle3D& triangle, size_t point_light_index, FrameBuffer& buffer)
 {
-	using namespace __BlingPhongReflectionModel;
+	using namespace __BlinnPhongReflectionModel;
 	auto& light_buffer_item = _lights_buffer[LightBufferLoc(_screen_width, _screen_height, point_light_index, x, y)];
 	auto& light_location = _point_lights[point_light_index].location_model_view_transformed;
 	auto light_point_distance = light_location - buffer.location;
@@ -198,7 +198,7 @@ void BlingPhongReflectionModel::__BuildPerTriangleLightPixel(size_t x, size_t y,
 	}
 }
 
-void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
+void BlinnPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::Triangle3D& triangle, FrameBuffer& buffer)
 {
 	for (size_t i = 0; i < _point_lights.size(); i++)
 	{
@@ -206,10 +206,10 @@ void BlingPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::
 	}
 }
 
-void BlingPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
+void BlinnPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
 {
 	// Utils::ArrayStack<size_t> triangle_index_stack;
-	using namespace __BlingPhongReflectionModel;
+	using namespace __BlinnPhongReflectionModel;
 	for (size_t i = 0; i < _point_lights.size(); i++)
 	{
 		auto& light_location = _point_lights[i].location_model_view_transformed;
@@ -223,7 +223,7 @@ void BlingPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__:
 			light_location, 
 			light_point_direction, 
 			light_buffer_item, 
-			[](BlingPhongReflectionModel& bpr_model, 
+			[](BlinnPhongReflectionModel& bpr_model, 
 			size_t x, 
 			size_t y, 
 			__::Triangle3D& triangle, 
@@ -241,9 +241,9 @@ void BlingPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__:
 /// @param location 
 /// @param normal 
 /// @param reflect_point 
-void BlingPhongReflectionModel::WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, DWORD& pixel)
+void BlinnPhongReflectionModel::WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, DWORD& pixel)
 {
-	using namespace __BlingPhongReflectionModel;
+	using namespace __BlinnPhongReflectionModel;
 	
     buffer.r = buffer.g = buffer.b = 0;
 	buffer.power = 0;
@@ -277,11 +277,11 @@ void BlingPhongReflectionModel::WriteToPixel(size_t x, size_t y, FrameBuffer& bu
 		
 		// if(light_buffer_item.is_exposed)
 		// {
-		// 	Log::Debug(__BlingPhongReflectionModel::LOG_NAME, "buffer(%llu, %llu) diffuse color: %6.X", x, y, buffer.diffuse_color);
+		// 	Log::Debug(__BlinnPhongReflectionModel::LOG_NAME, "buffer(%llu, %llu) diffuse color: %6.X", x, y, buffer.diffuse_color);
 		// }
 		// if(light_buffer_item.is_specular && light_buffer_item.is_exposed)
 		// {
-		// 	Log::Debug(__BlingPhongReflectionModel::LOG_NAME, "buffer(%llu, %llu) specular color: %6.X", x, y, buffer.specular_color);
+		// 	Log::Debug(__BlinnPhongReflectionModel::LOG_NAME, "buffer(%llu, %llu) specular color: %6.X", x, y, buffer.specular_color);
 		// }
 
     }

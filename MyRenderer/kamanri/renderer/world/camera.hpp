@@ -3,7 +3,7 @@
 #include "kamanri/maths/vector.hpp"
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/renderer/world/__/resources.hpp"
-#include "bling_phong_reflection_model.hpp"
+#include "blinn_phong_reflection_model.hpp"
 namespace Kamanri
 {
 	namespace Renderer
@@ -38,7 +38,7 @@ namespace Kamanri
 				// references
 				__::Resources* _p_resources = nullptr;
 
-				BlingPhongReflectionModel* _p_bpr_model = nullptr;
+				BlinnPhongReflectionModel* _p_bpr_model = nullptr;
 				/////////////////////////////////
 
 				// need 4d vector
@@ -86,7 +86,7 @@ namespace Kamanri
 				Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height);
 				Camera(Camera&& camera);
 				Camera& operator=(Camera&& other);
-				void __SetRefs(__::Resources& resources, BlingPhongReflectionModel& bpr_model);
+				void __SetRefs(__::Resources& resources, BlinnPhongReflectionModel& bpr_model);
 				Utils::DefaultResult Transform();
 				/**
 				 * @brief Inverse the upper vector when the upper of direction changed.

@@ -11,7 +11,7 @@ namespace Kamanri
         namespace World
         {
             using RGB = unsigned long;
-            namespace BlingPhongReflectionModel$
+            namespace BlinnPhongReflectionModel$
             {
 #ifdef __CUDA_RUNTIME_H__  
 					__device__
@@ -116,7 +116,7 @@ namespace Kamanri
                         is_exposed(is_exposed), distance(distance)
                     {}
                 };
-            } // namespace BlingPhongReflectionModel$
+            } // namespace BlinnPhongReflectionModel$
 
             namespace __
             {
@@ -124,16 +124,16 @@ namespace Kamanri
                 class BoundingBox;
             }
 
-            class BlingPhongReflectionModel
+            class BlinnPhongReflectionModel
             {
                 private:
                 /* data */
-                std::vector<BlingPhongReflectionModel$::PointLight> _point_lights;
-                Utils::List<BlingPhongReflectionModel$::PointLight> _cuda_point_lights;
+                std::vector<BlinnPhongReflectionModel$::PointLight> _point_lights;
+                Utils::List<BlinnPhongReflectionModel$::PointLight> _cuda_point_lights;
 
                 // Note that its size is buffer_size * _point_lights.size()
-                Utils::P<BlingPhongReflectionModel$::PointLightBufferItem[]> _lights_buffer;
-                BlingPhongReflectionModel$::PointLightBufferItem* _cuda_lights_buffer;
+                Utils::P<BlinnPhongReflectionModel$::PointLightBufferItem[]> _lights_buffer;
+                BlinnPhongReflectionModel$::PointLightBufferItem* _cuda_lights_buffer;
                 size_t _screen_width;
                 size_t _screen_height;
 
@@ -149,12 +149,12 @@ namespace Kamanri
 					void __BuildPerTriangleLightPixel(size_t x, size_t y, __::Triangle3D& triangle, size_t point_light_index, FrameBuffer& buffer);
 
                 public:
-                // BlingPhongReflectionModel() = default;
-                BlingPhongReflectionModel(std::vector<BlingPhongReflectionModel$::PointLight>&& point_lights, size_t screen_width, size_t screen_height, double specular_min_cos = 0.999, double diffuse_factor = 1 / (Maths::PI * 2), double ambient_factor = 0.1, bool is_use_cuda = false);
-                BlingPhongReflectionModel(BlingPhongReflectionModel&& other);
-                ~BlingPhongReflectionModel();
+                // BlinnPhongReflectionModel() = default;
+                BlinnPhongReflectionModel(std::vector<BlinnPhongReflectionModel$::PointLight>&& point_lights, size_t screen_width, size_t screen_height, double specular_min_cos = 0.999, double diffuse_factor = 1 / (Maths::PI * 2), double ambient_factor = 0.1, bool is_use_cuda = false);
+                BlinnPhongReflectionModel(BlinnPhongReflectionModel&& other);
+                ~BlinnPhongReflectionModel();
                 void DeleteCUDA();
-                BlingPhongReflectionModel& operator=(BlingPhongReflectionModel&& other);
+                BlinnPhongReflectionModel& operator=(BlinnPhongReflectionModel&& other);
                 void ModelViewTransform(Maths::SMatrix const& matrix);
                 inline size_t ScreenWidth() { return _screen_width; }
                 inline size_t ScreenHeight() { return _screen_height; }

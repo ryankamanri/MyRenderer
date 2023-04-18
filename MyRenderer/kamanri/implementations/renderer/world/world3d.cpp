@@ -1,5 +1,6 @@
 #include "kamanri/renderer/world/world3d.hpp"
 #include "kamanri/renderer/world/__/bounding_box.hpp"
+#include "kamanri/renderer/world/frame_buffer.hpp"
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/exports/build_world.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
@@ -51,7 +52,7 @@ namespace Kamanri
 
 
 
-World3D::World3D(Camera&& camera, BlingPhongReflectionModel&& model, bool is_use_cuda)
+World3D::World3D(Camera&& camera, BlinnPhongReflectionModel&& model, bool is_use_cuda)
 : _camera(std::move(camera)), 
 _buffers(_camera.ScreenWidth(), _camera.ScreenHeight(), is_use_cuda),
 _environment(std::move(model))
@@ -302,32 +303,38 @@ void World3D::__BuildForPixel(size_t x, size_t y)
 	auto& buffer = _buffers.GetFrame(x, y);
 	auto& bitmap_pixel = _buffers.GetBitmapBuffer(x, y);
 
-	for(auto& t: _environment.triangles)
-	{
-		t.WriteToPixel(x, y, buffer, _camera.NearestDist());
-	}
+	Utils::List<__::Triangle3D> triangles;
+	triangles.data = &_environment.triangles[0];
+	triangles.size = _environment.triangles.size();
+
+	__::BoundingBox$::MayScreenCover(
+		_environment.boxes.get(),
+		0, triangles,
+		x, y,
+		[](
+			__::Triangle3D& triangle,
+			size_t x,
+			size_t y,
+			FrameBuffer& buffer,
+			double nearest_dist,
+			Object* cuda_objects)
+		{
+			triangle.WriteToPixel(x, y, buffer, nearest_dist);
+		}, buffer, _camera.NearestDist());
 
 	if(_buffers.GetFrame(x, y).location[2] == -DBL_MAX) return;
 
 	// set distance = infinity, is exposed.
 	_environment.bpr_model.InitLightBufferPixel(x, y, buffer);
 
-	///////////////////////////////////////////////////////////////////////////
-	 //for(auto& t: _environment.triangles)
-	 //{
-	 //	_environment.bpr_model.__BuildPerTrianglePixel(x, y, t, buffer);
-	 //}
-
-	Utils::List<__::Triangle3D> triangles;
-	triangles.data = &_environment.triangles[0];
-	triangles.size = _environment.triangles.size();
+	
 	_environment.bpr_model.__BuildPixel(x, y, triangles, _environment.boxes.get(), buffer);
-	//////////////////////////////////////////////////////////////////////////////
+
 	_environment.bpr_model.WriteToPixel(x, y, buffer, bitmap_pixel);
 	
 }
 
-FrameBuffer const& World3D::FrameBuffer(int x, int y)
+FrameBuffer const& World3D::GetFrameBuffer(int x, int y)
 {
 	
 	x = x % _buffers.Width();

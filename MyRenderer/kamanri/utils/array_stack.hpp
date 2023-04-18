@@ -6,7 +6,7 @@ namespace Kamanri
 {
 	namespace Utils
 	{
-		template<class T, size_t size = 10000>
+		template<class T, size_t size = 1000>
 		class ArrayStack
 		{
 			public:

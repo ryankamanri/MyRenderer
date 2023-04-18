@@ -99,6 +99,8 @@ namespace Kamanri
 
 					Maths::Vector MinWorldBounding() const;
 					Maths::Vector MaxWorldBounding() const;
+					Maths::Vector MinScreenBounding() const;
+					Maths::Vector MaxScreenBounding() const;
 
 				};
 			} // namespace __
