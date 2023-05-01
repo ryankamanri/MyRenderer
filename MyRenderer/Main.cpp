@@ -13,7 +13,7 @@ using namespace Kamanri::Renderer::World;
 
 constexpr const char* LOG_NAME = "Main";
 constexpr const int WINDOW_LENGTH = 600;
-constexpr const bool IS_USE_CUDA = true;
+constexpr const bool IS_USE_CUDA = false;
 
 #define BASE_PATH "C:/Users/97448/totFolder/source/repos/MyRenderer/MyRenderer/models/"
 

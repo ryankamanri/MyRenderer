@@ -1,7 +1,11 @@
 #pragma once
+
+#ifndef SWIG
+
 #include <vector>
-#include <initializer_list>
 #include "vector.hpp"
+
+#endif
 
 namespace Kamanri
 {
@@ -11,22 +15,23 @@ namespace Kamanri
 		using SMatrixElemType = VectorElemType;
 		using SMatrixCode = int;
 
-		namespace SMatrix$
+		class SMatrix$
 		{
+			public:
 			// values
-			constexpr int NOT_INITIALIZED_N = Vector$::NOT_INITIALIZED_N;
-			constexpr SMatrixElemType NOT_INITIALIZED_VALUE = Vector$::NOT_INITIALIZED_VALUE;
-			constexpr int MAX_SUPPORTED_DIMENSION = Vector$::MAX_SUPPORTED_DIMENSION;
+			static inline std::size_t NOT_INITIALIZED_N = Maths::NOT_INITIALIZED_N;
+			static inline SMatrixElemType NOT_INITIALIZED_VALUE = Maths::NOT_INITIALIZED_VALUE;
+			static inline int MAX_SUPPORTED_DIMENSION = Maths::MAX_SUPPORTED_DIMENSION;
 
 			// Codes
-			constexpr SMatrixCode CODE_NORM = 0;
-			constexpr SMatrixCode CODE_NOT_INITIALIZED_N = 101;
-			constexpr SMatrixCode CODE_NOT_INITIALIZED_MATRIX = 201;
-			constexpr SMatrixCode CODE_NOT_EQUEL_N = 301;
-			constexpr SMatrixCode CODE_INVALID_OPERATION = 401;
-			constexpr SMatrixCode CODE_INDEX_OUT_OF_BOUND = 501;
-			constexpr SMatrixCode CODE_DUPLICATE_VALUE = 601;
-		}
+			static inline SMatrixCode CODE_NORM = 0;
+			static inline SMatrixCode CODE_NOT_INITIALIZED_N = 101;
+			static inline SMatrixCode CODE_NOT_INITIALIZED_MATRIX = 201;
+			static inline SMatrixCode CODE_NOT_EQUEL_N = 301;
+			static inline SMatrixCode CODE_INVALID_OPERATION = 401;
+			static inline SMatrixCode CODE_INDEX_OUT_OF_BOUND = 501;
+			static inline SMatrixCode CODE_DUPLICATE_VALUE = 601;
+		};
 
 		/**
 		 * @brief  n * n Square Matrix
@@ -119,9 +124,9 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to square matrix.
-			SMatrixElemType _SM[SMatrix$::MAX_SUPPORTED_DIMENSION * SMatrix$::MAX_SUPPORTED_DIMENSION];
+			SMatrixElemType _SM[Maths::MAX_SUPPORTED_DIMENSION * Maths::MAX_SUPPORTED_DIMENSION];
 			// The length of the square matrix.
-			std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
+			std::size_t _N = Maths::NOT_INITIALIZED_N;
 
 			// SMatrixElemType _Get(size_t row, size_t col) const;
 

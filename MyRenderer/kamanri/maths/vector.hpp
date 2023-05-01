@@ -1,6 +1,12 @@
 #pragma once
-#include <initializer_list>
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/logs_declare.hpp"
+
+namespace std
+{
+	template<class T>
+	class initializer_list;
+} // namespace std
+
 
 namespace Kamanri
 {
@@ -10,20 +16,25 @@ namespace Kamanri
 		using VectorElemType = double;
 		using VectorCode = int;
 
-		namespace Vector$
+		constexpr VectorElemType NOT_INITIALIZED_VALUE = -1;
+		constexpr std::size_t NOT_INITIALIZED_N = 0;
+		constexpr int MAX_SUPPORTED_DIMENSION = 4;
+		
+		class Vector$
 		{
-			constexpr VectorElemType NOT_INITIALIZED_VALUE = -1;
-			constexpr int NOT_INITIALIZED_N = 0;
-			constexpr int MAX_SUPPORTED_DIMENSION = 4;
+			public:
+			static inline VectorElemType NOT_INITIALIZED_VALUE = Maths::NOT_INITIALIZED_N;
+			static inline std::size_t NOT_INITIALIZED_N = Maths::NOT_INITIALIZED_N;
+			static inline int MAX_SUPPORTED_DIMENSION = Maths::MAX_SUPPORTED_DIMENSION;
 
 			// Codes
-			constexpr VectorCode CODE_NORM = 0;
-			constexpr VectorCode CODE_NOT_INITIALIZED_N = 100;
-			constexpr VectorCode CODE_NOT_INITIALIZED_VECTOR = 200;
-			constexpr VectorCode CODE_NOT_EQUEL_N = 300;
-			constexpr VectorCode CODE_INVALID_OPERATION = 400;
-			constexpr VectorCode CODE_INDEX_OUT_OF_BOUND = 500;
-		}
+			static inline VectorCode CODE_NORM = 0;
+			static inline VectorCode CODE_NOT_INITIALIZED_N = 100;
+			static inline VectorCode CODE_NOT_INITIALIZED_VECTOR = 200;
+			static inline VectorCode CODE_NOT_EQUEL_N = 300;
+			static inline VectorCode CODE_INVALID_OPERATION = 400;
+			static inline VectorCode CODE_INDEX_OUT_OF_BOUND = 500;
+		};
 
 		class Vector
 		{
@@ -116,9 +127,9 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to vector.
-			VectorElemType _V[Vector$::MAX_SUPPORTED_DIMENSION];
+			VectorElemType _V[Maths::MAX_SUPPORTED_DIMENSION];
 			// The length of the vector.
-			std::size_t _N = Vector$::NOT_INITIALIZED_N;
+			std::size_t _N = Maths::NOT_INITIALIZED_N;
 		};
 
 	}

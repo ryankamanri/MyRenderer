@@ -1,3 +1,4 @@
+#pragma once
 #include <cuda_runtime.h>
 #include "cuda_dll/src/build_world.cuh"
 #include "cuda_dll/src/utils/cuda_thread_config.cuh"

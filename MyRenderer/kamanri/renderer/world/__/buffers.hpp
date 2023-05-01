@@ -19,8 +19,8 @@ namespace Kamanri
 					size_t _height;
 					Utils::P<FrameBuffer[]> _buffers;
 					FrameBuffer* _cuda_buffers;
-					Utils::P<DWORD[]> _bitmap_buffer;
-					DWORD* _cuda_bitmap_buffer;
+					Utils::P<unsigned long[]> _bitmap_buffer;
+					unsigned long* _cuda_bitmap_buffer;
 
 					public:
 					Buffers(size_t width, size_t height, bool is_use_cuda = false);
@@ -38,13 +38,13 @@ namespace Kamanri
 					__device__
 #endif
 						FrameBuffer& GetFrame(size_t x, size_t y);
-					inline DWORD* GetBitmapBufferPtr() { return _bitmap_buffer.get(); }
+					inline unsigned long* GetBitmapBufferPtr() { return _bitmap_buffer.get(); }
 #ifdef __CUDA_RUNTIME_H__  
 					__device__
 #endif
-						DWORD& GetBitmapBuffer(size_t x, size_t y);
+						unsigned long& GetBitmapBuffer(size_t x, size_t y);
 					inline FrameBuffer* CUDAGetBuffersPtr() { return _cuda_buffers; }
-					inline DWORD* CUDAGetBitmapBufferPtr() { return _cuda_bitmap_buffer; }
+					inline unsigned long* CUDAGetBitmapBufferPtr() { return _cuda_bitmap_buffer; }
 				};
 
 			} // namespace __

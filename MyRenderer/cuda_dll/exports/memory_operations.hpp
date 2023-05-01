@@ -1,6 +1,5 @@
 #pragma once
 #include "kamanri/utils/imexport.hpp"
-#include <cuda_runtime.h>
 
 typedef unsigned int MemoryOperationsCode;
 

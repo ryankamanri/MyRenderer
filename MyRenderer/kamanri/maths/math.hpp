@@ -1,5 +1,6 @@
 #pragma once
-#include <cmath>
+
+#define DBL_MAX          1.7976931348623158e+308 // max value
 
 namespace Kamanri
 {

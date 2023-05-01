@@ -1,5 +1,8 @@
+#pragma once
+#include <cuda_runtime.h>
 #include "cuda_dll/src/memory_operations.cuh"
 #include "cuda_dll/src/utils/cuda_error_check.cuh"
+
 namespace __MemoryOperations
 {
     constexpr const char* LOG_NAME = STR(MemoryOperations);

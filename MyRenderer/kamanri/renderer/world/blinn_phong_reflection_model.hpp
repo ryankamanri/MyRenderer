@@ -99,7 +99,7 @@ namespace Kamanri
                     double power;
                     RGB color;
 
-                    PointLight(Maths::Vector location, double power, DWORD color):
+                    PointLight(Maths::Vector location, double power, RGB color):
                         location(location), location_model_view_transformed(location), power(power), color(color)
                     {}
 
@@ -173,7 +173,7 @@ namespace Kamanri
 #ifdef __CUDA_RUNTIME_H__  
                 __device__
 #endif
-                    void WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, DWORD& pixel);
+                    void WriteToPixel(size_t x, size_t y, FrameBuffer& buffer, RGB& pixel);
 
             };
 
