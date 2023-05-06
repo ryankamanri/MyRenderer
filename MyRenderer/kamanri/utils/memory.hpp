@@ -23,6 +23,26 @@ namespace Kamanri
 			return P<T[]>(new T[size]);
 		}
 
+		template <typename T>
+		P<T> Copy(T* p)
+		{
+			T* new_p = (T*)malloc(sizeof(T));
+			(*new_p) = (*p);
+			return P<T>(new_p);
+		}
+
+		template <typename T>
+		P<T[]> CopyArray(T* p, size_t size)
+		{
+			T* new_p = (T*)malloc(sizeof(T) * size);
+			T* new_p_ = new_p;
+			for(size_t i = 0; i < size; i++)
+			{
+				(*new_p++) = (*p++);
+			}
+
+			return P<T[]>(new_p_);
+		}
 
 	}
 }

@@ -1,37 +1,15 @@
 #pragma once
 
 #ifndef SWIG
-
-#include <vector>
-#include "vector.hpp"
-
+#include "smatrix$.hpp"
 #endif
 
 namespace Kamanri
 {
 	namespace Maths
 	{
-
 		using SMatrixElemType = VectorElemType;
 		using SMatrixCode = int;
-
-		class SMatrix$
-		{
-			public:
-			// values
-			static inline std::size_t NOT_INITIALIZED_N = Maths::NOT_INITIALIZED_N;
-			static inline SMatrixElemType NOT_INITIALIZED_VALUE = Maths::NOT_INITIALIZED_VALUE;
-			static inline int MAX_SUPPORTED_DIMENSION = Maths::MAX_SUPPORTED_DIMENSION;
-
-			// Codes
-			static inline SMatrixCode CODE_NORM = 0;
-			static inline SMatrixCode CODE_NOT_INITIALIZED_N = 101;
-			static inline SMatrixCode CODE_NOT_INITIALIZED_MATRIX = 201;
-			static inline SMatrixCode CODE_NOT_EQUEL_N = 301;
-			static inline SMatrixCode CODE_INVALID_OPERATION = 401;
-			static inline SMatrixCode CODE_INDEX_OUT_OF_BOUND = 501;
-			static inline SMatrixCode CODE_DUPLICATE_VALUE = 601;
-		};
 
 		/**
 		 * @brief  n * n Square Matrix
@@ -110,7 +88,7 @@ namespace Kamanri
 #endif
 			SMatrix operator*() const;
 
-			SMatrixCode PrintMatrix(Utils::LogLevel level = Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
+			SMatrixCode PrintMatrix(Kamanri::Utils::LogLevel level = Kamanri::Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
 
 			// The determinant
 			SMatrixElemType Determinant(std::vector<std::size_t> row_list, std::vector<std::size_t> col_list) const;
@@ -124,9 +102,9 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to square matrix.
-			SMatrixElemType _SM[Maths::MAX_SUPPORTED_DIMENSION * Maths::MAX_SUPPORTED_DIMENSION];
+			SMatrixElemType _SM[SMatrix$::MAX_SUPPORTED_DIMENSION * SMatrix$::MAX_SUPPORTED_DIMENSION];
 			// The length of the square matrix.
-			std::size_t _N = Maths::NOT_INITIALIZED_N;
+			std::size_t _N = SMatrix$::NOT_INITIALIZED_N;
 
 			// SMatrixElemType _Get(size_t row, size_t col) const;
 

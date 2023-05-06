@@ -20,6 +20,7 @@ namespace Kamanri
 					/* data */
 				public:
 					Environment(BlinnPhongReflectionModel&& model): bpr_model(std::move(model)) {}
+					Environment& operator=(Environment const& other);
 					Environment& operator=(Environment&& other);
 					BlinnPhongReflectionModel bpr_model;
 					/// @brief Store all Triangles

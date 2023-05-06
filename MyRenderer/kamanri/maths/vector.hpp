@@ -1,40 +1,15 @@
 #pragma once
-#include "kamanri/utils/logs_declare.hpp"
 
-namespace std
-{
-	template<class T>
-	class initializer_list;
-} // namespace std
-
+#ifndef SWIG
+#include "vector$.hpp"
+#endif
 
 namespace Kamanri
 {
 	namespace Maths
 	{
-
 		using VectorElemType = double;
 		using VectorCode = int;
-
-		constexpr VectorElemType NOT_INITIALIZED_VALUE = -1;
-		constexpr std::size_t NOT_INITIALIZED_N = 0;
-		constexpr int MAX_SUPPORTED_DIMENSION = 4;
-		
-		class Vector$
-		{
-			public:
-			static inline VectorElemType NOT_INITIALIZED_VALUE = Maths::NOT_INITIALIZED_N;
-			static inline std::size_t NOT_INITIALIZED_N = Maths::NOT_INITIALIZED_N;
-			static inline int MAX_SUPPORTED_DIMENSION = Maths::MAX_SUPPORTED_DIMENSION;
-
-			// Codes
-			static inline VectorCode CODE_NORM = 0;
-			static inline VectorCode CODE_NOT_INITIALIZED_N = 100;
-			static inline VectorCode CODE_NOT_INITIALIZED_VECTOR = 200;
-			static inline VectorCode CODE_NOT_EQUEL_N = 300;
-			static inline VectorCode CODE_INVALID_OPERATION = 400;
-			static inline VectorCode CODE_INDEX_OUT_OF_BOUND = 500;
-		};
 
 		class Vector
 		{
@@ -119,7 +94,7 @@ namespace Kamanri
 			VectorElemType operator*(Vector const &v) const;
 			VectorElemType operator*(std::initializer_list<VectorElemType> list) const;
 
-			VectorCode PrintVector(Utils::LogLevel level = Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
+			VectorCode PrintVector(Kamanri::Utils::LogLevel level = Kamanri::Utils::Log$::INFO_LEVEL, const char *decimal_count = "2") const;
 #ifdef __CUDA_RUNTIME_H__  
 			__device__
 #endif
@@ -127,9 +102,9 @@ namespace Kamanri
 
 		private:
 			// The pointer indicated to vector.
-			VectorElemType _V[Maths::MAX_SUPPORTED_DIMENSION];
+			VectorElemType _V[Vector$::MAX_SUPPORTED_DIMENSION];
 			// The length of the vector.
-			std::size_t _N = Maths::NOT_INITIALIZED_N;
+			std::size_t _N = Vector$::NOT_INITIALIZED_N;
 		};
 
 	}

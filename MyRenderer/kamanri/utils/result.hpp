@@ -1,5 +1,5 @@
 #pragma once
-#include "logs.hpp"
+#include "log.hpp"
 #include "memory.hpp"
 #include <string>
 #include <vector>
@@ -63,13 +63,15 @@ namespace Kamanri
 		public:
 			// constructors
 			Result();
-			Result(Result<T> &&result) noexcept;
+			Result(Result<T> const& result);
+			Result(Result<T> &&result);
 			explicit Result(T data);
 			Result(Result$::Status status, int code, std::string const &message);
 			Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult);
 			Result(Result$::Status status, int code, std::string const &message, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
 			Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
 
+			Result<T>& operator=(Result<T> const& result);
 			Result<T>& operator=(Result<T> &&result);
 
 			bool IsException();
@@ -114,10 +116,21 @@ namespace Kamanri
 		Result<T>::Result(): _status(Result$::Status::NORM) {}
 
 		template <class T>
-		Result<T>::Result(Result<T> &&result) noexcept : _status(result._status),
-														 _code(result._code),
-														 _message(result._message),
-														 _data(std::move(result._data))
+		Result<T>::Result(Result<T> const& result) :
+			_status(result._status),
+			_code(result._code),
+			_message(result._message),
+			_data(result._data)
+		{
+			this->_inner_result = Copy(result._inner_result.get());
+		}
+
+		template <class T>
+		Result<T>::Result(Result<T>&& result) :
+			_status(result._status),
+			_code(result._code),
+			_message(result._message),
+			_data(std::move(result._data))
 		{
 			this->_inner_result.reset(result._inner_result.release());
 			this->_stacktrace.assign(result._stacktrace.begin(), _stacktrace.end());
@@ -192,6 +205,18 @@ namespace Kamanri
 			this->_data = data;
 			this->_inner_result.reset(innerResult.release());
 			if (this->_stacktrace.size()) this->_stacktrace.assign(stackTrace.begin(), stackTrace.end());
+		}
+
+		template <class T>
+		Result<T>& Result<T>::operator=(Result<T> const& result)
+		{
+			_status = result._status;
+			_code = result._code;
+			_message = result._message;
+			_data = result._data;
+			this->_inner_result = Copy(result._inner_result.get());
+			this->_stacktrace = result._stacktrace;
+			return *this;
 		}
 
 		template <class T>

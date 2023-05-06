@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include "string.hpp"
-#include "logs.hpp"
+#include "log.hpp"
 
 #define c_export extern "C" __declspec(dllexport)
 

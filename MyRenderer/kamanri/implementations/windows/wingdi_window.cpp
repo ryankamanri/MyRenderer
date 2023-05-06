@@ -1,6 +1,6 @@
 #include <thread>
 #include <map>
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/windows/wingdi_window.hpp"
 
 using namespace Kamanri::Utils;
@@ -37,7 +37,6 @@ namespace Kamanri
 
 
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 /**
  * @brief the map used to find the window by the certain handle
@@ -52,7 +51,7 @@ WinGDI_Window::WinGDI_Window(HINSTANCE h_instance, Renderer::World::World3D& wor
 {
 	_window_width = window_width;
 	_window_height = window_height;
-	_WindowProc = WindowProc;
+	_WindowProc = WinGDI_Window$::WindowProc;
 	// 1.设计窗口类
 	TCHAR szAppClassName[] = TEXT("ZWX");
 	WNDCLASS wc = {0};
@@ -136,7 +135,7 @@ void WinGDI_Window::MessageLoop()
 }
 
 // //窗口处理函数
-LRESULT CALLBACK Kamanri::Windows::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Kamanri::Windows::WinGDI_Window$::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 { 
 	if(__Window::IS_PRINT)
 	{

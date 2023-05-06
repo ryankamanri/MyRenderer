@@ -79,27 +79,19 @@ class Command:
 
 #######################################################################################
 
-# define suffixes
-NONE_SUFFIX = ""
-I_SUFFIX = ".i"
-CXX_SUFFIX = ".cxx"
-OBJ_SUFFIX = ".obj"
-PYD_SUFFIX = ".pyd"
-EXP_SUFFIX = ".exp"
-LIB_SUFFIX = ".lib"
-
 # define environment paths
 
 PYTHON_PATH = "C:\\ProgramData\\Anaconda3"
 MSVC_PATH = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.30.30705"
 WIN_KITS_INCLUDE_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0"
 WIN_KITS_LIBS_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.20348.0"
-PROJECT_PATH = os.path.abspath(os.path.join(os.getcwd(), "..\\"))
+PROJECT_PATH = "C:\\Users\\97448\\totFolder\\source\\repos\\MyRenderer\\MyRenderer"
 PROJECT_LIBS_PATH = PROJECT_PATH + "\\build\\windows-default\\Debug"
 
 INCLUDE_DIR_LIST = [
     PYTHON_PATH + "\\include", 
     MSVC_PATH + "\\include", 
+    WIN_KITS_INCLUDE_PATH + "\\um", 
     WIN_KITS_INCLUDE_PATH + "\\ucrt", 
     WIN_KITS_INCLUDE_PATH + "\\shared", 
     PROJECT_PATH
@@ -115,48 +107,63 @@ LIB_DIR_LIST = [
 
 LIB_LIST = [
     "kamanri.lib", 
-    # "kernel32.lib", 
-    # "user32.lib", 
-    # "gdi32.lib", 
-    # "winspool.lib", 
-    # "shell32.lib", 
-    # "ole32.lib", 
-    # "oleaut32.lib", 
-    # "uuid.lib", 
-    # "comdlg32.lib", 
-    # "advapi32.lib"
+    "gdi32.lib", 
+    "user32.lib"
+
 ]
 
 
-COMPILE_MULTITHREAD_LIB_OPTION = "/MDd"
+COMPILE_MULTITHREAD_LIB_OPTION = "/MD"
 
 # select a default single/multi thread library by COMPILE_MULTITHREAD_LIB_OPTION, and annotate it.
 # reference https://blog.csdn.net/jianchiweiyi1/article/details/25715135?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-25715135-blog-119639790.235%5Ev32%5Epc_relevant_increate_t0_download_v2_base&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-25715135-blog-119639790.235%5Ev32%5Epc_relevant_increate_t0_download_v2_base&utm_relevant_index=1
 NO_DEFAULT_MULTITHREAD_LIB_LIST = [
     "libc.lib", # release single
     "libcmt.lib", # release multiple        /MT
-    "msvcrt.lib", # release dll multiple    /MD
+    # "msvcrt.lib", # release dll multiple    /MD
     "libcd.lib", # debug single
     "libcmtd.lib", # debug multiple         /MTd
-    # "msvcrtd.lib" # debug dll multiple    /MDd
+    "msvcrtd.lib" # debug dll multiple    /MDd
 ]
 
 #######################################################################################
 
+# define prefixes
+PRIVATE_PREFIX = "_"
+# define suffixes
+NONE_SUFFIX = ""
+I_SUFFIX = ".i"
+CXX_SUFFIX = ".cxx"
+OBJ_SUFFIX = ".obj"
+PYD_SUFFIX = ".pyd"
+EXP_SUFFIX = ".exp"
+LIB_SUFFIX = ".lib"
+
+def GetModuleName(swig_source_file: Path) -> str:
+    with open(str(swig_source_file)) as file:
+        while(True):
+            line = file.readline()
+            if(line == ""):
+                raise NameError(f"Module name not found in {str(swig_source_file)}")
+            if(line.startswith("%module")):
+                return line.split(" ")[1].split("\n")[0]
+        
+
 def Build(project_path: Path, swig_source_file: Path, target_path: Path) -> None:
     
-    source_name = swig_source_file.LastName().replace(I_SUFFIX, NONE_SUFFIX)
-    cxx_name = source_name + CXX_SUFFIX
-    obj_name = source_name + OBJ_SUFFIX
-    pyd_name = source_name + PYD_SUFFIX
-    exp_name = source_name + EXP_SUFFIX
-    lib_name = source_name + LIB_SUFFIX
+    source_name = GetModuleName(swig_source_file)
+    cxx_name = PRIVATE_PREFIX + source_name + CXX_SUFFIX
+    obj_name = PRIVATE_PREFIX + source_name + OBJ_SUFFIX
+    pyd_name = PRIVATE_PREFIX + source_name + PYD_SUFFIX
+    exp_name = PRIVATE_PREFIX + source_name + EXP_SUFFIX
+    lib_name = PRIVATE_PREFIX + source_name + LIB_SUFFIX
 
     res = project_path.Execute(
         Command("swig") \
             .AddItem("-python") \
             .AddItem("-c++") \
             .AddItem("-includeall") \
+            .AddOptions("-I", INCLUDE_DIR_LIST, Command.NO_GAP) \
             .AddOption("-o", "{}\\{}".format(str(target_path), cxx_name)) \
             .AddItem(str(swig_source_file))
     )
@@ -167,8 +174,10 @@ def Build(project_path: Path, swig_source_file: Path, target_path: Path) -> None
         Command("cl") \
         .AddOption("/c", cxx_name) \
         .AddOption("/std", "c++17", Command.COLON_GAP) \
+        .AddOption("/wd", "4819") \
         .AddOptions("/I", INCLUDE_DIR_LIST) \
-        .AddItem(COMPILE_MULTITHREAD_LIB_OPTION)
+        .AddItem(COMPILE_MULTITHREAD_LIB_OPTION) \
+        .AddItem("/nologo")
     )
 
     if(res != 0): exit(res)
@@ -180,23 +189,21 @@ def Build(project_path: Path, swig_source_file: Path, target_path: Path) -> None
             .AddItem("/DLL") \
             .AddOptions("/LIBPATH", LIB_DIR_LIST, Command.COLON_GAP) \
             .AddOptions("/NODEFAULTLIB", NO_DEFAULT_MULTITHREAD_LIB_LIST, Command.COLON_GAP) \
-            .AddItems(LIB_LIST)
+            .AddItems(LIB_LIST) \
+            .AddItem("/nologo")
     )
 
     if(res != 0): exit(res)
 
     # delete middle generated files.
-    target_path.Execute(Command("rm").AddItem(cxx_name))
-    target_path.Execute(Command("rm").AddItem(exp_name))
-    target_path.Execute(Command("rm").AddItem(lib_name))
-    target_path.Execute(Command("rm").AddItem(obj_name))
+    target_path.Execute(Command("rm").AddItem(cxx_name).AddItem(exp_name).AddItem(lib_name).AddItem(obj_name))
 
 ###################################################################################
 
 # define static path
-project_path = Path("..\\")
-source_path = Path(str(project_path) + "\\kamanri")
-target_path = Path(str(project_path) + "\\build\\kamanri")
+project_path = Path(PROJECT_PATH)
+source_path = Path(PROJECT_PATH + "\\kamanri")
+target_path = Path(PROJECT_PATH + "\\build\\kamanri")
 target_path.MakeDir()
 
 # define moveable path

@@ -114,6 +114,23 @@ BlinnPhongReflectionModel::BlinnPhongReflectionModel(BlinnPhongReflectionModel&&
 	_is_use_cuda = other._is_use_cuda;
 }
 
+BlinnPhongReflectionModel& BlinnPhongReflectionModel::operator=(BlinnPhongReflectionModel const& other)
+{
+    _point_lights = other._point_lights;
+	_screen_width = other._screen_width;
+	_screen_height = other._screen_height;
+    _specular_min_cos = other._specular_min_cos;
+	_diffuse_factor = other._diffuse_factor;
+	_ambient_factor = other._ambient_factor;
+	_lights_buffer = CopyArray(other._lights_buffer.get(), _screen_width * _screen_height);
+
+	_cuda_lights_buffer = other._cuda_lights_buffer;
+	_cuda_point_lights = other._cuda_point_lights;
+
+	_is_use_cuda = other._is_use_cuda;
+	return *this;
+}
+
 BlinnPhongReflectionModel& BlinnPhongReflectionModel::operator=(BlinnPhongReflectionModel&& other)
 {
     _point_lights = std::move(other._point_lights);

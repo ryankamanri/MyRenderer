@@ -1,5 +1,5 @@
 #pragma once
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/utils/string.hpp"
 #include "cuda_dll/src/utils/cuda_thread_config.cuh"
 

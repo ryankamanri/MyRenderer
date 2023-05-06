@@ -4,6 +4,7 @@
 #include "cuda_dll/exports/memory_operations.hpp"
 
 using namespace Kamanri::Renderer;
+using namespace Kamanri::Renderer::TGAImage$;
 
 namespace __TGAImage
 {

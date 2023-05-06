@@ -1,4 +1,4 @@
 #pragma once
 #include "math.hpp"
-#include "matrix.hpp"
+#include "smatrix.hpp"
 #include "vector.hpp"

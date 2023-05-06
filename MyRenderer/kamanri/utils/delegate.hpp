@@ -1,5 +1,7 @@
 #pragma once
+#ifndef SWIG
 #include <typeinfo>
+#endif
 
 namespace Kamanri
 {
@@ -44,8 +46,7 @@ namespace Kamanri
 			}
 			void AddHead(ANode &new_delegate)
 			{
-				if (new_delegate != nullptr)
-					new_delegate._next_delegate_node = _head;
+				new_delegate._next_delegate_node = _head;
 				_head = &new_delegate;
 				if (_rear == nullptr)
 					_rear = _head;

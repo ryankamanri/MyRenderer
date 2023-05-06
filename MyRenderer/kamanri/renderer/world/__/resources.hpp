@@ -34,6 +34,17 @@ namespace Kamanri
 					/// @brief Used to store ONLY MODEL VIEW transformed vertex normals
 					std::vector<Maths::Vector> vertex_normals_model_view_transformed;
 
+					Resources& operator=(Resources const& other)
+					{
+						vertices = other.vertices;
+						vertices_transformed = other.vertices_transformed;
+						vertices_model_view_transformed = other.vertices_model_view_transformed;
+						vertex_textures = other.vertex_textures;
+						vertex_normals = other.vertex_normals;
+						vertex_normals_model_view_transformed = other.vertex_normals_model_view_transformed;
+						return *this;
+					}
+
 					Resources& operator=(Resources&& other)
 					{
 						vertices = std::move(other.vertices);

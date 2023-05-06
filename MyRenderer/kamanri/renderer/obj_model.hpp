@@ -1,27 +1,12 @@
 #pragma once
-#include <vector>
-#include "kamanri/utils/result_declare.hpp"
-#include "tga_image.hpp"
+#ifndef SWIG
+#include "kamanri/renderer/obj_model$.hpp"
+#endif
 
 namespace Kamanri
 {
 	namespace Renderer
 	{
-		namespace ObjModel$
-		{
-			constexpr int CODE_INVALID_TYPE = 0;
-			constexpr int CODE_CANNOT_READ_FILE = 100;
-			constexpr int CODE_READING_EXCEPTION = 200;
-			constexpr int CODE_INDEX_OUT_OF_BOUND = 300;
-
-			class Face
-			{
-			public:
-				std::vector<int> vertex_indexes;
-				std::vector<int> vertex_texture_indexes;
-				std::vector<int> vertex_normal_indexes;
-			};
-		}
 
 		class ObjModel
 		{
@@ -31,10 +16,10 @@ namespace Kamanri
 			size_t GetVertexNormalSize() const;
 			size_t GetVertexTextureSize() const;
 			size_t GetFaceSize() const;
-			Utils::Result<std::vector<double>> GetVertex(size_t index) const;
-			Utils::Result<std::vector<double>> GetVertexNormal(size_t index) const;
-			Utils::Result<std::vector<double>> GetVertexTexture(size_t index) const;
-			Utils::Result<ObjModel$::Face> GetFace(size_t index) const;
+			Kamanri::Utils::Result<std::vector<double>> GetVertex(size_t index) const;
+			Kamanri::Utils::Result<std::vector<double>> GetVertexNormal(size_t index) const;
+			Kamanri::Utils::Result<std::vector<double>> GetVertexTexture(size_t index) const;
+			Kamanri::Utils::Result<Kamanri::Renderer::ObjModel$::Face> GetFace(size_t index) const;
 
 			inline std::string GetTGAImageName() const { return _tga_image_name; }
 			
@@ -45,11 +30,11 @@ namespace Kamanri
 			std::vector<std::vector<double>> _vertex_normals;
 			/// @brief 顶点纹理，代表当前顶点对应纹理图的哪个像素，通常是0-1，如果大于1，就相当于将纹理重新扩充然后取值，比如镜像填充、翻转填充之类的，然后根据纹理图的宽高去计算具体像素位置
 			std::vector<std::vector<double>> _vertex_textures;
-			std::vector<ObjModel$::Face> _faces;
+			std::vector<Kamanri::Renderer::ObjModel$::Face> _faces;
 
 			std::string _tga_image_name;
 
-			Utils::DefaultResult ReadObjFileAndInit(std::string const &file_name);
+			Kamanri::Utils::DefaultResult ReadObjFileAndInit(std::string const &file_name);
 		};
 
 	}

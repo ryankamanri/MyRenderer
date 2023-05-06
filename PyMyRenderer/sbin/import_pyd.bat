@@ -2,8 +2,7 @@
 cd %~dp0
 echo Import PYD...
 echo ===========================================================
-cp ../../MyRenderer/build/windows-default/Kamanri.py ../kamanri
-cp ../../MyRenderer/build/windows-default/Debug/_swig_kamanri.pyd ../kamanri
+xcopy ..\..\MyRenderer\build\kamanri ..\kamanri /E /Y /I
 
 if not %errorlevel% == 0 (
     echo The program abnormal exited with %errorlevel%.

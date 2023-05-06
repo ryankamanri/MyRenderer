@@ -1,34 +1,13 @@
 #pragma once
-#include "kamanri/utils/result_declare.hpp"
-#include "kamanri/maths/vector.hpp"
-#include "kamanri/utils/memory.hpp"
-#include "kamanri/renderer/world/__/resources.hpp"
-#include "blinn_phong_reflection_model.hpp"
+#ifndef SWIG
+#include "kamanri/renderer/world/camera$.hpp"
+#endif
 namespace Kamanri
 {
 	namespace Renderer
 	{
 		namespace World
 		{
-			namespace Camera$
-			{
-				constexpr const int CODE_NULL_POINTER_PVERTICES = 100;
-				constexpr const int CODE_INVALID_VECTOR_LENGTH = 200;
-				constexpr const int CODE_UNEQUAL_NUM = 300;
-				class CameraAttributes
-				{
-				public:
-					Maths::Vector location;
-					Maths::Vector direction;
-					Maths::Vector upper;
-					double nearest_dist;
-					double furthest_dist;
-					unsigned int screen_width;
-					unsigned int screen_height;
-					CameraAttributes(Maths::Vector $location, Maths::Vector $direction, Maths::Vector $upper, double $nearer_dest, double $further_dest, unsigned int $screen_width, unsigned int $screen_height):
-					location($location), direction($direction), upper($upper), nearest_dist($nearer_dest), furthest_dist($further_dest), screen_width($screen_width), screen_height($screen_height) {}
-				};
-			}
 
 			class Camera
 			{
@@ -36,16 +15,16 @@ namespace Kamanri
 				/* data */
 				///////////////////////////////
 				// references
-				__::Resources* _p_resources = nullptr;
+				Kamanri::Renderer::World::__::Resources* _p_resources = nullptr;
 
-				BlinnPhongReflectionModel* _p_bpr_model = nullptr;
+				Kamanri::Renderer::World::BlinnPhongReflectionModel* _p_bpr_model = nullptr;
 				/////////////////////////////////
 
 				// need 4d vector
-				Maths::Vector _location;
-				Maths::Vector _direction;
+				Kamanri::Maths::Vector _location;
+				Kamanri::Maths::Vector _direction;
 				// the upward direction only need 3d vector
-				Maths::Vector _upward;
+				Kamanri::Maths::Vector _upward;
 
 				// angles
 				/**
@@ -83,22 +62,23 @@ namespace Kamanri
 
 			public:
 				Camera();
-				Camera(Maths::Vector location, Maths::Vector direction, Maths::Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height);
+				Camera(Kamanri::Maths::Vector location, Kamanri::Maths::Vector direction, Kamanri::Maths::Vector upper, double nearest_dist, double furthest_dist, unsigned int screen_width, unsigned int screen_height);
 				Camera(Camera&& camera);
+				Camera& operator=(Camera const& other);
 				Camera& operator=(Camera&& other);
-				void __SetRefs(__::Resources& resources, BlinnPhongReflectionModel& bpr_model);
-				Utils::DefaultResult Transform();
+				void __SetRefs(Kamanri::Renderer::World::__::Resources& resources, Kamanri::Renderer::World::BlinnPhongReflectionModel& bpr_model);
+				Kamanri::Utils::DefaultResult Transform();
 				/**
 				 * @brief Inverse the upper vector when the upper of direction changed.
 				 * 
 				 * @param last_direction 
 				 * @return Utils::DefaultResult 
 				 */
-				Utils::DefaultResult InverseUpperByDirection(Maths::Vector const& last_direction);
+				Kamanri::Utils::DefaultResult InverseUpperByDirection(Kamanri::Maths::Vector const& last_direction);
 
-				inline Maths::Vector &Location() { return _location; }
-				inline Maths::Vector &Direction() { return _direction; }
-				inline Maths::Vector &Upward() { return _upward; }
+				inline Kamanri::Maths::Vector &Location() { return _location; }
+				inline Kamanri::Maths::Vector &Direction() { return _direction; }
+				inline Kamanri::Maths::Vector &Upward() { return _upward; }
 #ifdef __CUDA_RUNTIME_H__ 
 				__device__
 #endif

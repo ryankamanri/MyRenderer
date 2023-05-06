@@ -2,8 +2,7 @@
 cd %~dp0
 echo Import PYD...
 echo ===========================================================
-rm ../kamanri/_swig_kamanri.pyd
-rm ../kamanri/Kamanri.py
+rm -r -f ../kamanri
 
 if not %errorlevel% == 0 (
     echo The program abnormal exited with %errorlevel%.

@@ -1,5 +1,5 @@
 #include <fstream>
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/renderer/obj_model.hpp"
 #include "kamanri/utils/string.hpp"
 #include "kamanri/utils/result.hpp"

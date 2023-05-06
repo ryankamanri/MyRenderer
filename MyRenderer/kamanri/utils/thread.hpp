@@ -9,7 +9,7 @@
 #include <future>
 #include <functional>
 #include <stdexcept>
-#include "logs.hpp"
+#include "log.hpp"
 
 namespace Kamanri
 {

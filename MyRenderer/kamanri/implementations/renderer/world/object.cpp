@@ -2,7 +2,7 @@
 #include "kamanri/renderer/world/object.hpp"
 #include "kamanri/renderer/world/__/triangle3d.hpp"
 #include "kamanri/utils/result.hpp"
-#include "kamanri/maths/matrix.hpp"
+#include "kamanri/maths/smatrix.hpp"
 
 using namespace Kamanri::Renderer::World;
 using namespace Kamanri::Utils;

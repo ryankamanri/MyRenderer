@@ -1,5 +1,5 @@
 #pragma once
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 
 //数组实现的栈，能存储任意类型的数据
 namespace Kamanri

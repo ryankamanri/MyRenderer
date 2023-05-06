@@ -1,5 +1,5 @@
 #pragma once
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 
 #define CUDA_ERROR_CHECK(res, log_name) \
 	if (res != cudaSuccess) \

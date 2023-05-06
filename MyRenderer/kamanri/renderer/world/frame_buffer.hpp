@@ -1,5 +1,7 @@
 #pragma once
+#ifndef SWIG
 #include "kamanri/maths/all.hpp"
+#endif
 
 namespace Kamanri
 {
@@ -15,9 +17,9 @@ namespace Kamanri
 				/// @brief the located triangle index
 				size_t triangle_index;
 				/// the point location
-				Maths::Vector location;
+				Kamanri::Maths::Vector location;
 				/// the vertex normal
-				Maths::Vector vertex_normal;
+				Kamanri::Maths::Vector vertex_normal;
 				/// RGB color reflect
 				unsigned int color;
 				// /////// update in bpr model

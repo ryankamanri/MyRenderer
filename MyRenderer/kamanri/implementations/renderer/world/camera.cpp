@@ -1,9 +1,9 @@
 #include <cmath>
 #include "kamanri/maths/math.hpp"
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/renderer/world/camera.hpp"
 #include "kamanri/utils/result.hpp"
-#include "kamanri/maths/matrix.hpp"
+#include "kamanri/maths/smatrix.hpp"
 #include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
@@ -145,6 +145,23 @@ Camera::Camera(Camera && camera)
 	_location = std::move(camera._location);
 	_direction = std::move(camera._direction);
 	_upward = std::move(camera._upward);
+}
+
+Camera& Camera::operator=(Camera const& other)
+{
+	_p_resources = other._p_resources;
+	_p_bpr_model = other._p_bpr_model;
+	_alpha = other._alpha;
+	_beta = other._beta;
+	_gamma = other._gamma;
+	_nearest_dist = other._nearest_dist;
+	_furthest_dist = other._furthest_dist;
+	_screen_width = other._screen_width;
+	_screen_height = other._screen_height;
+	_location = other._location;
+	_direction = other._direction;
+	_upward = other._upward;
+	return *this;
 }
 
 Camera& Camera::operator=(Camera&& other)

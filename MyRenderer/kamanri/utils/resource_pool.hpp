@@ -4,7 +4,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "logs.hpp"
+#include "log.hpp"
 #include "string.hpp"
 #include "result.hpp"
 #include "memory.hpp"

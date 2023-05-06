@@ -9,11 +9,12 @@ using namespace Kamanri::Windows::WinGDI_Window$;
 using namespace Kamanri::WindowProcedures::WinGDI_Window;
 using namespace Kamanri::Renderer;
 using namespace Kamanri::Renderer::World;
+using namespace Kamanri::Utils;
 
 
 constexpr const char* LOG_NAME = "Main";
 constexpr const int WINDOW_LENGTH = 600;
-constexpr const bool IS_USE_CUDA = false;
+constexpr const bool IS_USE_CUDA = true;
 
 #define BASE_PATH "C:/Users/97448/totFolder/source/repos/MyRenderer/MyRenderer/models/"
 
@@ -72,7 +73,7 @@ void StartRender(HINSTANCE hInstance)
 		),
 		BlinnPhongReflectionModel({
 			BlinnPhongReflectionModel$::PointLight({0, 3, 4, 1}, 800, 0xffffff)
-		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.2, IS_USE_CUDA),
+		}, WINDOW_LENGTH, WINDOW_LENGTH, 0.95, 1 / PI * 2, 0.4, IS_USE_CUDA),
 		IS_USE_CUDA
 	);
 	world

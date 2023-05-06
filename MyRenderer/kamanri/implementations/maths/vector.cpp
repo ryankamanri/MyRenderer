@@ -1,6 +1,6 @@
 #include <cmath>
 #include "kamanri/maths/vector.hpp"
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/utils/memory.hpp"
 #include "kamanri/utils/string.hpp"
 

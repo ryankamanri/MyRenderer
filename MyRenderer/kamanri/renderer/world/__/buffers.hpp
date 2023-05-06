@@ -25,6 +25,7 @@ namespace Kamanri
 					public:
 					Buffers(size_t width, size_t height, bool is_use_cuda = false);
 					~Buffers();
+					Buffers& operator=(Buffers const& other);
 					Buffers& operator=(Buffers&& other);
 #ifdef __CUDA_RUNTIME_H__  
 					__device__

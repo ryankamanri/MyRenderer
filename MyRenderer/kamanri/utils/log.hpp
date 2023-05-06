@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <Windows.h>
 #include <string>
-#include "logs_declare.hpp"
+#include "log_declare.hpp"
 
 namespace Kamanri
 {

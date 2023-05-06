@@ -1,8 +1,8 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
-#include "kamanri/maths/matrix.hpp"
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/maths/smatrix.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;
@@ -130,21 +130,6 @@ namespace Kamanri
 		}
 	}
 }
-
-//////////////////////////////////// SMatrix$
-
-// static int SMatrix$::NOT_INITIALIZED_N = Vector$::NOT_INITIALIZED_N;
-// static SMatrixElemType SMatrix$::NOT_INITIALIZED_VALUE = Vector$::NOT_INITIALIZED_VALUE;
-// static int SMatrix$::MAX_SUPPORTED_DIMENSION = Vector$::MAX_SUPPORTED_DIMENSION;
-
-// // Codes
-// static SMatrixCode SMatrix$::CODE_NORM = 0;
-// static SMatrixCode SMatrix$::CODE_NOT_INITIALIZED_N = 101;
-// static SMatrixCode SMatrix$::CODE_NOT_INITIALIZED_MATRIX = 201;
-// static SMatrixCode SMatrix$::CODE_NOT_EQUEL_N = 301;
-// static SMatrixCode SMatrix$::CODE_INVALID_OPERATION = 401;
-// static SMatrixCode SMatrix$::CODE_INDEX_OUT_OF_BOUND = 501;
-// static SMatrixCode SMatrix$::CODE_DUPLICATE_VALUE = 601;
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Class member functions

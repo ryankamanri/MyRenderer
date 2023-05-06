@@ -76,7 +76,18 @@ _environment(std::move(model))
 	__World3D::cuda_malloc(&(void*)_cuda_world, sizeof(World3D));
 }
 
-
+World3D& World3D::operator=(World3D const& other)
+{
+	_resources = other._resources;
+	_camera = other._camera;
+	_environment = other._environment;
+	_buffers = other._buffers;
+	_configs = other._configs;
+	_cuda_world = other._cuda_world;
+	// Move the reference of vertices of camera
+	_camera.__SetRefs(_resources, _environment.bpr_model);
+	return *this;
+}
 
 World3D& World3D::operator=(World3D && other)
 {

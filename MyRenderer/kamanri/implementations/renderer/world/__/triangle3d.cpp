@@ -1,8 +1,8 @@
 #include <cfloat>
 #include "kamanri/renderer/world/__/triangle3d.hpp"
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/maths/vector.hpp"
-#include "kamanri/maths/matrix.hpp"
+#include "kamanri/maths/smatrix.hpp"
 #include "kamanri/utils/string.hpp"
 
 using namespace Kamanri::Utils;

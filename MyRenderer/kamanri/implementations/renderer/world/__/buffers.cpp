@@ -1,6 +1,6 @@
 #include <cfloat>
 #include "kamanri/utils/string.hpp"
-#include "kamanri/utils/logs.hpp"
+#include "kamanri/utils/log.hpp"
 #include "kamanri/renderer/world/__/buffers.hpp"
 #include "cuda_dll/exports/memory_operations.hpp"
 
@@ -74,6 +74,18 @@ Buffers::~Buffers()
 	Log::Debug(__Buffers::LOG_NAME, "clean the buffers");
 	__Buffers::cuda_free(_cuda_buffers);
 	__Buffers::cuda_free(_cuda_bitmap_buffer);
+}
+
+Buffers& Buffers::operator=(Buffers const& other)
+{
+	_width = other._width;
+	_height = other._height;
+	_buffers = CopyArray(other._buffers.get(), _width * _height);
+	_bitmap_buffer = CopyArray(other._bitmap_buffer.get(), _width * _height);
+
+	_cuda_buffers = other._cuda_buffers;
+	_cuda_bitmap_buffer = other._cuda_bitmap_buffer;
+	return *this;
 }
 
 Buffers& Buffers::operator=(Buffers&& other)

@@ -1,6 +1,6 @@
 #pragma once
-#include "kamanri/maths/matrix.hpp"
-#include "cuda_dll/src/utils/logs.cuh"
+#include "kamanri/maths/smatrix.hpp"
+#include "cuda_dll/src/utils/log.cuh"
 
 
 namespace __SMatrix
