@@ -1,8 +1,10 @@
 #pragma once
+#ifndef SWIG
 #include "log.hpp"
 #include "memory.hpp"
 #include <string>
 #include <vector>
+#endif
 
 namespace Kamanri
 {
@@ -22,7 +24,7 @@ namespace Kamanri
 			 * @brief 堆栈跟踪
 			 *
 			 */
-			using StackTrace = struct StackTrace
+			struct StackTrace
 			{
 				StackTrace(std::string const &file, int line, int lineCount = 1);
 				/* data */
@@ -67,9 +69,9 @@ namespace Kamanri
 			Result(Result<T> &&result);
 			explicit Result(T data);
 			Result(Result$::Status status, int code, std::string const &message);
-			Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult);
-			Result(Result$::Status status, int code, std::string const &message, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
-			Result(Result$::Status status, int code, std::string const &message, T data, P<Result<T>> innerResult, std::vector<Result$::StackTrace> &stackTrace);
+			Result(Result$::Status status, int code, std::string const &message, T data, Kamanri::Utils::P<Result<T>>& innerResult);
+			Result(Result$::Status status, int code, std::string const &message, Kamanri::Utils::P<Result<T>>& innerResult, std::vector<Result$::StackTrace> &stackTrace);
+			Result(Result$::Status status, int code, std::string const &message, T data, Kamanri::Utils::P<Result<T>>& innerResult, std::vector<Result$::StackTrace> &stackTrace);
 
 			Result<T>& operator=(Result<T> const& result);
 			Result<T>& operator=(Result<T> &&result);
@@ -98,7 +100,7 @@ namespace Kamanri
 			// 返回值
 			T _data;
 			// 内部返回或内部异常
-			P<Result<T>> _inner_result;
+			Kamanri::Utils::P<Result<T>> _inner_result;
 			// 调用堆栈
 			std::vector<Result$::StackTrace> _stacktrace;
 
@@ -165,7 +167,7 @@ namespace Kamanri
 			int code,
 			std::string const &message,
 			T data,
-			P<Result<T>> innerResult)
+			P<Result<T>>& innerResult)
 		{
 
 			this->_status = status;
@@ -180,7 +182,7 @@ namespace Kamanri
 			Result$::Status status,
 			int code,
 			std::string const &message,
-			P<Result<T>> innerResult,
+			P<Result<T>>& innerResult,
 			std::vector<Result$::StackTrace> &stackTrace)
 		{
 			this->_status = status;
@@ -196,7 +198,7 @@ namespace Kamanri
 			int code,
 			std::string const &message,
 			T data,
-			P<Result<T>> innerResult,
+			P<Result<T>>& innerResult,
 			std::vector<Result$::StackTrace> &stackTrace)
 		{
 			this->_status = status;

@@ -188,10 +188,10 @@ void Camera::__SetRefs(__::Resources& resources, BlinnPhongReflectionModel& bpr_
 }
 
 
-DefaultResult Camera::Transform()
+int Camera::Transform(bool is_bpr_model_transform)
 {
-	CHECK_MEMORY_FOR_DEFAULT_RESULT(_p_resources, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
-	CHECK_MEMORY_FOR_DEFAULT_RESULT(_p_bpr_model, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
+	CHECK_MEMORY_IS_ALLOCATED(_p_resources, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
+	CHECK_MEMORY_IS_ALLOCATED(_p_bpr_model, __Camera::LOG_NAME, Camera$::CODE_NULL_POINTER_PVERTICES);
 	SetAngles();
 
 	Log::Trace(__Camera::LOG_NAME, "vertices count: %d", _p_resources->vertices.size());
@@ -323,19 +323,19 @@ DefaultResult Camera::Transform()
 		model_view_transform * _p_resources->vertex_normals_model_view_transformed[i];
 	}
 
-	_p_bpr_model->ModelViewTransform(model_view_transform);
+	if(is_bpr_model_transform) _p_bpr_model->ModelViewTransform(model_view_transform);
 	//
-	return DEFAULT_RESULT;
+	return 0;
 }
 
-DefaultResult Camera::InverseUpperByDirection(Maths::Vector const &last_direction)
+int Camera::InverseUpperByDirection(Maths::Vector const &last_direction)
 {
 	auto last_direction_n = last_direction.N();
 	if (last_direction_n != 4)
 	{
 		Log::Error(__Camera::LOG_NAME, "Invalid last_direction length %d", last_direction_n);
 		PRINT_LOCATION;
-		return DEFAULT_RESULT_EXCEPTION(Camera$::CODE_INVALID_VECTOR_LENGTH, "Invalid last_direction length");
+		return Camera$::CODE_INVALID_VECTOR_LENGTH;
 	}
 
 	using namespace __Camera::InverseUpperByDirection;
@@ -351,5 +351,5 @@ DefaultResult Camera::InverseUpperByDirection(Maths::Vector const &last_directio
 		_upward *= -1;
 	}
 
-	return DEFAULT_RESULT;
+	return 0;
 }

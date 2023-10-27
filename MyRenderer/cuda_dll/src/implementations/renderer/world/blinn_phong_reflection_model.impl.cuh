@@ -102,7 +102,7 @@ __device__ void Kamanri::Renderer::World::BlinnPhongReflectionModel::__BuildPerT
 
 }
 
-__device__ void Kamanri::Renderer::World::BlinnPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
+__device__ void Kamanri::Renderer::World::BlinnPhongReflectionModel::__BuildShadowPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
 {
 	// Utils::ArrayStack<size_t> triangle_index_stack;
 	using namespace __BlinnPhongReflectionModel;

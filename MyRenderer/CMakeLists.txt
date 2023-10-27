@@ -16,7 +16,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 
 ####################################### build switches
-# set(BUILD_CUDA_DLL ON)
+set(BUILD_CUDA_DLL ON)
 set(BUILD_KAMANRI ON)
 set(BUILD_EXECUTABLE ON)
 set(BUILD_SWIG_PYTHON OFF) # DEPRECATED. Use sbin/build_swig_python.bat instead.

@@ -61,7 +61,7 @@ namespace Kamanri
 #ifdef __CUDA_RUNTIME_H__  
                 __device__
 #endif
-					void __BuildPixel(size_t x, size_t y, Kamanri::Utils::List<Kamanri::Renderer::World::__::Triangle3D> triangles, Kamanri::Renderer::World::__::BoundingBox* boxes, Kamanri::Renderer::World::FrameBuffer& buffer);
+					void __BuildShadowPixel(size_t x, size_t y, Kamanri::Utils::List<Kamanri::Renderer::World::__::Triangle3D> triangles, Kamanri::Renderer::World::__::BoundingBox* boxes, Kamanri::Renderer::World::FrameBuffer& buffer);
 #ifdef __CUDA_RUNTIME_H__  
                 __device__
 #endif

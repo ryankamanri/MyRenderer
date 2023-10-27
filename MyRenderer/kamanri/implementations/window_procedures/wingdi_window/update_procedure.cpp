@@ -24,11 +24,23 @@ using namespace Kamanri::Windows::WinGDI_Window$;
 using namespace Kamanri::WindowProcedures::WinGDI_Window;
 using namespace Kamanri::Utils;
 
-UpdateProcedure::UpdateProcedure(Kamanri::Utils::DefaultResult(*update_func)(Kamanri::Renderer::World::World3D&), unsigned int screen_width, unsigned int screen_height)
+UpdateProcedure::UpdateProcedure(int(*update_func)(Kamanri::Renderer::World::World3D&), unsigned int screen_width, unsigned int screen_height, bool is_offline, unsigned int frame_count, unsigned int wait_millis)
 {
 	_update_func = update_func;
 	_screen_width = screen_width;
 	_screen_height = screen_height;
+	_is_offline = is_offline;
+
+	if(is_offline && frame_count < 1) 
+		Log::Error(__UpdateProcedure::LOG_NAME, "Invalid frame_count: %u", frame_count);
+	
+	_frame_count = frame_count;
+	_wait_millis = wait_millis;
+	_frames = NewArray<P<unsigned long[]>>(_frame_count);
+	for(size_t i = 0; i < _frame_count; i++)
+	{
+		_frames[i] = NewArray<unsigned long>(_screen_width * _screen_height);
+	}
 }
 
 UpdateProcedure::UpdateProcedure(UpdateProcedure const& other)
@@ -61,27 +73,67 @@ void UpdateProcedure::Func(Kamanri::Windows::WinGDI_Window$::WinGDI_Message& mes
 		auto painter = painter_factor.CreatePainter();
 
 		// int color;
-		DefaultResult update_res;
+		int update_res;
 		//
-		while (this->_is_window_alive)
+
+		if (!_is_offline)
 		{
-			// this part rightly belongs to DrawFunc
-			update_res = _update_func(*message.world);
-			if (update_res.IsException())
+			while (this->_is_window_alive)
 			{
-				Log::Error(__UpdateProcedure::LOG_NAME, "Failed to execute the update_func caused by:");
-				update_res.Print();
-				exit(update_res.Code());
+				// this part rightly belongs to DrawFunc
+				update_res = _update_func(*message.world);
+				if (update_res != 0)
+				{
+					Log::Error(__UpdateProcedure::LOG_NAME, "Failed to execute the update_func caused by:");
+					exit(update_res);
+				}
+				//
+				Log::Debug(__UpdateProcedure::LOG_NAME, "Start to render...");
+
+				painter.DrawFrom(message.world->Bitmap());
+
+				painter.Flush();
+				painter_factor.Clean(painter);
+				Log::Debug(__UpdateProcedure::LOG_NAME, "Finish a frame render.");
 			}
-			//
-			Log::Debug(__UpdateProcedure::LOG_NAME, "Start to render...");
-
-			painter.DrawFrom(message.world->Bitmap());
-
-			painter.Flush();
-			painter_factor.Clean(painter);
-			Log::Debug(__UpdateProcedure::LOG_NAME, "Finish a frame render.");
 		}
+		else
+		{
+			// offline rendering.
+			for(unsigned int i = 0; _is_window_alive && i < _frame_count; i++)
+			{
+				update_res = _update_func(*message.world);
+				if (update_res != 0)
+				{
+					Log::Error(__UpdateProcedure::LOG_NAME, "Failed to execute the update_func caused by:");
+					exit(update_res);
+				}
+				// move result to frame.
+				message.world->Bitmap()[0] = 0xffffff;
+				memcpy(_frames[i].get(), message.world->Bitmap(), _screen_width * _screen_height * sizeof(unsigned long)); 
+
+				Log::Debug(__UpdateProcedure::LOG_NAME, "Render process: %u / %u", i + 1, _frame_count);
+			}
+
+			Log::Debug(__UpdateProcedure::LOG_NAME, "Finished offline render, begin to draw...");
+
+			unsigned int current_frame = 0;
+
+			while (this->_is_window_alive)
+			{
+
+				painter.DrawFrom(_frames[current_frame].get());
+
+				painter.Flush();
+
+				Sleep(_wait_millis);
+
+				painter_factor.Clean(painter);
+				
+				(++current_frame) %= _frame_count;
+			}
+		}
+		
 	});
 
 }

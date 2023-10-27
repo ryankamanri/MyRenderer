@@ -29,8 +29,8 @@ __device__ void Kamanri::Renderer::World::World3D::__BuildForPixel(size_t x, siz
 	// set distance = infinity, is exposed.
 	_environment.bpr_model.InitLightBufferPixel(x, y, buffer);
 
-
-	_environment.bpr_model.__BuildPixel(x, y, _environment.cuda_triangles, _environment.cuda_boxes.data, buffer);
+	if(_configs.is_shadow_mapping)
+		_environment.bpr_model.__BuildShadowPixel(x, y, _environment.cuda_triangles, _environment.cuda_boxes.data, buffer);
 
 	_environment.bpr_model.WriteToPixel(x, y, buffer, bitmap_pixel);
 

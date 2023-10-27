@@ -40,14 +40,10 @@ namespace Kamanri
 
 %{
 	static UpdateFuncBaseWrapper* update_func_base_wrapper_mount;
-	static Kamanri::Utils::DefaultResult UpdateFuncBaseWrapperCaller(Kamanri::Renderer::World::World3D& world)
+	static int UpdateFuncBaseWrapperCaller(Kamanri::Renderer::World::World3D& world)
 	{
 		auto result_code = update_func_base_wrapper_mount->UpdateFunc(world);
-		return Kamanri::Utils::DefaultResult(
-			result_code == Kamanri::Utils::Result$::DEFAULT_CODE ? Kamanri::Utils::Result$::Status::NORM : Kamanri::Utils::Result$::Status::EXCEPTION, 
-			result_code, 
-			"An Exception happened in UpdateFunc."
-		);
+		return result_code;
 	}
 %}
 

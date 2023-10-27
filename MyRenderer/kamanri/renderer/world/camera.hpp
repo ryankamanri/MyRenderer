@@ -67,14 +67,14 @@ namespace Kamanri
 				Camera& operator=(Camera const& other);
 				Camera& operator=(Camera&& other);
 				void __SetRefs(Kamanri::Renderer::World::__::Resources& resources, Kamanri::Renderer::World::BlinnPhongReflectionModel& bpr_model);
-				Kamanri::Utils::DefaultResult Transform();
+				int Transform(bool is_transform_bpr_model = true);
 				/**
 				 * @brief Inverse the upper vector when the upper of direction changed.
 				 * 
 				 * @param last_direction 
 				 * @return Utils::DefaultResult 
 				 */
-				Kamanri::Utils::DefaultResult InverseUpperByDirection(Kamanri::Maths::Vector const& last_direction);
+				int InverseUpperByDirection(Kamanri::Maths::Vector const& last_direction);
 
 				inline Kamanri::Maths::Vector &Location() { return _location; }
 				inline Kamanri::Maths::Vector &Direction() { return _direction; }

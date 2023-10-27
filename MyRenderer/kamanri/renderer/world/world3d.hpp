@@ -27,7 +27,7 @@ namespace Kamanri
 				World3D* _cuda_world;
 
 			public:
-				World3D(Kamanri::Renderer::World::Camera&& camera, Kamanri::Renderer::World::BlinnPhongReflectionModel&& model, bool is_use_cuda = false);
+				World3D(Kamanri::Renderer::World::Camera&& camera, Kamanri::Renderer::World::BlinnPhongReflectionModel&& model, bool is_shadow_mapping = true, bool is_use_cuda = false);
 				~World3D();
 				World3D& operator=(World3D const& other);
 				World3D& operator=(World3D&& other);
@@ -35,7 +35,7 @@ namespace Kamanri
 				Kamanri::Utils::Result<Object *> AddObjModel(Kamanri::Renderer::ObjModel const &model);
 				World3D& AddObjModel(Kamanri::Renderer::ObjModel const &model, Kamanri::Maths::SMatrix const& transform_matrix);
 				World3D& Commit();
-				Kamanri::Utils::DefaultResult Build();
+				void Build();
 #ifdef __CUDA_RUNTIME_H__  
 				__device__
 #endif

@@ -223,7 +223,7 @@ void BlinnPhongReflectionModel::__BuildPerTrianglePixel(size_t x, size_t y, __::
 	}
 }
 
-void BlinnPhongReflectionModel::__BuildPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
+void BlinnPhongReflectionModel::__BuildShadowPixel(size_t x, size_t y, Utils::List<__::Triangle3D> triangles, __::BoundingBox* boxes, FrameBuffer& buffer)
 {
 	// Utils::ArrayStack<size_t> triangle_index_stack;
 	using namespace __BlinnPhongReflectionModel;

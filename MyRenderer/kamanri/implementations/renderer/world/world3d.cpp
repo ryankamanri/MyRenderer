@@ -52,7 +52,7 @@ namespace Kamanri
 
 
 
-World3D::World3D(Camera&& camera, BlinnPhongReflectionModel&& model, bool is_use_cuda)
+World3D::World3D(Camera&& camera, BlinnPhongReflectionModel&& model, bool is_shadow_mapping, bool is_use_cuda)
 : _camera(std::move(camera)), 
 _buffers(_camera.ScreenWidth(), _camera.ScreenHeight(), is_use_cuda),
 _environment(std::move(model))
@@ -68,6 +68,8 @@ _environment(std::move(model))
 		exit(World3D$::CODE_UNHANDLED_EXCEPTION);
 	}
 	_camera.__SetRefs(_resources, _environment.bpr_model);
+
+	_configs.is_shadow_mapping = is_shadow_mapping;
 
 	if(!is_use_cuda) return;
 	_configs.is_use_cuda = is_use_cuda;
@@ -247,7 +249,7 @@ World3D& World3D::Commit()
 	return *this;
 }
 
-DefaultResult World3D::Build()
+void World3D::Build()
 {
 	if(!_configs.is_commited)
 	{
@@ -255,6 +257,7 @@ DefaultResult World3D::Build()
 	}
 
 	Log::Debug(__World3D::LOG_NAME, "Start to build the world...");
+	Log::Debug(__World3D::LOG_NAME, "Triangle size: %llu", _environment.triangles.size());
 
 	_buffers.CleanBitmap();
 
@@ -303,7 +306,7 @@ DefaultResult World3D::Build()
 
 
 
-	return DEFAULT_RESULT;
+	
 }
 
 void World3D::__BuildForPixel(size_t x, size_t y)
@@ -338,8 +341,8 @@ void World3D::__BuildForPixel(size_t x, size_t y)
 	// set distance = infinity, is exposed.
 	_environment.bpr_model.InitLightBufferPixel(x, y, buffer);
 
-	
-	_environment.bpr_model.__BuildPixel(x, y, triangles, _environment.boxes.get(), buffer);
+	if(_configs.is_shadow_mapping)
+		_environment.bpr_model.__BuildShadowPixel(x, y, triangles, _environment.boxes.get(), buffer);
 
 	_environment.bpr_model.WriteToPixel(x, y, buffer, bitmap_pixel);
 	

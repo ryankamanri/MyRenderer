@@ -7,4 +7,7 @@
 
 %include <windows.i>
 
+using HWND = void*;
+using DWORD = unsigned long;
+
 %include "kamanri/windows/wingdi_window$.hpp"

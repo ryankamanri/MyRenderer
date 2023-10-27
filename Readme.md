@@ -12,4 +12,10 @@ This `Readme.md` is just a catalog of my introduction docs, and the rest docs is
 - The code design and implementation of functions
 - The logs in developing
 
-The project is still developing.  
+The project is still developing.
+
+
+=============================================================
+**Update on Oct 27, 2023**
+The work has almost done because I finished my undergraduate life(as a graduation project).
+If anyone is interested in it, see [PDF](docs/2223_51_10636_080901_2019110111_BS.pdf).
