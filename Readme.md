@@ -2,6 +2,10 @@ In short, this is:
 
 # An easy extendable renderer used in practicing.
 
+
+https://github.com/user-attachments/assets/bb2a456e-94e3-41b8-b1f9-3ee90893346f
+
+
 I had almost completed all works of the first stage(Rasterization) when I first wrote this `Readme.md`... So excuse me for some case I may forget.  
 
 However, I would try my best to restore the whole procession of how I implemented it and clarify the function of my entire code step by step.  
